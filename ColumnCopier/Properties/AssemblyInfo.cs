@@ -6,9 +6,9 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("ColumnCopier")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Parses columns for easy copying.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Christian Webber")]
 [assembly: AssemblyProduct("ColumnCopier")]
 [assembly: AssemblyCopyright("Copyright ©  2016")]
 [assembly: AssemblyTrademark("")]
