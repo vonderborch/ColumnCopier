@@ -266,14 +266,26 @@ namespace ColumnCopier
         /// <summary>
         /// Gets the next line.
         /// </summary>
+        /// <param name="tmp">The temporary.</param>
         /// <returns>System.String.</returns>
+        /// Changelog:
+        /// - 1.0.0 (08-18-2016) - Initial version.
         ///  Changelog:
+        ///             - 1.0.1 (08-23-2016) - Added argument for row id to copy.
         ///             - 1.0.0 (08-18-2016) - Initial version.
-        public string GetNextLine()
+        public string GetNextLine(int? tmp = null)
         {
-            int rowId = CurrentRowId++;
-            if (rowId >= columnsData[CurrentColumn].Count)
-                rowId = 0;
+            int rowId = 0;
+            if (tmp == null)
+                rowId = CurrentRowId++;
+            else
+            {
+                rowId = (int)tmp;
+            }
+
+            CurrentRowId = rowId + 1;
+            if (CurrentRowId >= columnsData[CurrentColumn].Count)
+                CurrentRowId = 0;
 
             return columnsData[CurrentColumn][rowId];
         }

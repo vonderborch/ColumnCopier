@@ -112,7 +112,7 @@ namespace ColumnCopier
 
             string fileToLoad = "";
             if (BaseExecutableName != ExecutableName)
-                fileToLoad = $"{BaseExecutableName}{SaveFileExtension}";
+                fileToLoad = $"{ExecutableName}{SaveFileExtension}";
             else
                 fileToLoad = $"ColumnCopier-{DateTime.Now.Ticks}{SaveFileExtension}";
 
@@ -214,7 +214,8 @@ namespace ColumnCopier
             set
             {
                 Clipboard.Clear();
-                Clipboard.SetText(value);
+                if (!string.IsNullOrEmpty(value))
+                    Clipboard.SetText(value);
             }
         }
 
@@ -754,6 +755,7 @@ namespace ColumnCopier
             }
             catch (Exception ex)
             {
+                if (true) ;
             }
 
             return false;
@@ -848,7 +850,8 @@ namespace ColumnCopier
         ///             - 1.0.0 (08-15-2016) - Initial version.
         private void copyLine_btn_Click(object sender, EventArgs e)
         {
-            ClipBoard = history[currentRequest].GetNextLine();
+            ClipBoard = history[currentRequest].GetNextLine(CurrentLine);
+            CurrentLine = history[currentRequest].CurrentRowId;
         }
 
         /// <summary>
@@ -906,7 +909,7 @@ namespace ColumnCopier
         {
             OpenFileDialog fileSelector = new OpenFileDialog();
             fileSelector.DefaultExt = SaveFileExtension;
-            fileSelector.Filter = $"Column Copier Save File (${SaveFileExtension})|*{SaveFileExtension}";
+            fileSelector.Filter = $"Column Copier Save File ({SaveFileExtension})|*{SaveFileExtension}";
             fileSelector.InitialDirectory = ExecutableDirectory;
 
             fileSelector.ShowDialog();
@@ -981,13 +984,14 @@ namespace ColumnCopier
         {
             SaveFileDialog fileSelector = new SaveFileDialog();
             fileSelector.DefaultExt = SaveFileExtension;
-            fileSelector.Filter = $"Column Copier Save File (${SaveFileExtension})|*{SaveFileExtension}";
+            fileSelector.Filter = $"Column Copier Save File ({SaveFileExtension})|*{SaveFileExtension}";
             fileSelector.InitialDirectory = ExecutableDirectory;
 
             fileSelector.ShowDialog();
             var file = fileSelector.FileName;
 
             SaveSettings(file);
+            LoadSettings(file);
         }
 
         /// <summary>
