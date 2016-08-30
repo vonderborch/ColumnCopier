@@ -4,9 +4,9 @@
 // Author           : Christian
 // Created          : 08-18-2016
 // 
-// Version          : 1.0.0
+// Version          : 1.1.3
 // Last Modified By : Christian
-// Last Modified On : 08-22-2016
+// Last Modified On : 08-30-2016
 // ***********************************************************************
 // <copyright file="Request.cs" company="Christian Webber">
 //		Copyright ©  2016
@@ -16,6 +16,7 @@
 // </summary>
 //
 // Changelog: 
+///           - 1.1.3 (08-30-2016) - Removed string.format to new format approach when saving a request.
 //            - 1.0.0 (08-22-2016) - Finished initial code.
 //            - 0.0.0 (08-18-2016) - Initial version created.
 // ***********************************************************************
@@ -295,26 +296,27 @@ namespace ColumnCopier
         /// </summary>
         /// <returns>System.String.</returns>
         ///  Changelog:
+        ///             - 1.1.3 (08-30-2016) - Removed string.format to new format approach.
         ///             - 1.0.0 (08-18-2016) - Initial version.
         public string ToXmlText()
         {
             var str = new StringBuilder();
 
             str.AppendLine("<Request>");
-            str.AppendLine(string.Format("<Name>{0}</Name>", Name));
-            str.AppendLine(string.Format("<ID>{0}</ID>", ID));
+            str.AppendLine($"<Name>{Name}</Name>");
+            str.AppendLine($"<ID>{ID}</ID>");
             str.AppendLine("<ColumnKeys>");
             foreach (var key in columnKeys)
-                str.AppendLine(string.Format("<{0}>{1}</{0}>", key.Value, key.Key));
+                str.AppendLine($"<{key.Value}>{key.Key}</{key.Value}>");
             str.AppendLine("</ColumnKeys>");
 
             str.AppendLine("<ColumnsData>");
             foreach (var key in columnKeys)
             {
                 str.AppendLine("<Column>");
-                str.AppendLine(string.Format("<Name>{0}</Name>", key.Value));
+                str.AppendLine($"<Name>{key.Value}</Name>");
                 for (int i = 0; i < columnsData[key.Value].Count; i++)
-                    str.AppendLine(string.Format("<Row>{0}</Row>", columnsData[key.Value][i]));
+                    str.AppendLine($"<Row>{columnsData[key.Value][i]}</Row>");
                 str.AppendLine("</Column>");
             }
             str.AppendLine("</ColumnsData>");

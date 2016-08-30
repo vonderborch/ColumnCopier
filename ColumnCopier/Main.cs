@@ -4,9 +4,9 @@
 // Author           : Christian
 // Created          : 08-15-2016
 // 
-// Version          : 1.0.0
+// Version          : 1.1.3
 // Last Modified By : Christian
-// Last Modified On : 08-29-2016
+// Last Modified On : 08-30-2016
 // ***********************************************************************
 // <copyright file="Main.cs" company="Christian Webber">
 //		Copyright ©  2016
@@ -16,6 +16,9 @@
 // </summary>
 //
 // Changelog: 
+//            - 1.1.3 (08-30-2016) - Replaced string.format with new approach (more consistent with elsewhere in the program), enhanced error message during saving/loading.
+//            - 1.1.2 (08-29-2016) - Fixed issue with loading requests.
+//            - 1.1.1 (08-29-2016) - Version bump.
 //            - 1.1.0 (08-29-2016) - Added status text field, update checker, and error message popups.
 //            - 1.0.0 (08-22-2016) - Initial version finished.
 //            - 0.5.0 (08-18-2016) - Initial version created.
@@ -52,7 +55,7 @@ namespace ColumnCopier
         /// <summary>
         /// The git current release tag
         /// </summary>
-        private const int GitCurrentReleaseTagVersion = 111;
+        private const int GitCurrentReleaseTagVersion = 113;
 
         /// <summary>
         /// The git repository
@@ -584,6 +587,8 @@ namespace ColumnCopier
         /// <param name="file">The file.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         ///  Changelog:
+        ///             - 1.1.3 (08-30-2016) - Enhanced error message.
+        ///             - 1.1.0 (08-29-2016) - Added error message.
         ///             - 1.0.0 (08-15-2016) - Initial version.
         public bool LoadSettings(string file)
         {
@@ -707,13 +712,13 @@ namespace ColumnCopier
                 history_cmb.SelectedIndex = history_cmb.Items.Count - 1;
 
                 LoadRequest(currentRequest);
-                requestID = maxId++;
+                requestID = maxId + 1;
 
                 return true;
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message.ToString(), $"Error: {ex.ToString()}", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(ex.StackTrace.ToString(), $"Error: {ex.ToString()}", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             return false;
         }
@@ -768,6 +773,8 @@ namespace ColumnCopier
         /// <param name="file">The file.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         ///  Changelog:
+        ///             - 1.1.3 (08-30-2016) - Removed string.format to new format approach, enhanced error message.
+        ///             - 1.1.0 (08-29-2016) - Added error message.
         ///             - 1.0.0 (08-15-2016) - Initial version.
         public bool SaveSettings(string file)
         {
@@ -780,24 +787,24 @@ namespace ColumnCopier
 
                 str.AppendLine("<ColumnCopier>");
 
-                str.AppendLine(string.Format("<SaveVersion>{0}</SaveVersion>", SaveVersion));
+                str.AppendLine($"<SaveVersion>{SaveVersion}</SaveVersion>");
                 str.AppendLine("<Settings>");
-                str.AppendLine(string.Format("<ShowOnTop>{0}</ShowOnTop>", isTop_cbx.Checked));
-                str.AppendLine(string.Format("<DataHasHeaders>{0}</DataHasHeaders>", header_cxb.Checked));
-                str.AppendLine(string.Format("<NextLine>{0}</NextLine>", line_txt.Text));
-                str.AppendLine(string.Format("<ReplaceText>{0}</ReplaceText>", ReplaceText));
-                str.AppendLine(string.Format("<DefaultColumn>{0}</DefaultColumn>", DefaultColumn));
-                str.AppendLine(string.Format("<DefaultColumnName>{0}</DefaultColumnName>", DefaultColumnName));
-                str.AppendLine(string.Format("<Threshold>{0}</Threshold>", Threshold));
-                str.AppendLine(string.Format("<Priority>{0}</Priority>", defaultColumnPriority));
-                str.AppendLine(string.Format("<MaxHistory>{0}</MaxHistory>", MaxHistory));
+                str.AppendLine($"<ShowOnTop>{isTop_cbx.Checked}</ShowOnTop>");
+                str.AppendLine($"<DataHasHeaders>{header_cxb.Checked}</DataHasHeaders>");
+                str.AppendLine($"<NextLine>{line_txt.Text}</NextLine>");
+                str.AppendLine($"<ReplaceText>{ReplaceText}</ReplaceText>");
+                str.AppendLine($"<DefaultColumn>{DefaultColumn}</DefaultColumn>");
+                str.AppendLine($"<DefaultColumnName>{DefaultColumnName}</DefaultColumnName>");
+                str.AppendLine($"<Threshold>{Threshold}</Threshold>");
+                str.AppendLine($"<Priority>{defaultColumnPriority}</Priority>");
+                str.AppendLine($"<MaxHistory>{MaxHistory}</MaxHistory>");
                 str.AppendLine("</Settings>");
 
                 str.AppendLine("<History>");
                 if (!string.IsNullOrEmpty(currentRequest))
                 {
-                    str.AppendLine(string.Format("<CurrentRequest>{0}</CurrentRequest>", currentRequest));
-                    str.AppendLine(string.Format("<CurrentColumn>{0}</CurrentColumn>", history[currentRequest].CurrentColumn));
+                    str.AppendLine($"<CurrentRequest>{currentRequest}</CurrentRequest>");
+                    str.AppendLine($"<CurrentColumn>{history[currentRequest].CurrentColumn}</CurrentColumn>");
                     str.AppendLine("<Requests>");
                     foreach (var request in history)
                         str.AppendLine(request.Value.ToXmlText());
@@ -814,7 +821,7 @@ namespace ColumnCopier
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message.ToString(), $"Error: {ex.ToString()}", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(ex.StackTrace.ToString(), $"Error: {ex.ToString()}", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
             return false;
