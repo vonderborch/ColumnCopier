@@ -52,7 +52,7 @@ namespace ColumnCopier
         /// <summary>
         /// The git current release tag
         /// </summary>
-        private const int GitCurrentReleaseTagVersion = 110;
+        private const int GitCurrentReleaseTagVersion = 111;
 
         /// <summary>
         /// The git repository
