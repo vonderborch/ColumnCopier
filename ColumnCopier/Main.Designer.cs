@@ -61,10 +61,13 @@
             this.header_cxb = new System.Windows.Forms.CheckBox();
             this.removeBlanks_cxb = new System.Windows.Forms.CheckBox();
             this.panel2 = new System.Windows.Forms.Panel();
-            this.replaceSemiColon_btn = new System.Windows.Forms.Button();
             this.help_btn = new System.Windows.Forms.Button();
+            this.replaceSemiColon_btn = new System.Windows.Forms.Button();
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.status_txt = new System.Windows.Forms.ToolStripStatusLabel();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
+            this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // paste_btn
@@ -390,6 +393,7 @@
             // panel2
             // 
             this.panel2.AutoSize = true;
+            this.panel2.Controls.Add(this.statusStrip1);
             this.panel2.Controls.Add(this.help_btn);
             this.panel2.Controls.Add(this.replaceSemiColon_btn);
             this.panel2.Controls.Add(this.paste_btn);
@@ -422,8 +426,18 @@
             this.panel2.Controls.Add(this.columnNum_txt);
             this.panel2.Location = new System.Drawing.Point(2, 1);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(1454, 715);
+            this.panel2.Size = new System.Drawing.Size(1454, 771);
             this.panel2.TabIndex = 28;
+            // 
+            // help_btn
+            // 
+            this.help_btn.Location = new System.Drawing.Point(1112, 644);
+            this.help_btn.Name = "help_btn";
+            this.help_btn.Size = new System.Drawing.Size(331, 58);
+            this.help_btn.TabIndex = 29;
+            this.help_btn.Text = "Help/About";
+            this.help_btn.UseVisualStyleBackColor = true;
+            this.help_btn.Click += new System.EventHandler(this.help_btn_Click);
             // 
             // replaceSemiColon_btn
             // 
@@ -436,22 +450,29 @@
             this.replaceSemiColon_btn.UseVisualStyleBackColor = true;
             this.replaceSemiColon_btn.Click += new System.EventHandler(this.replaceSemiColon_btn_Click);
             // 
-            // help_btn
+            // statusStrip1
             // 
-            this.help_btn.Location = new System.Drawing.Point(1112, 644);
-            this.help_btn.Name = "help_btn";
-            this.help_btn.Size = new System.Drawing.Size(331, 58);
-            this.help_btn.TabIndex = 29;
-            this.help_btn.Text = "Help/About";
-            this.help_btn.UseVisualStyleBackColor = true;
-            this.help_btn.Click += new System.EventHandler(this.help_btn_Click);
+            this.statusStrip1.ImageScalingSize = new System.Drawing.Size(40, 40);
+            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.status_txt});
+            this.statusStrip1.Location = new System.Drawing.Point(0, 723);
+            this.statusStrip1.Name = "statusStrip1";
+            this.statusStrip1.Size = new System.Drawing.Size(1454, 48);
+            this.statusStrip1.TabIndex = 30;
+            this.statusStrip1.Text = "statusStrip1";
+            // 
+            // status_txt
+            // 
+            this.status_txt.Name = "status_txt";
+            this.status_txt.Size = new System.Drawing.Size(122, 43);
+            this.status_txt.Text = "             ";
             // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(240F, 240F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.AutoSize = true;
-            this.ClientSize = new System.Drawing.Size(1457, 712);
+            this.ClientSize = new System.Drawing.Size(1457, 773);
             this.Controls.Add(this.panel2);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
             this.MaximizeBox = false;
@@ -461,6 +482,8 @@
             this.panel1.PerformLayout();
             this.panel2.ResumeLayout(false);
             this.panel2.PerformLayout();
+            this.statusStrip1.ResumeLayout(false);
+            this.statusStrip1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -503,6 +526,8 @@
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Button replaceSemiColon_btn;
         private System.Windows.Forms.Button help_btn;
+        private System.Windows.Forms.StatusStrip statusStrip1;
+        private System.Windows.Forms.ToolStripStatusLabel status_txt;
     }
 }
 

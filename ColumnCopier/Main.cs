@@ -6,7 +6,7 @@
 // 
 // Version          : 1.0.0
 // Last Modified By : Christian
-// Last Modified On : 08-22-2016
+// Last Modified On : 08-29-2016
 // ***********************************************************************
 // <copyright file="Main.cs" company="Christian Webber">
 //		Copyright ©  2016
@@ -16,10 +16,12 @@
 // </summary>
 //
 // Changelog: 
+//            - 1.1.0 (08-29-2016) - Added status text field, update checker, and error message popups.
 //            - 1.0.0 (08-22-2016) - Initial version finished.
 //            - 0.5.0 (08-18-2016) - Initial version created.
 //            - 0.0.0 (08-15-2016) - Initial version created.
 // ***********************************************************************
+using Octokit;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -38,14 +40,29 @@ namespace ColumnCopier
         #region Private Fields
 
         /// <summary>
-        /// The base executable name
-        /// </summary>
-        private const string BaseExecutableName = "ColumnCopier";
-
-        /// <summary>
         /// The current column format
         /// </summary>
         private const string CurrentColumnFormat = "Current Column #: {0}";
+
+        /// <summary>
+        /// The git client
+        /// </summary>
+        private GitHubClient gitClient;
+
+        /// <summary>
+        /// The git current release tag
+        /// </summary>
+        private const int GitCurrentReleaseTagVersion = 110;
+
+        /// <summary>
+        /// The git repository
+        /// </summary>
+        private const string GitRepository = "ColumnCopier";
+
+        /// <summary>
+        /// The git user
+        /// </summary>
+        private const string GitUser = "vonderborch";
 
         /// <summary>
         /// The number of columns format
@@ -108,15 +125,19 @@ namespace ColumnCopier
         {
             InitializeComponent();
 
+
             string defaultName = Title;
 
             string fileToLoad = "";
-            if (BaseExecutableName != ExecutableName)
+            if (AssemblyExecutableName != ExecutableName)
                 fileToLoad = $"{ExecutableName}{SaveFileExtension}";
             else
                 fileToLoad = $"ColumnCopier-{DateTime.Now.Ticks}{SaveFileExtension}";
 
             LoadSettings($"{ExecutableDirectory}\\{fileToLoad}");
+
+            gitClient = new GitHubClient(new ProductHeaderValue($"{AssemblyExecutableName}_Application"));
+            CheckForUpdates(gitClient);
         }
 
         #endregion Public Constructors
@@ -198,6 +219,15 @@ namespace ColumnCopier
         #endregion Private Methods
 
         #region Private Properties
+
+        /// <summary>
+        /// Gets the name of the assembly executable.
+        /// </summary>
+        /// <value>The name of the assembly executable.</value>
+        private string AssemblyExecutableName
+        {
+            get { return this.ProductName; }
+        }
 
         /// <summary>
         /// Gets or sets the clip board.
@@ -342,6 +372,16 @@ namespace ColumnCopier
         }
 
         /// <summary>
+        /// Gets or sets the status text.
+        /// </summary>
+        /// <value>The status text.</value>
+        private string StatusText
+        {
+            get { return status_txt.Text; }
+            set { status_txt.Text = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the threshold.
         /// </summary>
         /// <value>The threshold.</value>
@@ -364,6 +404,23 @@ namespace ColumnCopier
         #endregion Private Properties
 
         #region Public Methods
+
+        /// <summary>
+        /// Checks for updates.
+        /// </summary>
+        /// <param name="client">The client.</param>
+        ///  Changelog:
+        ///             - 1.0.0 (08-29-2016) - Initial version.
+        public static async void CheckForUpdates(GitHubClient client)
+        {
+            var latestRelease = await client.Repository.Release.GetLatest(GitUser, GitRepository);
+
+            var releaseVersion = ConvertReleaseTagVersionToInt(latestRelease.TagName);
+
+            if (releaseVersion > GitCurrentReleaseTagVersion)
+                MessageBox.Show($"A newly released version is available, version ${latestRelease.TagName}. Would you like to download the update?",
+                                "Update Available", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+        }
 
         /// <summary>
         /// Computes the specified s.
@@ -650,11 +707,13 @@ namespace ColumnCopier
                 history_cmb.SelectedIndex = history_cmb.Items.Count - 1;
 
                 LoadRequest(currentRequest);
+                requestID = maxId++;
 
                 return true;
             }
             catch (Exception ex)
             {
+                MessageBox.Show(ex.Message.ToString(), $"Error: {ex.ToString()}", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             return false;
         }
@@ -755,7 +814,7 @@ namespace ColumnCopier
             }
             catch (Exception ex)
             {
-                if (true) ;
+                MessageBox.Show(ex.Message.ToString(), $"Error: {ex.ToString()}", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
             return false;
@@ -812,6 +871,8 @@ namespace ColumnCopier
             ResetFields();
 
             SaveSettings(saveFile);
+
+            StatusText = "Cleared History!";
         }
 
         /// <summary>
@@ -825,6 +886,25 @@ namespace ColumnCopier
         {
             LoadColumn(column_cmb.SelectedIndex);
             SaveSettings(saveFile);
+
+            StatusText = "Changed selected column!";
+        }
+
+        /// <summary>
+        /// Converts the release tag version to int.
+        /// </summary>
+        /// <param name="tag">The tag.</param>
+        /// <returns>System.Int32.</returns>
+        ///  Changelog:
+        ///             - 1.0.0 (08-29-2016) - Initial version.
+        private static int ConvertReleaseTagVersionToInt(string tag)
+        {
+            var tagBits = tag.Split('.');
+            var str = new StringBuilder();
+            foreach (var bit in tagBits)
+                str.Append(bit);
+
+            return ParseTextToInt(str.ToString(), -1);
         }
 
         /// <summary>
@@ -839,6 +919,8 @@ namespace ColumnCopier
             ClipBoard = ColumnText;
             column_txt.Focus();
             column_txt.SelectAll();
+
+            StatusText = "Copied selected column!";
         }
 
         /// <summary>
@@ -852,6 +934,8 @@ namespace ColumnCopier
         {
             ClipBoard = history[currentRequest].GetNextLine(CurrentLine);
             CurrentLine = history[currentRequest].CurrentRowId;
+
+            StatusText = "Copied line!";
         }
 
         /// <summary>
@@ -866,6 +950,8 @@ namespace ColumnCopier
             ClipBoard = ReplaceNewLineInText();
             column_txt.Focus();
             column_txt.SelectAll();
+
+            StatusText = "Copied selected column and replaced lines!";
         }
 
         /// <summary>
@@ -879,6 +965,8 @@ namespace ColumnCopier
         {
             LoadRequest(history_cmb.Text);
             SaveSettings(saveFile);
+
+            StatusText = "Loaded new request!";
         }
 
         /// <summary>
@@ -916,6 +1004,8 @@ namespace ColumnCopier
             var file = fileSelector.FileName;
 
             LoadSettings(file);
+
+            StatusText = "Loaded settings file!";
         }
 
         /// <summary>
@@ -944,6 +1034,8 @@ namespace ColumnCopier
         {
             CreateRequest(ClipBoard);
             SaveSettings(saveFile);
+
+            StatusText = "Pasted data!";
         }
 
         /// <summary>
@@ -956,8 +1048,12 @@ namespace ColumnCopier
         private void pasteCopy_btn_Click(object sender, EventArgs e)
         {
             CreateRequest(ClipBoard);
+            column_txt.Focus();
+            column_txt.SelectAll();
             ClipBoard = ColumnText;
             SaveSettings(saveFile);
+
+            StatusText = "Pasted data and copied the selected column!";
         }
 
         /// <summary>
@@ -992,6 +1088,8 @@ namespace ColumnCopier
 
             SaveSettings(file);
             LoadSettings(file);
+
+            StatusText = "Saved as new file!";
         }
 
         /// <summary>
@@ -1004,6 +1102,8 @@ namespace ColumnCopier
         private void saveSettings_btn_Click(object sender, EventArgs e)
         {
             SaveSettings(saveFile);
+
+            StatusText = "Saved file!";
         }
 
         /// <summary>
