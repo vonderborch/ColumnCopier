@@ -4,7 +4,7 @@
 // Author           : Christian
 // Created          : 08-18-2016
 // 
-// Version          : 1.1.4
+// Version          : 1.1.5
 // Last Modified By : Christian
 // Last Modified On : 09-21-2016
 // ***********************************************************************
@@ -16,11 +16,13 @@
 // </summary>
 //
 // Changelog: 
-///           - 1.1.4 (09-21-2016) - Enhanced robustness of new line splitter. Adjusted saving of ColumnKeys to split the value between two items to prevent a crash during saving.
-///           - 1.1.3 (08-30-2016) - Removed string. format to new format approach when saving a request.
 //            - 1.0.0 (08-22-2016) - Finished initial code.
 //            - 0.0.0 (08-18-2016) - Initial version created.
 // ***********************************************************************
+using System;
+///           - 1.1.5 (09-21-2016) - Added request exporting functionality.
+///           - 1.1.4 (09-21-2016) - Enhanced robustness of new line splitter. Adjusted saving of ColumnKeys to split the value between two items to prevent a crash during saving.
+///           - 1.1.3 (08-30-2016) - Removed string. format to new format approach when saving a request.
 using System.Collections.Generic;
 using System.Text;
 using System.Xml.Linq;
@@ -201,6 +203,59 @@ namespace ColumnCopier
         #region Public Methods
 
         /// <summary>
+        /// Exports this instance.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        ///  Changelog:
+        ///             - 1.1.5 (09-21-2016) - Initial version.
+        public string Export()
+        {
+            try
+            {
+                StringBuilder str = new StringBuilder();
+
+                //// export headers
+                StringBuilder rawHeader = new StringBuilder();
+                foreach (var item in columnKeys)
+                    rawHeader.AppendFormat("{0}\t", item.Value);
+
+                var header = rawHeader.ToString();
+                str.AppendFormat("{0}{1}", header.Remove(header.Length - 1), Environment.NewLine);
+
+                //// export data
+                // calculate longest column
+                int maxColumn = int.MinValue;
+                foreach (var column in ColumnsData)
+                {
+                    if (maxColumn < column.Value.Count)
+                        maxColumn = column.Value.Count;
+                }
+                // export rows
+                for (int i = 0; i < maxColumn; i++)
+                {
+                    StringBuilder rawRow = new StringBuilder();
+                    foreach (var item in ColumnsData)
+                    {
+                        if (i < item.Value.Count)
+                        {
+                            rawRow.AppendFormat("{0}\t", item.Value[i]);
+                        }
+                    }
+
+                    var row = rawRow.ToString();
+                    str.AppendFormat("{0}{1}", row.Remove(row.Length - 1), Environment.NewLine);
+                }
+
+                return str.ToString();
+
+            }
+            catch (Exception ex)
+            {
+                return ex.ToString();
+            }
+        }
+
+        /// <summary>
         /// Gets the column text.
         /// </summary>
         /// <param name="columnName">Name of the column.</param>
@@ -374,7 +429,7 @@ namespace ColumnCopier
         ///             - 1.0.0 (08-18-2016) - Initial version.
         private void ParseText(string text, bool hasColumnHeaders, bool cleanData)
         {
-            var rawRows = text.Split(splitters, cleanData == true ? System.StringSplitOptions.RemoveEmptyEntries : System.StringSplitOptions.None);
+            var rawRows = text.Split(splitters, cleanData == true ? StringSplitOptions.RemoveEmptyEntries : StringSplitOptions.None);
 
             for (int i = 0; i < rawRows.Length; i++)
             {

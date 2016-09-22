@@ -4,7 +4,7 @@
 // Author           : Christian
 // Created          : 08-15-2016
 // 
-// Version          : 1.1.4
+// Version          : 1.1.5
 // Last Modified By : Christian
 // Last Modified On : 09-21-2016
 // ***********************************************************************
@@ -16,6 +16,7 @@
 // </summary>
 //
 // Changelog: 
+//            - 1.1.5 (09-21-2016) - Added tooltips and the export functionality.
 //            - 1.1.4 (09-21-2016) - Added pre and post text for copying and replacing. Removed excessive saving. Added more information to status text. Bumped save version. Number is actually the default selected priority now.
 //            - 1.1.3 (08-30-2016) - Replaced string.format with new approach (more consistent with elsewhere in the program), enhanced error message during saving/loading.
 //            - 1.1.2 (08-29-2016) - Fixed issue with loading requests.
@@ -33,6 +34,9 @@ using System.Text;
 using System.Windows.Forms;
 using System.Xml.Linq;
 
+/// <summary>
+/// The ColumnCopier namespace.
+/// </summary>
 namespace ColumnCopier
 {
     /// <summary>
@@ -56,7 +60,7 @@ namespace ColumnCopier
         /// <summary>
         /// The git current release tag
         /// </summary>
-        private const int GitCurrentReleaseTagVersion = 114;
+        private const int GitCurrentReleaseTagVersion = 115;
 
         /// <summary>
         /// The git repository
@@ -956,6 +960,7 @@ namespace ColumnCopier
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         ///  Changelog:
+        ///             - 1.1.5 (09-21-2016) - Updated status text to display more information.
         ///             - 1.0.0 (08-15-2016) - Initial version.
         private void copy_btn_Click(object sender, EventArgs e)
         {
@@ -963,7 +968,7 @@ namespace ColumnCopier
             column_txt.Focus();
             column_txt.SelectAll();
 
-            StatusText = "Copied selected column!";
+            StatusText = $"Copied selected column [{column_cmb.Items[column_cmb.SelectedIndex]}]!";
         }
 
         /// <summary>
@@ -972,6 +977,7 @@ namespace ColumnCopier
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         ///  Changelog:
+        ///             - 1.1.4 (09-21-2016) - Updated status text to display more information.
         ///             - 1.0.0 (08-15-2016) - Initial version.
         private void copyLine_btn_Click(object sender, EventArgs e)
         {
@@ -988,6 +994,7 @@ namespace ColumnCopier
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         ///  Changelog:
+        ///             - 1.1.4 (09-21-2016) - Updated status text to display more information.
         ///             - 1.0.0 (08-15-2016) - Initial version.
         private void copyReplace_btn_Click(object sender, EventArgs e)
         {
@@ -996,6 +1003,20 @@ namespace ColumnCopier
             column_txt.SelectAll();
 
             StatusText = "Copied selected column and replaced line breaks!";
+        }
+
+        /// <summary>
+        /// Handles the Click event of the export_btn control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        ///  Changelog:
+        ///             - 1.1.5 (09-21-2016) - Initial version.
+        private void export_btn_Click(object sender, EventArgs e)
+        {
+            ClipBoard = history[currentRequest].Export();
+
+            StatusText = $"Exported the current request [{history_cmb.Text}]!";
         }
 
         /// <summary>
