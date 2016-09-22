@@ -4,9 +4,9 @@
 // Author           : Christian
 // Created          : 08-15-2016
 // 
-// Version          : 1.1.3
+// Version          : 1.1.4
 // Last Modified By : Christian
-// Last Modified On : 08-30-2016
+// Last Modified On : 09-21-2016
 // ***********************************************************************
 // <copyright file="Main.cs" company="Christian Webber">
 //		Copyright ©  2016
@@ -16,6 +16,7 @@
 // </summary>
 //
 // Changelog: 
+//            - 1.1.4 (09-21-2016) - Added pre and post text for copying and replacing. Removed excessive saving. Added more information to status text. Bumped save version. Number is actually the default selected priority now.
 //            - 1.1.3 (08-30-2016) - Replaced string.format with new approach (more consistent with elsewhere in the program), enhanced error message during saving/loading.
 //            - 1.1.2 (08-29-2016) - Fixed issue with loading requests.
 //            - 1.1.1 (08-29-2016) - Version bump.
@@ -55,7 +56,7 @@ namespace ColumnCopier
         /// <summary>
         /// The git current release tag
         /// </summary>
-        private const int GitCurrentReleaseTagVersion = 113;
+        private const int GitCurrentReleaseTagVersion = 114;
 
         /// <summary>
         /// The git repository
@@ -85,7 +86,7 @@ namespace ColumnCopier
         /// <summary>
         /// The save version
         /// </summary>
-        private const string SaveVersion = "1.0";
+        private const string SaveVersion = "1.1";
 
         /// <summary>
         /// The current request
@@ -106,6 +107,11 @@ namespace ColumnCopier
         /// The history log
         /// </summary>
         private Queue<string> historyLog = new Queue<string>();
+
+        /// <summary>
+        /// Whether a new request is going through.
+        /// </summary>
+        private bool isNewRequest = false;
 
         /// <summary>
         /// The request identifier
@@ -202,11 +208,16 @@ namespace ColumnCopier
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         ///  Changelog:
+        ///             - 1.1.4 (09-21-2016) - Added pre and post texts. Added status text.
         ///             - 1.0.0 (08-15-2016) - Initial version.
         private void replaceSemiColon_btn_Click(object sender, EventArgs e)
         {
             ReplaceText = ";";
+            ReplaceTextPost = "";
+            ReplaceTextPre = "";
             SaveSettings(saveFile);
+
+            StatusText = "Changed replacement text to [;]";
         }
 
         /// <summary>
@@ -375,6 +386,26 @@ namespace ColumnCopier
         }
 
         /// <summary>
+        /// Gets or sets the post replace text.
+        /// </summary>
+        /// <value>The post replace text.</value>
+        private string ReplaceTextPost
+        {
+            get { return replaceTextPost_txt.Text; }
+            set { replaceTextPost_txt.Text = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the pre replace text.
+        /// </summary>
+        /// <value>The pre replace text.</value>
+        private string ReplaceTextPre
+        {
+            get { return replaceTextPre_txt.Text; }
+            set { replaceTextPre_txt.Text = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the status text.
         /// </summary>
         /// <value>The status text.</value>
@@ -504,7 +535,6 @@ namespace ColumnCopier
             history_cmb.SelectedIndex = history_cmb.Items.Count - 1;
 
             LoadRequest(newRequest.Name);
-            SaveSettings(saveFile);
         }
 
         /// <summary>
@@ -728,6 +758,7 @@ namespace ColumnCopier
         /// </summary>
         /// <returns>System.String.</returns>
         ///  Changelog:
+        ///             - 1.1.4 (09-21-2016) - Added pre and post replace text.
         ///             - 1.0.0 (08-15-2016) - Initial version.
         public string ReplaceNewLineInText()
         {
@@ -736,6 +767,7 @@ namespace ColumnCopier
             if (lines.Count > 0)
             {
                 StringBuilder str = new StringBuilder();
+                str.Append(ReplaceTextPre);
 
                 var finalLine = lines.Count - 1;
                 for (int i = 0; i < lines.Count; i++)
@@ -746,6 +778,7 @@ namespace ColumnCopier
                         str.AppendFormat("{0}{1}", lines[i], ReplaceText);
                 }
 
+                str.Append(ReplaceTextPost);
                 return str.ToString();
             }
 
@@ -814,7 +847,8 @@ namespace ColumnCopier
 
                 str.AppendLine("</ColumnCopier>");
 
-                var doc = XDocument.Parse(str.ToString());
+                var result = str.ToString();
+                var doc = XDocument.Parse(result);
                 doc.Save(file);
 
                 return true;
@@ -888,13 +922,15 @@ namespace ColumnCopier
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         ///  Changelog:
+        ///             - 1.1.4 (09-21-2016) - Updated status text to display more information.
         ///             - 1.0.0 (08-15-2016) - Initial version.
         private void column_cmb_SelectedIndexChanged(object sender, EventArgs e)
         {
             LoadColumn(column_cmb.SelectedIndex);
-            SaveSettings(saveFile);
+            if (!isNewRequest)
+                SaveSettings(saveFile);
 
-            StatusText = "Changed selected column!";
+            StatusText = $"Changed selected column to [{column_cmb.Items[column_cmb.SelectedIndex]}]!";
         }
 
         /// <summary>
@@ -939,10 +975,11 @@ namespace ColumnCopier
         ///             - 1.0.0 (08-15-2016) - Initial version.
         private void copyLine_btn_Click(object sender, EventArgs e)
         {
-            ClipBoard = history[currentRequest].GetNextLine(CurrentLine);
+            var line = history[currentRequest].GetNextLine(CurrentLine);
+            ClipBoard = line;
             CurrentLine = history[currentRequest].CurrentRowId;
 
-            StatusText = "Copied line!";
+            StatusText = $"Copied line! Text: [{line}]";
         }
 
         /// <summary>
@@ -958,7 +995,7 @@ namespace ColumnCopier
             column_txt.Focus();
             column_txt.SelectAll();
 
-            StatusText = "Copied selected column and replaced lines!";
+            StatusText = "Copied selected column and replaced line breaks!";
         }
 
         /// <summary>
@@ -967,13 +1004,15 @@ namespace ColumnCopier
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         ///  Changelog:
+        ///             - 1.1.4 (09-21-2016) - Updated status text to display more information.
         ///             - 1.0.0 (08-15-2016) - Initial version.
         private void history_cmb_SelectedIndexChanged(object sender, EventArgs e)
         {
             LoadRequest(history_cmb.Text);
-            SaveSettings(saveFile);
+            if (!isNewRequest)
+                SaveSettings(saveFile);
 
-            StatusText = "Loaded new request!";
+            StatusText = $"Changed displayed request to [{history_cmb.Text}]!";
         }
 
         /// <summary>
@@ -1039,8 +1078,10 @@ namespace ColumnCopier
         ///             - 1.0.0 (08-15-2016) - Initial version.
         private void paste_btn_Click(object sender, EventArgs e)
         {
+            isNewRequest = true;
             CreateRequest(ClipBoard);
             SaveSettings(saveFile);
+            isNewRequest = false;
 
             StatusText = "Pasted data!";
         }
@@ -1054,13 +1095,15 @@ namespace ColumnCopier
         ///             - 1.0.0 (08-15-2016) - Initial version.
         private void pasteCopy_btn_Click(object sender, EventArgs e)
         {
+            isNewRequest = true;
             CreateRequest(ClipBoard);
             column_txt.Focus();
             column_txt.SelectAll();
             ClipBoard = ColumnText;
             SaveSettings(saveFile);
 
-            StatusText = "Pasted data and copied the selected column!";
+            StatusText = "Pasted data and copied the default selected column!";
+            isNewRequest = false;
         }
 
         /// <summary>
@@ -1069,11 +1112,33 @@ namespace ColumnCopier
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         ///  Changelog:
+        ///             - 1.1.4 (09-21-2016) - Added pre and post texts. Added status text.
         ///             - 1.0.0 (08-15-2016) - Initial version.
         private void replaceComma_btn_Click(object sender, EventArgs e)
         {
             ReplaceText = ", ";
+            ReplaceTextPost = "";
+            ReplaceTextPre = "";
             SaveSettings(saveFile);
+
+            StatusText = "Changed replacement text to [,]";
+        }
+
+        /// <summary>
+        /// Handles the Click event of the replaceQuotedComma_btn control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        ///  Changelog:
+        ///             - 1.1.4 (09-21-2016) - Initial version.
+        private void replaceQuotedComma_btn_Click(object sender, EventArgs e)
+        {
+            ReplaceText = "\", \"";
+            ReplaceTextPost = "\"";
+            ReplaceTextPre = "\"";
+            SaveSettings(saveFile);
+
+            StatusText = "Changed replacement text to [\", \"], with a [\"] at the beginning and end of the result string.";
         }
 
         /// <summary>

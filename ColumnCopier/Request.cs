@@ -4,9 +4,9 @@
 // Author           : Christian
 // Created          : 08-18-2016
 // 
-// Version          : 1.1.3
+// Version          : 1.1.4
 // Last Modified By : Christian
-// Last Modified On : 08-30-2016
+// Last Modified On : 09-21-2016
 // ***********************************************************************
 // <copyright file="Request.cs" company="Christian Webber">
 //		Copyright ©  2016
@@ -16,7 +16,8 @@
 // </summary>
 //
 // Changelog: 
-///           - 1.1.3 (08-30-2016) - Removed string.format to new format approach when saving a request.
+///           - 1.1.4 (09-21-2016) - Enhanced robustness of new line splitter. Adjusted saving of ColumnKeys to split the value between two items to prevent a crash during saving.
+///           - 1.1.3 (08-30-2016) - Removed string. format to new format approach when saving a request.
 //            - 1.0.0 (08-22-2016) - Finished initial code.
 //            - 0.0.0 (08-18-2016) - Initial version created.
 // ***********************************************************************
@@ -38,10 +39,13 @@ namespace ColumnCopier
         /// </summary>
         private Dictionary<int, string> columnKeys = new Dictionary<int, string>();
 
-        /// <summary>
-        /// The columns data
-        /// </summary>
         private Dictionary<string, List<string>> columnsData = new Dictionary<string, List<string>>();
+
+        /// <summary>
+        /// The splitters to use for parsing text
+        /// \r\n : default Windows, \n : default Unix, \r : Old
+        /// </summary>
+        private static string[] splitters = {"\r\n", "\n", "\r"};
 
         #endregion Private Fields
 
@@ -82,8 +86,21 @@ namespace ColumnCopier
                 {
                     foreach (var column in node.Elements())
                     {
-                        var key = Main.ParseTextToInt(column.Value);
-                        var value = column.Name.ToString();
+                        var key = -1;
+                        var value = "";
+
+                        foreach (var columnItem in column.Elements())
+                        {
+                            switch (columnItem.Name.ToString())
+                            {
+                                case "Key":
+                                    key = Main.ParseTextToInt(columnItem.Value);
+                                    break;
+                                case "Value":
+                                    value = columnItem.Value;
+                                    break;
+                            }
+                        }
 
                         columnKeys.Add(key, value);
                         columnsData.Add(value, new List<string>());
@@ -296,6 +313,7 @@ namespace ColumnCopier
         /// </summary>
         /// <returns>System.String.</returns>
         ///  Changelog:
+        ///             - 1.1.4 (09-21-2016) - Adjusted saving of ColumnKeys to split the value between two items to prevent a crash during saving.
         ///             - 1.1.3 (08-30-2016) - Removed string.format to new format approach.
         ///             - 1.0.0 (08-18-2016) - Initial version.
         public string ToXmlText()
@@ -307,7 +325,10 @@ namespace ColumnCopier
             str.AppendLine($"<ID>{ID}</ID>");
             str.AppendLine("<ColumnKeys>");
             foreach (var key in columnKeys)
-                str.AppendLine($"<{key.Value}>{key.Key}</{key.Value}>");
+            {
+                str.AppendLine($"<Key>{key.Key}</Key>");
+                str.AppendLine($"<Value>{key.Value}</Value>");
+            }
             str.AppendLine("</ColumnKeys>");
 
             str.AppendLine("<ColumnsData>");
@@ -349,10 +370,11 @@ namespace ColumnCopier
         /// <param name="hasColumnHeaders">if set to <c>true</c> [has column headers].</param>
         /// <param name="cleanData">if set to <c>true</c> [clean data].</param>
         ///  Changelog:
+        ///             - 1.1.4 (09-21-2016) - Changed line break splitter...
         ///             - 1.0.0 (08-18-2016) - Initial version.
         private void ParseText(string text, bool hasColumnHeaders, bool cleanData)
         {
-            var rawRows = text.Split('\n');
+            var rawRows = text.Split(splitters, cleanData == true ? System.StringSplitOptions.RemoveEmptyEntries : System.StringSplitOptions.None);
 
             for (int i = 0; i < rawRows.Length; i++)
             {
@@ -382,7 +404,7 @@ namespace ColumnCopier
                         continue;
                     }
                 }
-
+                
                 for (int j = 0; j < columns.Length; j++)
                 {
                     var item = columns[j].Trim();

@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.paste_btn = new System.Windows.Forms.Button();
             this.pasteCopy_btn = new System.Windows.Forms.Button();
             this.copy_btn = new System.Windows.Forms.Button();
@@ -61,10 +62,14 @@
             this.header_cxb = new System.Windows.Forms.CheckBox();
             this.removeBlanks_cxb = new System.Windows.Forms.CheckBox();
             this.panel2 = new System.Windows.Forms.Panel();
-            this.help_btn = new System.Windows.Forms.Button();
-            this.replaceSemiColon_btn = new System.Windows.Forms.Button();
+            this.replaceTextPost_txt = new System.Windows.Forms.TextBox();
+            this.replaceTextPre_txt = new System.Windows.Forms.TextBox();
+            this.replaceQuotedComma_btn = new System.Windows.Forms.Button();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.status_txt = new System.Windows.Forms.ToolStripStatusLabel();
+            this.help_btn = new System.Windows.Forms.Button();
+            this.replaceSemiColon_btn = new System.Windows.Forms.Button();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.statusStrip1.SuspendLayout();
@@ -180,7 +185,7 @@
             // 
             // replaceText_txt
             // 
-            this.replaceText_txt.Location = new System.Drawing.Point(331, 284);
+            this.replaceText_txt.Location = new System.Drawing.Point(77, 295);
             this.replaceText_txt.Name = "replaceText_txt";
             this.replaceText_txt.Size = new System.Drawing.Size(82, 38);
             this.replaceText_txt.TabIndex = 12;
@@ -189,7 +194,7 @@
             // copyReplace_btn
             // 
             this.copyReplace_btn.AutoSize = true;
-            this.copyReplace_btn.Location = new System.Drawing.Point(21, 273);
+            this.copyReplace_btn.Location = new System.Drawing.Point(77, 402);
             this.copyReplace_btn.Name = "copyReplace_btn";
             this.copyReplace_btn.Size = new System.Drawing.Size(304, 58);
             this.copyReplace_btn.TabIndex = 11;
@@ -200,7 +205,7 @@
             // replaceComma_btn
             // 
             this.replaceComma_btn.AutoSize = true;
-            this.replaceComma_btn.Location = new System.Drawing.Point(241, 337);
+            this.replaceComma_btn.Location = new System.Drawing.Point(77, 339);
             this.replaceComma_btn.Name = "replaceComma_btn";
             this.replaceComma_btn.Size = new System.Drawing.Size(84, 57);
             this.replaceComma_btn.TabIndex = 13;
@@ -299,12 +304,10 @@
             // text_rbtn
             // 
             this.text_rbtn.AutoSize = true;
-            this.text_rbtn.Checked = true;
             this.text_rbtn.Location = new System.Drawing.Point(14, 83);
             this.text_rbtn.Name = "text_rbtn";
             this.text_rbtn.Size = new System.Drawing.Size(127, 36);
             this.text_rbtn.TabIndex = 1;
-            this.text_rbtn.TabStop = true;
             this.text_rbtn.Text = "Name";
             this.text_rbtn.UseVisualStyleBackColor = true;
             this.text_rbtn.CheckedChanged += new System.EventHandler(this.text_rbtn_CheckedChanged);
@@ -312,10 +315,12 @@
             // number_rbtn
             // 
             this.number_rbtn.AutoSize = true;
+            this.number_rbtn.Checked = true;
             this.number_rbtn.Location = new System.Drawing.Point(14, 40);
             this.number_rbtn.Name = "number_rbtn";
             this.number_rbtn.Size = new System.Drawing.Size(152, 36);
             this.number_rbtn.TabIndex = 0;
+            this.number_rbtn.TabStop = true;
             this.number_rbtn.Text = "Number";
             this.number_rbtn.UseVisualStyleBackColor = true;
             this.number_rbtn.CheckedChanged += new System.EventHandler(this.number_rbtn_CheckedChanged);
@@ -393,6 +398,9 @@
             // panel2
             // 
             this.panel2.AutoSize = true;
+            this.panel2.Controls.Add(this.replaceTextPost_txt);
+            this.panel2.Controls.Add(this.replaceTextPre_txt);
+            this.panel2.Controls.Add(this.replaceQuotedComma_btn);
             this.panel2.Controls.Add(this.statusStrip1);
             this.panel2.Controls.Add(this.help_btn);
             this.panel2.Controls.Add(this.replaceSemiColon_btn);
@@ -429,6 +437,48 @@
             this.panel2.Size = new System.Drawing.Size(1454, 771);
             this.panel2.TabIndex = 28;
             // 
+            // replaceTextPost_txt
+            // 
+            this.replaceTextPost_txt.Location = new System.Drawing.Point(299, 295);
+            this.replaceTextPost_txt.Name = "replaceTextPost_txt";
+            this.replaceTextPost_txt.Size = new System.Drawing.Size(82, 38);
+            this.replaceTextPost_txt.TabIndex = 33;
+            // 
+            // replaceTextPre_txt
+            // 
+            this.replaceTextPre_txt.Location = new System.Drawing.Point(187, 295);
+            this.replaceTextPre_txt.Name = "replaceTextPre_txt";
+            this.replaceTextPre_txt.Size = new System.Drawing.Size(82, 38);
+            this.replaceTextPre_txt.TabIndex = 32;
+            // 
+            // replaceQuotedComma_btn
+            // 
+            this.replaceQuotedComma_btn.AutoSize = true;
+            this.replaceQuotedComma_btn.Location = new System.Drawing.Point(187, 339);
+            this.replaceQuotedComma_btn.Name = "replaceQuotedComma_btn";
+            this.replaceQuotedComma_btn.Size = new System.Drawing.Size(84, 57);
+            this.replaceQuotedComma_btn.TabIndex = 31;
+            this.replaceQuotedComma_btn.Text = "\",\" ";
+            this.replaceQuotedComma_btn.UseVisualStyleBackColor = true;
+            this.replaceQuotedComma_btn.Click += new System.EventHandler(this.replaceQuotedComma_btn_Click);
+            // 
+            // statusStrip1
+            // 
+            this.statusStrip1.ImageScalingSize = new System.Drawing.Size(40, 40);
+            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.status_txt});
+            this.statusStrip1.Location = new System.Drawing.Point(0, 725);
+            this.statusStrip1.Name = "statusStrip1";
+            this.statusStrip1.Size = new System.Drawing.Size(1454, 46);
+            this.statusStrip1.TabIndex = 30;
+            this.statusStrip1.Text = "statusStrip1";
+            // 
+            // status_txt
+            // 
+            this.status_txt.Name = "status_txt";
+            this.status_txt.Size = new System.Drawing.Size(122, 41);
+            this.status_txt.Text = "             ";
+            // 
             // help_btn
             // 
             this.help_btn.Location = new System.Drawing.Point(1112, 644);
@@ -442,30 +492,13 @@
             // replaceSemiColon_btn
             // 
             this.replaceSemiColon_btn.AutoSize = true;
-            this.replaceSemiColon_btn.Location = new System.Drawing.Point(331, 337);
+            this.replaceSemiColon_btn.Location = new System.Drawing.Point(297, 339);
             this.replaceSemiColon_btn.Name = "replaceSemiColon_btn";
             this.replaceSemiColon_btn.Size = new System.Drawing.Size(84, 57);
             this.replaceSemiColon_btn.TabIndex = 28;
             this.replaceSemiColon_btn.Text = ";";
             this.replaceSemiColon_btn.UseVisualStyleBackColor = true;
             this.replaceSemiColon_btn.Click += new System.EventHandler(this.replaceSemiColon_btn_Click);
-            // 
-            // statusStrip1
-            // 
-            this.statusStrip1.ImageScalingSize = new System.Drawing.Size(40, 40);
-            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.status_txt});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 723);
-            this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(1454, 48);
-            this.statusStrip1.TabIndex = 30;
-            this.statusStrip1.Text = "statusStrip1";
-            // 
-            // status_txt
-            // 
-            this.status_txt.Name = "status_txt";
-            this.status_txt.Size = new System.Drawing.Size(122, 43);
-            this.status_txt.Text = "             ";
             // 
             // Main
             // 
@@ -528,6 +561,10 @@
         private System.Windows.Forms.Button help_btn;
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripStatusLabel status_txt;
+        private System.Windows.Forms.Button replaceQuotedComma_btn;
+        private System.Windows.Forms.TextBox replaceTextPost_txt;
+        private System.Windows.Forms.TextBox replaceTextPre_txt;
+        private System.Windows.Forms.ToolTip toolTip1;
     }
 }
 
