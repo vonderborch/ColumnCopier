@@ -4,9 +4,9 @@
 // Author           : Christian
 // Created          : 08-18-2016
 // 
-// Version          : 1.1.5
+// Version          : 1.1.6
 // Last Modified By : Christian
-// Last Modified On : 09-21-2016
+// Last Modified On : 09-29-2016
 // ***********************************************************************
 // <copyright file="Request.cs" company="Christian Webber">
 //		Copyright ©  2016
@@ -16,13 +16,14 @@
 // </summary>
 //
 // Changelog: 
+//            - 1.1.6 (09-29-2016) - Fixed bug when loading old saves (bumped save version), fixed bug when copying invalid characters, fixed bug with no data in the clipboard
+///           - 1.1.5 (09-21-2016) - Added request exporting functionality.
+///           - 1.1.4 (09-21-2016) - Enhanced robustness of new line splitter. Adjusted saving of ColumnKeys to split the value between two items to prevent a crash during saving.
+///           - 1.1.3 (08-30-2016) - Removed string. format to new format approach when saving a request.
 //            - 1.0.0 (08-22-2016) - Finished initial code.
 //            - 0.0.0 (08-18-2016) - Initial version created.
 // ***********************************************************************
 using System;
-///           - 1.1.5 (09-21-2016) - Added request exporting functionality.
-///           - 1.1.4 (09-21-2016) - Enhanced robustness of new line splitter. Adjusted saving of ColumnKeys to split the value between two items to prevent a crash during saving.
-///           - 1.1.3 (08-30-2016) - Removed string. format to new format approach when saving a request.
 using System.Collections.Generic;
 using System.Text;
 using System.Xml.Linq;
@@ -368,6 +369,7 @@ namespace ColumnCopier
         /// </summary>
         /// <returns>System.String.</returns>
         ///  Changelog:
+        ///             - 1.1.6 (09-29-2016) - Fixed bug when loading old saves (bumped save version).
         ///             - 1.1.4 (09-21-2016) - Adjusted saving of ColumnKeys to split the value between two items to prevent a crash during saving.
         ///             - 1.1.3 (08-30-2016) - Removed string.format to new format approach.
         ///             - 1.0.0 (08-18-2016) - Initial version.
@@ -381,8 +383,10 @@ namespace ColumnCopier
             str.AppendLine("<ColumnKeys>");
             foreach (var key in columnKeys)
             {
+                str.AppendLine("<ColumnKey>");
                 str.AppendLine($"<Key>{key.Key}</Key>");
                 str.AppendLine($"<Value>{key.Value}</Value>");
+                str.AppendLine("</ColumnKey>");
             }
             str.AppendLine("</ColumnKeys>");
 
@@ -469,7 +473,10 @@ namespace ColumnCopier
             }
 
             NumberOfColumns = columnKeys.Count;
-            CurrentColumn = columnKeys[0];
+            if (columnKeys.Count > 0)
+                CurrentColumn = columnKeys[0];
+            else
+                CurrentColumn = "";
         }
 
         #endregion Private Methods

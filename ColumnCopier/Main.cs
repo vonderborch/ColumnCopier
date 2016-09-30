@@ -4,9 +4,9 @@
 // Author           : Christian
 // Created          : 08-15-2016
 // 
-// Version          : 1.1.5
+// Version          : 1.1.6
 // Last Modified By : Christian
-// Last Modified On : 09-21-2016
+// Last Modified On : 09-29-2016
 // ***********************************************************************
 // <copyright file="Main.cs" company="Christian Webber">
 //		Copyright ©  2016
@@ -16,6 +16,7 @@
 // </summary>
 //
 // Changelog: 
+//            - 1.1.6 (09-29-2016) - Fixed bug when loading old saves (bumped save version), fixed bug when copying invalid characters, fixed bug with no data in the clipboard.
 //            - 1.1.5 (09-21-2016) - Added tooltips and the export functionality.
 //            - 1.1.4 (09-21-2016) - Added pre and post text for copying and replacing. Removed excessive saving. Added more information to status text. Bumped save version. Number is actually the default selected priority now.
 //            - 1.1.3 (08-30-2016) - Replaced string.format with new approach (more consistent with elsewhere in the program), enhanced error message during saving/loading.
@@ -32,6 +33,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Windows.Forms;
+using System.Xml;
 using System.Xml.Linq;
 
 /// <summary>
@@ -60,7 +62,7 @@ namespace ColumnCopier
         /// <summary>
         /// The git current release tag
         /// </summary>
-        private const int GitCurrentReleaseTagVersion = 115;
+        private const int GitCurrentReleaseTagVersion = 116;
 
         /// <summary>
         /// The git repository
@@ -90,7 +92,7 @@ namespace ColumnCopier
         /// <summary>
         /// The save version
         /// </summary>
-        private const string SaveVersion = "1.1";
+        private const string SaveVersion = "1.2";
 
         /// <summary>
         /// The current request
@@ -534,7 +536,7 @@ namespace ColumnCopier
             }
 
             history_cmb.Items.Clear();
-            foreach (var historyRequest in history.Keys)
+            foreach (var historyRequest in historyLog.ToArray())
                 history_cmb.Items.Add(historyRequest);
             history_cmb.SelectedIndex = history_cmb.Items.Count - 1;
 
@@ -1096,15 +1098,24 @@ namespace ColumnCopier
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         ///  Changelog:
+        ///             - 1.1.6 (09-29-2016) - Added check for an empty clipboard.
         ///             - 1.0.0 (08-15-2016) - Initial version.
         private void paste_btn_Click(object sender, EventArgs e)
         {
-            isNewRequest = true;
-            CreateRequest(ClipBoard);
-            SaveSettings(saveFile);
-            isNewRequest = false;
+            var text = VerifyText(ClipBoard);
+            if (text != null)
+            {
+                isNewRequest = true;
+                CreateRequest(text);
+                SaveSettings(saveFile);
+                isNewRequest = false;
 
-            StatusText = "Pasted data!";
+                StatusText = "Pasted data!";
+            }
+            else
+            {
+                StatusText = "No data in the clipboard!";
+            }
         }
 
         /// <summary>
@@ -1113,18 +1124,27 @@ namespace ColumnCopier
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         ///  Changelog:
+        ///             - 1.1.6 (09-29-2016) - Added check for an empty clipboard.
         ///             - 1.0.0 (08-15-2016) - Initial version.
         private void pasteCopy_btn_Click(object sender, EventArgs e)
         {
-            isNewRequest = true;
-            CreateRequest(ClipBoard);
-            column_txt.Focus();
-            column_txt.SelectAll();
-            ClipBoard = ColumnText;
-            SaveSettings(saveFile);
+            var text = VerifyText(ClipBoard);
+            if (text != null)
+            {
+                isNewRequest = true;
+                CreateRequest(text);
+                column_txt.Focus();
+                column_txt.SelectAll();
+                ClipBoard = ColumnText;
+                SaveSettings(saveFile);
 
-            StatusText = "Pasted data and copied the default selected column!";
-            isNewRequest = false;
+                StatusText = "Pasted data and copied the default selected column!";
+                isNewRequest = false;
+            }
+            else
+            {
+                StatusText = "No data in the clipboard!";
+            }
         }
 
         /// <summary>
@@ -1212,6 +1232,28 @@ namespace ColumnCopier
                 defaultColumnPriority = "Name";
 
             SaveSettings(saveFile);
+        }
+
+        /// <summary>
+        /// Verifies that text will be valid in the system.
+        /// </summary>
+        /// <param name="text">The text.</param>
+        /// <returns><c>true</c> if the text is valid, <c>false</c> otherwise.</returns>
+        ///  Changelog:
+        ///             - 1.1.6 (09-19-2016) - Initial version.
+        private string VerifyText(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+                return null;
+
+            StringBuilder output = new StringBuilder();
+            for (int i = 0; i < text.Length; i++)
+            {
+                var tmp = text[i];
+                if (XmlConvert.IsXmlChar(tmp))
+                    output.Append(tmp);
+            }
+            return output.ToString();
         }
 
         #endregion Private Methods
