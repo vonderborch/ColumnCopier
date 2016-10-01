@@ -4,9 +4,9 @@
 // Author           : Christian
 // Created          : 08-15-2016
 // 
-// Version          : 1.1.6
+// Version          : 1.2.0
 // Last Modified By : Christian
-// Last Modified On : 09-29-2016
+// Last Modified On : 09-30-2016
 // ***********************************************************************
 // <copyright file="Main.cs" company="Christian Webber">
 //		Copyright ©  2016
@@ -16,6 +16,7 @@
 // </summary>
 //
 // Changelog: 
+//            - 1.2.0 (09-30-2016) - Saves now occur on a separate thread and saves can be compressed. Added option for compressed saves. Added preserve request toggle support. Added the missing process start code to open the latest release (when an update is detected) and fixed update notice typo. Added option to delete a request.
 //            - 1.1.6 (09-29-2016) - Fixed bug when loading old saves (bumped save version), fixed bug when copying invalid characters, fixed bug with no data in the clipboard.
 //            - 1.1.5 (09-21-2016) - Added tooltips and the export functionality.
 //            - 1.1.4 (09-21-2016) - Added pre and post text for copying and replacing. Removed excessive saving. Added more information to status text. Bumped save version. Number is actually the default selected priority now.
@@ -30,8 +31,10 @@
 using Octokit;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Linq;
@@ -50,19 +53,29 @@ namespace ColumnCopier
         #region Private Fields
 
         /// <summary>
+        /// Delegate UpdateProgressBar
+        /// </summary>
+        private delegate void UpdateProgressBar();
+
+        /// <summary>
+        /// The busy save text
+        /// </summary>
+        private const string BusySaveText = "Currently processing another request, please try again!";
+
+        /// <summary>
+        /// The compressed save file extension
+        /// </summary>
+        private const string CompressedSaveFileExtension = ".ccsx";
+
+        /// <summary>
         /// The current column format
         /// </summary>
         private const string CurrentColumnFormat = "Current Column #: {0}";
 
         /// <summary>
-        /// The git client
-        /// </summary>
-        private GitHubClient gitClient;
-
-        /// <summary>
         /// The git current release tag
         /// </summary>
-        private const int GitCurrentReleaseTagVersion = 116;
+        private const int GitCurrentReleaseTagVersion = 120;
 
         /// <summary>
         /// The git repository
@@ -92,7 +105,7 @@ namespace ColumnCopier
         /// <summary>
         /// The save version
         /// </summary>
-        private const string SaveVersion = "1.2";
+        private const string SaveVersion = "1.3";
 
         /// <summary>
         /// The current request
@@ -105,6 +118,11 @@ namespace ColumnCopier
         private string defaultColumnPriority = "Number";
 
         /// <summary>
+        /// The git client
+        /// </summary>
+        private GitHubClient gitClient;
+
+        /// <summary>
         /// The history
         /// </summary>
         private Dictionary<string, Request> history = new Dictionary<string, Request>();
@@ -112,12 +130,12 @@ namespace ColumnCopier
         /// <summary>
         /// The history log
         /// </summary>
-        private Queue<string> historyLog = new Queue<string>();
+        private List<string> historyLog = new List<string>();
 
         /// <summary>
-        /// Whether a new request is going through.
+        /// Whether the program is currently saving.
         /// </summary>
-        private bool isNewRequest = false;
+        private Guard isSaving = new Guard();
 
         /// <summary>
         /// The request identifier
@@ -139,16 +157,27 @@ namespace ColumnCopier
         public Main()
         {
             InitializeComponent();
-
-
+            
             string defaultName = Title;
 
             string fileToLoad = "";
             if (AssemblyExecutableName != ExecutableName)
-                fileToLoad = $"{ExecutableName}{SaveFileExtension}";
+            {
+                var regularFile = $"{ExecutableName}{SaveFileExtension}";
+                var compressedFile = $"{ExecutableName}{CompressedSaveFileExtension}";
+
+                if (File.Exists(compressedFile))
+                    fileToLoad = compressedFile;
+                else // default to using a non-compressed file
+                    fileToLoad = regularFile;
+            }
             else
                 fileToLoad = $"ColumnCopier-{DateTime.Now.Ticks}{SaveFileExtension}";
 
+            while (!isSaving.CheckSet) ;
+            var destinationPath = Path.Combine(ExecutableDirectory, "TEMPORARY");
+            if (Directory.Exists(destinationPath))
+                Directory.Delete(destinationPath, true);
             LoadSettings($"{ExecutableDirectory}\\{fileToLoad}");
 
             gitClient = new GitHubClient(new ProductHeaderValue($"{AssemblyExecutableName}_Application"));
@@ -165,9 +194,11 @@ namespace ColumnCopier
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         ///  Changelog:
+        ///             - 1.2.0 (09-30-2016) - Saves now occur on a separate thread. 
         ///             - 1.0.0 (08-15-2016) - Initial version.
         private void header_cxb_CheckedChanged(object sender, EventArgs e)
         {
+            while (!isSaving.CheckSet) ;
             SaveSettings(saveFile);
         }
 
@@ -202,9 +233,11 @@ namespace ColumnCopier
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         ///  Changelog:
+        ///             - 1.2.0 (09-30-2016) - Saves now occur on a separate thread. 
         ///             - 1.0.0 (08-15-2016) - Initial version.
         private void removeBlanks_cxb_CheckedChanged(object sender, EventArgs e)
         {
+            while (!isSaving.CheckSet) ;
             SaveSettings(saveFile);
         }
 
@@ -214,16 +247,24 @@ namespace ColumnCopier
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         ///  Changelog:
+        ///             - 1.2.0 (09-30-2016) - Saves now occur on a separate thread. 
         ///             - 1.1.4 (09-21-2016) - Added pre and post texts. Added status text.
         ///             - 1.0.0 (08-15-2016) - Initial version.
         private void replaceSemiColon_btn_Click(object sender, EventArgs e)
         {
-            ReplaceText = ";";
-            ReplaceTextPost = "";
-            ReplaceTextPre = "";
-            SaveSettings(saveFile);
+            if (isSaving.CheckSet)
+            {
+                ReplaceText = ";";
+                ReplaceTextPost = "";
+                ReplaceTextPre = "";
+                SaveSettings(saveFile);
 
-            StatusText = "Changed replacement text to [;]";
+                StatusText = "Changed replacement text to [;]";
+            }
+            else
+            {
+                StatusText = BusySaveText;
+            }
         }
 
         /// <summary>
@@ -450,6 +491,7 @@ namespace ColumnCopier
         /// </summary>
         /// <param name="client">The client.</param>
         ///  Changelog:
+        ///             - 1.2.0 (09-30-2016) - Removed update text typo. Added actual functionality to go to the update.
         ///             - 1.0.0 (08-29-2016) - Initial version.
         public static async void CheckForUpdates(GitHubClient client)
         {
@@ -458,8 +500,17 @@ namespace ColumnCopier
             var releaseVersion = ConvertReleaseTagVersionToInt(latestRelease.TagName);
 
             if (releaseVersion > GitCurrentReleaseTagVersion)
-                MessageBox.Show($"A newly released version is available, version ${latestRelease.TagName}. Would you like to download the update?",
+            {
+                var result = MessageBox.Show($"A newly released version is available, version {latestRelease.TagName}. Would you like to download the update?",
                                 "Update Available", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+                switch(result)
+                {
+                    case DialogResult.Yes:
+                        Process.Start(latestRelease.HtmlUrl);
+                        break;
+                }
+            }
         }
 
         /// <summary>
@@ -520,25 +571,16 @@ namespace ColumnCopier
         /// </summary>
         /// <param name="text">The text.</param>
         ///  Changelog:
+        ///             - 1.2.0 (09-30-2016) - Moved history cleaning to seperate method.
         ///             - 1.0.0 (08-15-2016) - Initial version.
         public void CreateRequest(string text)
         {
             var newRequest = new Request(text, requestID++, header_cxb.Checked, removeBlanks_cxb.Checked);
 
             history.Add(newRequest.Name, newRequest);
-            historyLog.Enqueue(newRequest.Name);
+            historyLog.Add(newRequest.Name);
 
-            var numberOfHistoryToDelete = historyLog.Count - MaxHistory;
-            if (numberOfHistoryToDelete > 0)
-            {
-                for (int i = 0; i < numberOfHistoryToDelete; i++)
-                    history.Remove(historyLog.Dequeue());
-            }
-
-            history_cmb.Items.Clear();
-            foreach (var historyRequest in historyLog.ToArray())
-                history_cmb.Items.Add(historyRequest);
-            history_cmb.SelectedIndex = history_cmb.Items.Count - 1;
+            CleanHistory();
 
             LoadRequest(newRequest.Name);
         }
@@ -604,17 +646,26 @@ namespace ColumnCopier
         /// </summary>
         /// <param name="name">The name.</param>
         ///  Changelog:
+        ///             - 1.2.0 (09-30-2016) - Added preserve request toggle support.
         ///             - 1.0.0 (08-15-2016) - Initial version.
         public void LoadRequest(string name)
         {
-            currentRequest = name;
-            ColumnText = "";
+            try
+            {
+                currentRequest = name;
+                ColumnText = "";
 
-            column_cmb.Items.Clear();
-            foreach (var newColumn in history[currentRequest].ColumnKeys.Values)
-                column_cmb.Items.Add(newColumn);
+                column_cmb.Items.Clear();
+                foreach (var newColumn in history[currentRequest].ColumnKeys.Values)
+                    column_cmb.Items.Add(newColumn);
 
-            column_cmb.SelectedIndex = DetermineSelectedIndex();
+                column_cmb.SelectedIndex = DetermineSelectedIndex();
+                preserve_cxb.Checked = history[currentRequest].PreserveRequest;
+            }
+            catch
+            {
+
+            }
         }
 
         /// <summary>
@@ -635,7 +686,18 @@ namespace ColumnCopier
             try
             {
                 if (!File.Exists(file))
+                {
+                    isSaving.Reset();
                     return false;
+                }
+
+                bool isCompressed = Path.GetExtension(file) == CompressedSaveFileExtension;
+                if (isCompressed)
+                {
+                    var destinationPath = Path.Combine(Path.GetDirectoryName(file), "TEMPORARY");
+                    System.IO.Compression.ZipFile.ExtractToDirectory(file, destinationPath);
+                    file = Path.Combine(destinationPath, Path.GetFileName(file));
+                }
 
                 var doc = XDocument.Load(file);
 
@@ -724,7 +786,7 @@ namespace ColumnCopier
                                 {
                                     Request request = new Request(requestNode);
                                     history.Add(request.Name, request);
-                                    historyLog.Enqueue(request.Name);
+                                    historyLog.Add(request.Name);
                                 }
                             }
                         }
@@ -750,13 +812,58 @@ namespace ColumnCopier
                 LoadRequest(currentRequest);
                 requestID = maxId + 1;
 
+                if (isCompressed)
+                    Directory.Delete(Path.GetDirectoryName(file), true);
+
+                isSaving.Reset();
                 return true;
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.StackTrace.ToString(), $"Error: {ex.ToString()}", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                bool isCompressed = Path.GetExtension(file) == CompressedSaveFileExtension;
+                if (isCompressed)
+                {
+                    var destinationPath = Path.Combine(Path.GetDirectoryName(file), "TEMPORARY");
+                    Directory.Delete(destinationPath, true);
+                }
             }
+
+            isSaving.Reset();
             return false;
+        }
+
+        /// <summary>
+        /// Parses the text to bool.
+        /// </summary>
+        /// <param name="text">The text.</param>
+        /// <param name="defaultValue">if set to <c>true</c> [default value].</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        ///  Changelog:
+        ///             - 1.0.0 (08-15-2016) - Initial version.
+        public static bool ParseTextToBool(string text, bool defaultValue = false)
+        {
+            bool output;
+            if (bool.TryParse(text, out output))
+                return output;
+            return defaultValue;
+        }
+
+        /// <summary>
+        /// Parses the text to int.
+        /// </summary>
+        /// <param name="text">The text.</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <returns>System.Int32.</returns>
+        ///  Changelog:
+        ///             - 1.0.0 (08-15-2016) - Initial version.
+        public static int ParseTextToInt(string text, int defaultValue = 0)
+        {
+            int output;
+            if (int.TryParse(text, out output))
+                return output;
+            return defaultValue;
         }
 
         /// <summary>
@@ -812,59 +919,15 @@ namespace ColumnCopier
         /// <param name="file">The file.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         ///  Changelog:
+        ///             - 1.2.0 (09-30-2016) - Saves now occur on a separate thread. Added support for compressed saves.
         ///             - 1.1.3 (08-30-2016) - Removed string.format to new format approach, enhanced error message.
         ///             - 1.1.0 (08-29-2016) - Added error message.
         ///             - 1.0.0 (08-15-2016) - Initial version.
-        public bool SaveSettings(string file)
+        public void SaveSettings(string file)
         {
-            try
-            {
-                if (File.Exists(file))
-                    File.Delete(file);
+            var saveThread = new Thread(() => SaveSettingsThead(file));
 
-                var str = new StringBuilder();
-
-                str.AppendLine("<ColumnCopier>");
-
-                str.AppendLine($"<SaveVersion>{SaveVersion}</SaveVersion>");
-                str.AppendLine("<Settings>");
-                str.AppendLine($"<ShowOnTop>{isTop_cbx.Checked}</ShowOnTop>");
-                str.AppendLine($"<DataHasHeaders>{header_cxb.Checked}</DataHasHeaders>");
-                str.AppendLine($"<NextLine>{line_txt.Text}</NextLine>");
-                str.AppendLine($"<ReplaceText>{ReplaceText}</ReplaceText>");
-                str.AppendLine($"<DefaultColumn>{DefaultColumn}</DefaultColumn>");
-                str.AppendLine($"<DefaultColumnName>{DefaultColumnName}</DefaultColumnName>");
-                str.AppendLine($"<Threshold>{Threshold}</Threshold>");
-                str.AppendLine($"<Priority>{defaultColumnPriority}</Priority>");
-                str.AppendLine($"<MaxHistory>{MaxHistory}</MaxHistory>");
-                str.AppendLine("</Settings>");
-
-                str.AppendLine("<History>");
-                if (!string.IsNullOrEmpty(currentRequest))
-                {
-                    str.AppendLine($"<CurrentRequest>{currentRequest}</CurrentRequest>");
-                    str.AppendLine($"<CurrentColumn>{history[currentRequest].CurrentColumn}</CurrentColumn>");
-                    str.AppendLine("<Requests>");
-                    foreach (var request in history)
-                        str.AppendLine(request.Value.ToXmlText());
-                    str.AppendLine("</Requests>");
-                }
-                str.AppendLine("</History>");
-
-                str.AppendLine("</ColumnCopier>");
-
-                var result = str.ToString();
-                var doc = XDocument.Parse(result);
-                doc.Save(file);
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.StackTrace.ToString(), $"Error: {ex.ToString()}", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-
-            return false;
+            saveThread.Start();
         }
 
         #endregion Public Methods
@@ -872,35 +935,50 @@ namespace ColumnCopier
         #region Private Methods
 
         /// <summary>
-        /// Parses the text to bool.
+        /// Cleans the history.
         /// </summary>
-        /// <param name="text">The text.</param>
-        /// <param name="defaultValue">if set to <c>true</c> [default value].</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         ///  Changelog:
-        ///             - 1.0.0 (08-15-2016) - Initial version.
-        public static bool ParseTextToBool(string text, bool defaultValue = false)
+        ///             - 1.2.0 (09-30-2016) - Initial version.
+        private void CleanHistory()
         {
-            bool output;
-            if (bool.TryParse(text, out output))
-                return output;
-            return defaultValue;
-        }
 
-        /// <summary>
-        /// Parses the text to int.
-        /// </summary>
-        /// <param name="text">The text.</param>
-        /// <param name="defaultValue">The default value.</param>
-        /// <returns>System.Int32.</returns>
-        ///  Changelog:
-        ///             - 1.0.0 (08-15-2016) - Initial version.
-        public static int ParseTextToInt(string text, int defaultValue = 0)
-        {
-            int output;
-            if (int.TryParse(text, out output))
-                return output;
-            return defaultValue;
+            var numberOfHistoryToDelete = historyLog.Count - MaxHistory;
+            for (int i = 0; i < historyLog.Count; i++)
+            {
+                if (history[historyLog[i]].PreserveRequest)
+                    numberOfHistoryToDelete--;
+            }
+            if (numberOfHistoryToDelete > 0)
+            {
+                var i = 0;
+                for (var j = 0; j < numberOfHistoryToDelete; j++)
+                {
+                    var request = historyLog[i];
+                    if (!history[request].PreserveRequest)
+                    {
+                        history.Remove(request);
+                        historyLog.RemoveAt(i);
+
+                        i--;
+                    }
+                    else
+                    {
+                        j--;
+                    }
+                    i++;
+                }
+            }
+
+            history_cmb.Items.Clear();
+            for (var i = 0; i < historyLog.Count; i++)
+                history_cmb.Items.Add(historyLog[i]);
+            history_cmb.SelectedIndex = history_cmb.Items.Count - 1;
+
+            if (history_cmb.Items.Count == 0)
+            {
+                column_cmb.Items.Add("");
+                column_cmb.SelectedIndex = 0;
+            }
         }
 
         /// <summary>
@@ -909,17 +987,23 @@ namespace ColumnCopier
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         ///  Changelog:
+        ///             - 1.2.0 (09-30-2016) - Saves now occur on a separate thread. 
         ///             - 1.0.0 (08-15-2016) - Initial version.
         private void clearHistory_btn_Click(object sender, EventArgs e)
         {
-            history.Clear();
-            history_cmb.Items.Clear();
+            if (!isSaving.CheckSet)
+            {
+                history.Clear();
+                history_cmb.Items.Clear();
 
-            ResetFields();
+                ResetFields();
 
-            SaveSettings(saveFile);
+                SaveSettings(saveFile);
 
-            StatusText = "Cleared History!";
+                StatusText = "Cleared History!";
+            }
+            else
+                StatusText = BusySaveText;
         }
 
         /// <summary>
@@ -928,13 +1012,16 @@ namespace ColumnCopier
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         ///  Changelog:
+        ///             - 1.2.0 (09-30-2016) - Saves now occur on a separate thread. 
         ///             - 1.1.4 (09-21-2016) - Updated status text to display more information.
         ///             - 1.0.0 (08-15-2016) - Initial version.
         private void column_cmb_SelectedIndexChanged(object sender, EventArgs e)
         {
             LoadColumn(column_cmb.SelectedIndex);
-            if (!isNewRequest)
+            if (isSaving.CheckSet)
+            {
                 SaveSettings(saveFile);
+            }
 
             StatusText = $"Changed selected column to [{column_cmb.Items[column_cmb.SelectedIndex]}]!";
         }
@@ -1008,6 +1095,50 @@ namespace ColumnCopier
         }
 
         /// <summary>
+        /// Handles the Click event of the deleteRequest_txt control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        ///  Changelog:
+        ///             - 1.2.0 (09-30-2016) - Initial version.
+        private void deleteRequest_txt_Click(object sender, EventArgs e)
+        {
+            if (history_cmb.Items.Count > 0)
+            {
+                if (isSaving.CheckSet)
+                {
+                    try
+                    {
+                        var request = history_cmb.Text;
+                        historyLog.Remove(request);
+                        history.Remove(request);
+                        ColumnText = "";
+                        column_cmb.Items.Clear();
+
+                        history_cmb.SelectedIndex = history_cmb.Items.Count - 2;
+                        CleanHistory();
+                        SaveSettings(saveFile);
+
+                        StatusText = $"Deleted the current request [{request}]!";
+                    }
+                    catch (Exception ex)
+                    {
+                    }
+                    finally
+                    {
+                        isSaving.Reset();
+                    }
+                }
+                else
+                    StatusText = BusySaveText;
+            }
+            else
+            {
+                StatusText = "No more requests to delete!";
+            }
+        }
+
+        /// <summary>
         /// Handles the Click event of the export_btn control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -1027,13 +1158,16 @@ namespace ColumnCopier
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         ///  Changelog:
+        ///             - 1.2.0 (09-30-2016) - Saves now occur on a separate thread. 
         ///             - 1.1.4 (09-21-2016) - Updated status text to display more information.
         ///             - 1.0.0 (08-15-2016) - Initial version.
         private void history_cmb_SelectedIndexChanged(object sender, EventArgs e)
         {
             LoadRequest(history_cmb.Text);
-            if (!isNewRequest)
+            if (isSaving.CheckSet)
+            {
                 SaveSettings(saveFile);
+            }
 
             StatusText = $"Changed displayed request to [{history_cmb.Text}]!";
         }
@@ -1044,6 +1178,7 @@ namespace ColumnCopier
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         ///  Changelog:
+        ///             - 1.2.0 (09-30-2016) - Saves now occur on a separate thread. 
         ///             - 1.0.0 (08-15-2016) - Initial version.
         private void isTop_cbx_CheckedChanged(object sender, EventArgs e)
         {
@@ -1051,6 +1186,7 @@ namespace ColumnCopier
                 this.TopMost = true;
             else
                 this.TopMost = false;
+            while (!isSaving.CheckSet) ;
 
             SaveSettings(saveFile);
         }
@@ -1061,20 +1197,27 @@ namespace ColumnCopier
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         ///  Changelog:
+        ///             - 1.2.0 (09-30-2016) - Added compressed save and threading support.
         ///             - 1.0.0 (08-15-2016) - Initial version.
         private void loadSettings_btn_Click(object sender, EventArgs e)
         {
-            OpenFileDialog fileSelector = new OpenFileDialog();
-            fileSelector.DefaultExt = SaveFileExtension;
-            fileSelector.Filter = $"Column Copier Save File ({SaveFileExtension})|*{SaveFileExtension}";
-            fileSelector.InitialDirectory = ExecutableDirectory;
+            if (isSaving.CheckSet)
+            {
+                OpenFileDialog fileSelector = new OpenFileDialog();
+                fileSelector.DefaultExt = SaveFileExtension;
+                fileSelector.Filter = $"Column Copier Save File ({SaveFileExtension})|*{SaveFileExtension}|Compressed Column Copier Save File ({CompressedSaveFileExtension})|*{CompressedSaveFileExtension}";
+                fileSelector.InitialDirectory = ExecutableDirectory;
 
-            fileSelector.ShowDialog();
-            var file = fileSelector.FileName;
+                fileSelector.ShowDialog();
+                var file = fileSelector.FileName;
 
-            LoadSettings(file);
+                if (!string.IsNullOrWhiteSpace(file))
+                {
+                    LoadSettings(file);
 
-            StatusText = "Loaded settings file!";
+                    StatusText = "Loaded settings file!";
+                }
+            }
         }
 
         /// <summary>
@@ -1083,12 +1226,14 @@ namespace ColumnCopier
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         ///  Changelog:
+        ///             - 1.2.0 (09-30-2016) - Saves now occur on a separate thread. 
         ///             - 1.0.0 (08-15-2016) - Initial version.
         private void number_rbtn_CheckedChanged(object sender, EventArgs e)
         {
             if (number_rbtn.Checked)
                 defaultColumnPriority = "Number";
 
+            while (!isSaving.CheckSet) ;
             SaveSettings(saveFile);
         }
 
@@ -1098,23 +1243,30 @@ namespace ColumnCopier
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         ///  Changelog:
+        ///             - 1.2.0 (09-30-2016) - Saves now occur on a separate thread. Added preserve request toggle support.
         ///             - 1.1.6 (09-29-2016) - Added check for an empty clipboard.
         ///             - 1.0.0 (08-15-2016) - Initial version.
         private void paste_btn_Click(object sender, EventArgs e)
         {
-            var text = VerifyText(ClipBoard);
-            if (text != null)
+            if (isSaving.CheckSet)
             {
-                isNewRequest = true;
-                CreateRequest(text);
-                SaveSettings(saveFile);
-                isNewRequest = false;
+                var text = VerifyText(ClipBoard);
+                if (text != null)
+                {
+                    CreateRequest(text);
+                    SaveSettings(saveFile);
+                    preserve_cxb.Checked = false;
 
-                StatusText = "Pasted data!";
+                    StatusText = "Pasted data!";
+                }
+                else
+                {
+                    StatusText = "No data in the clipboard!";
+                }
             }
             else
             {
-                StatusText = "No data in the clipboard!";
+                StatusText = BusySaveText;
             }
         }
 
@@ -1124,26 +1276,48 @@ namespace ColumnCopier
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         ///  Changelog:
+        ///             - 1.2.0 (09-30-2016) - Saves now occur on a separate thread. Added preserve request toggle support.
         ///             - 1.1.6 (09-29-2016) - Added check for an empty clipboard.
         ///             - 1.0.0 (08-15-2016) - Initial version.
         private void pasteCopy_btn_Click(object sender, EventArgs e)
         {
-            var text = VerifyText(ClipBoard);
-            if (text != null)
+            if (isSaving.CheckSet)
             {
-                isNewRequest = true;
-                CreateRequest(text);
-                column_txt.Focus();
-                column_txt.SelectAll();
-                ClipBoard = ColumnText;
-                SaveSettings(saveFile);
+                var text = VerifyText(ClipBoard);
+                if (text != null)
+                {
+                    CreateRequest(text);
+                    column_txt.Focus();
+                    column_txt.SelectAll();
+                    ClipBoard = ColumnText;
+                    SaveSettings(saveFile);
+                    preserve_cxb.Checked = false;
 
-                StatusText = "Pasted data and copied the default selected column!";
-                isNewRequest = false;
-            }
+                    StatusText = "Pasted data and copied the default selected column!";
+                }
+                else
+                {
+                    StatusText = "No data in the clipboard!";
+                    }
+                }
             else
             {
-                StatusText = "No data in the clipboard!";
+                StatusText = "Currently processing another request, please try again!";
+            }
+        }
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the preserve_cxb control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        ///  Changelog:
+        ///             - 1.2.0 (09-30-2016) - Initial version.
+        private void preserve_cxb_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!string.IsNullOrWhiteSpace(currentRequest))
+            {
+                history[currentRequest].PreserveRequest = preserve_cxb.Checked;
             }
         }
 
@@ -1153,16 +1327,24 @@ namespace ColumnCopier
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         ///  Changelog:
+        ///             - 1.2.0 (09-30-2016) - Saves now occur on a separate thread. 
         ///             - 1.1.4 (09-21-2016) - Added pre and post texts. Added status text.
         ///             - 1.0.0 (08-15-2016) - Initial version.
         private void replaceComma_btn_Click(object sender, EventArgs e)
         {
-            ReplaceText = ", ";
-            ReplaceTextPost = "";
-            ReplaceTextPre = "";
-            SaveSettings(saveFile);
+            if (isSaving.CheckSet)
+            {
+                ReplaceText = ", ";
+                ReplaceTextPost = "";
+                ReplaceTextPre = "";
+                SaveSettings(saveFile);
 
-            StatusText = "Changed replacement text to [,]";
+                StatusText = "Changed replacement text to [,]";
+            }
+            else
+            {
+                StatusText = BusySaveText;
+            }
         }
 
         /// <summary>
@@ -1171,15 +1353,23 @@ namespace ColumnCopier
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         ///  Changelog:
+        ///             - 1.2.0 (09-30-2016) - Saves now occur on a separate thread. 
         ///             - 1.1.4 (09-21-2016) - Initial version.
         private void replaceQuotedComma_btn_Click(object sender, EventArgs e)
         {
-            ReplaceText = "\", \"";
-            ReplaceTextPost = "\"";
-            ReplaceTextPre = "\"";
-            SaveSettings(saveFile);
+            if (isSaving.CheckSet)
+            {
+                ReplaceText = "\", \"";
+                ReplaceTextPost = "\"";
+                ReplaceTextPre = "\"";
+                SaveSettings(saveFile);
 
-            StatusText = "Changed replacement text to [\", \"], with a [\"] at the beginning and end of the result string.";
+                StatusText = "Changed replacement text to [\", \"], with a [\"] at the beginning and end of the result string.";
+            }
+            else
+            {
+                StatusText = BusySaveText;
+            }
         }
 
         /// <summary>
@@ -1188,21 +1378,106 @@ namespace ColumnCopier
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         ///  Changelog:
+        ///             - 1.2.0 (09-30-2016) - Saves now occur on a separate thread. Added support for compressed saves.
         ///             - 1.0.0 (08-15-2016) - Initial version.
         private void saveAsNew_btn_Click(object sender, EventArgs e)
         {
-            SaveFileDialog fileSelector = new SaveFileDialog();
-            fileSelector.DefaultExt = SaveFileExtension;
-            fileSelector.Filter = $"Column Copier Save File ({SaveFileExtension})|*{SaveFileExtension}";
-            fileSelector.InitialDirectory = ExecutableDirectory;
+            if (isSaving.CheckSet)
+            {
+                SaveFileDialog fileSelector = new SaveFileDialog();
+                fileSelector.DefaultExt = SaveFileExtension;
+                fileSelector.Filter = $"Column Copier Save File ({SaveFileExtension})|*{SaveFileExtension}|Compressed Column Copier Save File ({CompressedSaveFileExtension})|*{CompressedSaveFileExtension}";
+                fileSelector.InitialDirectory = ExecutableDirectory;
 
-            fileSelector.ShowDialog();
-            var file = fileSelector.FileName;
+                fileSelector.ShowDialog();
+                var file = fileSelector.FileName;
 
-            SaveSettings(file);
-            LoadSettings(file);
+                if (!string.IsNullOrWhiteSpace(file))
+                {
+                    SaveSettings(file);
+                    LoadSettings(file);
 
-            StatusText = "Saved as new file!";
+                    StatusText = "Saved as new file!";
+                }
+            }
+            else
+            {
+                StatusText = BusySaveText;
+            }
+        }
+
+        /// <summary>
+        /// Saves the settings thead.
+        /// </summary>
+        /// <param name="file">The file.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        ///  Changelog:
+        ///             - 1.2.0 (09-30-2016) - Initial version.
+        private bool SaveSettingsThead(string file)
+        {
+            try
+            {
+                ToggleProgressBar();
+                if (File.Exists(file))
+                    File.Delete(file);
+
+                var str = new StringBuilder();
+
+                str.AppendLine("<ColumnCopier>");
+
+                str.AppendLine($"<SaveVersion>{SaveVersion}</SaveVersion>");
+                str.AppendLine("<Settings>");
+                str.AppendLine($"<ShowOnTop>{isTop_cbx.Checked}</ShowOnTop>");
+                str.AppendLine($"<DataHasHeaders>{header_cxb.Checked}</DataHasHeaders>");
+                str.AppendLine($"<NextLine>{line_txt.Text}</NextLine>");
+                str.AppendLine($"<ReplaceText>{ReplaceText}</ReplaceText>");
+                str.AppendLine($"<DefaultColumn>{DefaultColumn}</DefaultColumn>");
+                str.AppendLine($"<DefaultColumnName>{DefaultColumnName}</DefaultColumnName>");
+                str.AppendLine($"<Threshold>{Threshold}</Threshold>");
+                str.AppendLine($"<Priority>{defaultColumnPriority}</Priority>");
+                str.AppendLine($"<MaxHistory>{MaxHistory}</MaxHistory>");
+                str.AppendLine("</Settings>");
+
+                str.AppendLine("<History>");
+                if (!string.IsNullOrEmpty(currentRequest))
+                {
+                    str.AppendLine($"<CurrentRequest>{currentRequest}</CurrentRequest>");
+                    str.AppendLine($"<CurrentColumn>{history[currentRequest].CurrentColumn}</CurrentColumn>");
+                    str.AppendLine("<Requests>");
+                    foreach (var request in history)
+                        str.AppendLine(request.Value.ToXmlText());
+                    str.AppendLine("</Requests>");
+                }
+                str.AppendLine("</History>");
+
+                str.AppendLine("</ColumnCopier>");
+
+                var result = str.ToString();
+                var doc = XDocument.Parse(result);
+                doc.Save(file);
+                doc = null;
+
+                bool isCompressed = Path.GetExtension(file) == CompressedSaveFileExtension;
+                if (isCompressed)
+                {
+                    var destinationPath = Path.Combine(Path.GetDirectoryName(file), "TEMPORARY");
+                    Directory.CreateDirectory(destinationPath);
+                    File.Move(file, Path.Combine(destinationPath, Path.GetFileName(file)));
+                    System.IO.Compression.ZipFile.CreateFromDirectory(destinationPath, file);
+                    Directory.Delete(destinationPath, true);
+                }
+
+                isSaving.Reset();
+                ToggleProgressBar();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                
+                MessageBox.Show(ex.StackTrace.ToString(), $"Error: {ex.ToString()}", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -1211,12 +1486,20 @@ namespace ColumnCopier
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         ///  Changelog:
+        ///             - 1.2.0 (09-30-2016) - Saves now occur on a separate thread. Added support for compressed saves.
         ///             - 1.0.0 (08-15-2016) - Initial version.
         private void saveSettings_btn_Click(object sender, EventArgs e)
         {
-            SaveSettings(saveFile);
+            if (isSaving.CheckSet)
+            {
+                SaveSettings(saveFile);
 
-            StatusText = "Saved file!";
+                StatusText = "Saved file!";
+            }
+            else
+            {
+                StatusText = BusySaveText;
+            }
         }
 
         /// <summary>
@@ -1225,13 +1508,33 @@ namespace ColumnCopier
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         ///  Changelog:
+        ///             - 1.2.0 (09-30-2016) - Saves now occur on a separate thread. 
         ///             - 1.0.0 (08-15-2016) - Initial version.
         private void text_rbtn_CheckedChanged(object sender, EventArgs e)
         {
             if (text_rbtn.Checked)
                 defaultColumnPriority = "Name";
 
+            while (!isSaving.CheckSet) ;
             SaveSettings(saveFile);
+        }
+
+        /// <summary>
+        /// Toggles the progress bar.
+        /// </summary>
+        ///  Changelog:
+        ///             - 1.2.0 (09-30-2016) - Initial version.
+        private void ToggleProgressBar()
+        {
+            if (progress_bar.InvokeRequired)
+            {
+                UpdateProgressBar d = new UpdateProgressBar(ToggleProgressBar);
+                this.Invoke(d);
+            }
+            else
+            {
+                progress_bar.Visible = !progress_bar.Visible;
+            }
         }
 
         /// <summary>

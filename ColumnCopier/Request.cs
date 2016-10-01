@@ -16,10 +16,11 @@
 // </summary>
 //
 // Changelog: 
+//            - 1.2.0 (09-30-2016) - Added preserve request toggle support.
 //            - 1.1.6 (09-29-2016) - Fixed bug when loading old saves (bumped save version), fixed bug when copying invalid characters, fixed bug with no data in the clipboard
-///           - 1.1.5 (09-21-2016) - Added request exporting functionality.
-///           - 1.1.4 (09-21-2016) - Enhanced robustness of new line splitter. Adjusted saving of ColumnKeys to split the value between two items to prevent a crash during saving.
-///           - 1.1.3 (08-30-2016) - Removed string. format to new format approach when saving a request.
+//            - 1.1.5 (09-21-2016) - Added request exporting functionality.
+//            - 1.1.4 (09-21-2016) - Enhanced robustness of new line splitter. Adjusted saving of ColumnKeys to split the value between two items to prevent a crash during saving.
+//            - 1.1.3 (08-30-2016) - Removed string. format to new format approach when saving a request.
 //            - 1.0.0 (08-22-2016) - Finished initial code.
 //            - 0.0.0 (08-18-2016) - Initial version created.
 // ***********************************************************************
@@ -84,6 +85,10 @@ namespace ColumnCopier
                 else if (nodeName == "ID")
                 {
                     ID = Main.ParseTextToInt(node.Value);
+                }
+                else if (nodeName == "PreserveRequest")
+                {
+                    PreserveRequest = Main.ParseTextToBool(node.Value);
                 }
                 else if (nodeName == "ColumnKeys")
                 {
@@ -198,6 +203,12 @@ namespace ColumnCopier
         /// </summary>
         /// <value>The number of columns.</value>
         public int NumberOfColumns { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [preserve request].
+        /// </summary>
+        /// <value><c>true</c> if [preserve request]; otherwise, <c>false</c>.</value>
+        public bool PreserveRequest { get; set; } = false;
 
         #endregion Public Properties
 
@@ -380,6 +391,7 @@ namespace ColumnCopier
             str.AppendLine("<Request>");
             str.AppendLine($"<Name>{Name}</Name>");
             str.AppendLine($"<ID>{ID}</ID>");
+            str.AppendLine($"<PreserveRequest>{PreserveRequest}</PreserveRequest>");
             str.AppendLine("<ColumnKeys>");
             foreach (var key in columnKeys)
             {

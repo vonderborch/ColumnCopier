@@ -62,6 +62,9 @@
             this.header_cxb = new System.Windows.Forms.CheckBox();
             this.removeBlanks_cxb = new System.Windows.Forms.CheckBox();
             this.panel2 = new System.Windows.Forms.Panel();
+            this.progress_bar = new System.Windows.Forms.ProgressBar();
+            this.preserve_cxb = new System.Windows.Forms.CheckBox();
+            this.export_btn = new System.Windows.Forms.Button();
             this.replaceTextPost_txt = new System.Windows.Forms.TextBox();
             this.replaceTextPre_txt = new System.Windows.Forms.TextBox();
             this.replaceQuotedComma_btn = new System.Windows.Forms.Button();
@@ -70,7 +73,7 @@
             this.help_btn = new System.Windows.Forms.Button();
             this.replaceSemiColon_btn = new System.Windows.Forms.Button();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.export_btn = new System.Windows.Forms.Button();
+            this.deleteRequest_txt = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.statusStrip1.SuspendLayout();
@@ -158,9 +161,9 @@
             // history_cmb
             // 
             this.history_cmb.FormattingEnabled = true;
-            this.history_cmb.Location = new System.Drawing.Point(22, 542);
+            this.history_cmb.Location = new System.Drawing.Point(22, 559);
             this.history_cmb.Name = "history_cmb";
-            this.history_cmb.Size = new System.Drawing.Size(379, 39);
+            this.history_cmb.Size = new System.Drawing.Size(213, 39);
             this.history_cmb.TabIndex = 7;
             this.toolTip.SetToolTip(this.history_cmb, "A list of previous requests.");
             this.history_cmb.SelectedIndexChanged += new System.EventHandler(this.history_cmb_SelectedIndexChanged);
@@ -168,7 +171,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(22, 598);
+            this.label1.Location = new System.Drawing.Point(22, 615);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(163, 32);
             this.label1.TabIndex = 8;
@@ -176,7 +179,7 @@
             // 
             // history_txt
             // 
-            this.history_txt.Location = new System.Drawing.Point(193, 595);
+            this.history_txt.Location = new System.Drawing.Point(199, 612);
             this.history_txt.Name = "history_txt";
             this.history_txt.Size = new System.Drawing.Size(208, 38);
             this.history_txt.TabIndex = 9;
@@ -186,7 +189,7 @@
             // clearHistory_btn
             // 
             this.clearHistory_btn.AutoSize = true;
-            this.clearHistory_btn.Location = new System.Drawing.Point(21, 644);
+            this.clearHistory_btn.Location = new System.Drawing.Point(21, 661);
             this.clearHistory_btn.Name = "clearHistory_btn";
             this.clearHistory_btn.Size = new System.Drawing.Size(392, 58);
             this.clearHistory_btn.TabIndex = 10;
@@ -372,7 +375,7 @@
             // saveSettings_btn
             // 
             this.saveSettings_btn.AutoSize = true;
-            this.saveSettings_btn.Location = new System.Drawing.Point(441, 644);
+            this.saveSettings_btn.Location = new System.Drawing.Point(441, 661);
             this.saveSettings_btn.Name = "saveSettings_btn";
             this.saveSettings_btn.Size = new System.Drawing.Size(252, 58);
             this.saveSettings_btn.TabIndex = 23;
@@ -384,7 +387,7 @@
             // loadSettings_btn
             // 
             this.loadSettings_btn.AutoSize = true;
-            this.loadSettings_btn.Location = new System.Drawing.Point(1000, 644);
+            this.loadSettings_btn.Location = new System.Drawing.Point(1000, 661);
             this.loadSettings_btn.Name = "loadSettings_btn";
             this.loadSettings_btn.Size = new System.Drawing.Size(241, 58);
             this.loadSettings_btn.TabIndex = 24;
@@ -396,7 +399,7 @@
             // saveAsNew_btn
             // 
             this.saveAsNew_btn.AutoSize = true;
-            this.saveAsNew_btn.Location = new System.Drawing.Point(699, 644);
+            this.saveAsNew_btn.Location = new System.Drawing.Point(699, 661);
             this.saveAsNew_btn.Name = "saveAsNew_btn";
             this.saveAsNew_btn.Size = new System.Drawing.Size(295, 58);
             this.saveAsNew_btn.TabIndex = 25;
@@ -436,6 +439,9 @@
             // panel2
             // 
             this.panel2.AutoSize = true;
+            this.panel2.Controls.Add(this.deleteRequest_txt);
+            this.panel2.Controls.Add(this.progress_bar);
+            this.panel2.Controls.Add(this.preserve_cxb);
             this.panel2.Controls.Add(this.export_btn);
             this.panel2.Controls.Add(this.replaceTextPost_txt);
             this.panel2.Controls.Add(this.replaceTextPre_txt);
@@ -473,8 +479,44 @@
             this.panel2.Controls.Add(this.columnNum_txt);
             this.panel2.Location = new System.Drawing.Point(2, 1);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(1454, 771);
+            this.panel2.Size = new System.Drawing.Size(1454, 774);
             this.panel2.TabIndex = 28;
+            // 
+            // progress_bar
+            // 
+            this.progress_bar.Location = new System.Drawing.Point(1173, 728);
+            this.progress_bar.MarqueeAnimationSpeed = 25;
+            this.progress_bar.Name = "progress_bar";
+            this.progress_bar.Size = new System.Drawing.Size(240, 43);
+            this.progress_bar.Step = 5;
+            this.progress_bar.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
+            this.progress_bar.TabIndex = 36;
+            this.toolTip.SetToolTip(this.progress_bar, "Current save progress");
+            this.progress_bar.Visible = false;
+            // 
+            // preserve_cxb
+            // 
+            this.preserve_cxb.AutoSize = true;
+            this.preserve_cxb.Location = new System.Drawing.Point(250, 562);
+            this.preserve_cxb.Name = "preserve_cxb";
+            this.preserve_cxb.Size = new System.Drawing.Size(166, 36);
+            this.preserve_cxb.TabIndex = 35;
+            this.preserve_cxb.Text = "Preserve";
+            this.toolTip.SetToolTip(this.preserve_cxb, "Whether this program should be shown on top of all others or not.");
+            this.preserve_cxb.UseVisualStyleBackColor = true;
+            this.preserve_cxb.CheckedChanged += new System.EventHandler(this.preserve_cxb_CheckedChanged);
+            // 
+            // export_btn
+            // 
+            this.export_btn.AutoSize = true;
+            this.export_btn.Location = new System.Drawing.Point(22, 444);
+            this.export_btn.Name = "export_btn";
+            this.export_btn.Size = new System.Drawing.Size(391, 58);
+            this.export_btn.TabIndex = 34;
+            this.export_btn.Text = "Export Current Request";
+            this.toolTip.SetToolTip(this.export_btn, "Exports the current request to a tab and line seperated format.");
+            this.export_btn.UseVisualStyleBackColor = true;
+            this.export_btn.Click += new System.EventHandler(this.export_btn_Click);
             // 
             // replaceTextPost_txt
             // 
@@ -510,7 +552,7 @@
             this.statusStrip1.ImageScalingSize = new System.Drawing.Size(40, 40);
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.status_txt});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 725);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 728);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(1454, 46);
             this.statusStrip1.TabIndex = 30;
@@ -524,7 +566,7 @@
             // 
             // help_btn
             // 
-            this.help_btn.Location = new System.Drawing.Point(1247, 644);
+            this.help_btn.Location = new System.Drawing.Point(1247, 661);
             this.help_btn.Name = "help_btn";
             this.help_btn.Size = new System.Drawing.Size(196, 58);
             this.help_btn.TabIndex = 29;
@@ -546,17 +588,17 @@
             this.replaceSemiColon_btn.UseVisualStyleBackColor = true;
             this.replaceSemiColon_btn.Click += new System.EventHandler(this.replaceSemiColon_btn_Click);
             // 
-            // export_btn
+            // deleteRequest_txt
             // 
-            this.export_btn.AutoSize = true;
-            this.export_btn.Location = new System.Drawing.Point(22, 444);
-            this.export_btn.Name = "export_btn";
-            this.export_btn.Size = new System.Drawing.Size(391, 58);
-            this.export_btn.TabIndex = 34;
-            this.export_btn.Text = "Export Current Request";
-            this.toolTip.SetToolTip(this.export_btn, "Exports the current request to a tab and line seperated format.");
-            this.export_btn.UseVisualStyleBackColor = true;
-            this.export_btn.Click += new System.EventHandler(this.export_btn_Click);
+            this.deleteRequest_txt.AutoSize = true;
+            this.deleteRequest_txt.Location = new System.Drawing.Point(22, 499);
+            this.deleteRequest_txt.Name = "deleteRequest_txt";
+            this.deleteRequest_txt.Size = new System.Drawing.Size(391, 58);
+            this.deleteRequest_txt.TabIndex = 37;
+            this.deleteRequest_txt.Text = "Delete Current Request";
+            this.toolTip.SetToolTip(this.deleteRequest_txt, "Exports the current request to a tab and line seperated format.");
+            this.deleteRequest_txt.UseVisualStyleBackColor = true;
+            this.deleteRequest_txt.Click += new System.EventHandler(this.deleteRequest_txt_Click);
             // 
             // Main
             // 
@@ -624,6 +666,9 @@
         private System.Windows.Forms.TextBox replaceTextPre_txt;
         private System.Windows.Forms.ToolTip toolTip;
         private System.Windows.Forms.Button export_btn;
+        private System.Windows.Forms.CheckBox preserve_cxb;
+        private System.Windows.Forms.ProgressBar progress_bar;
+        private System.Windows.Forms.Button deleteRequest_txt;
     }
 }
 
