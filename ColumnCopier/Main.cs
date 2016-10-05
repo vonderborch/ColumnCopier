@@ -4,9 +4,9 @@
 // Author           : Christian
 // Created          : 08-15-2016
 // 
-// Version          : 1.2.0
+// Version          : 1.2.1
 // Last Modified By : Christian
-// Last Modified On : 09-30-2016
+// Last Modified On : 10-04-2016
 // ***********************************************************************
 // <copyright file="Main.cs" company="Christian Webber">
 //		Copyright ©  2016
@@ -16,6 +16,7 @@
 // </summary>
 //
 // Changelog: 
+//            - 1.2.1 (10-04-2016) - Hopefully resolved issue causing program to never enter a state where it can actually be used.
 //            - 1.2.0 (09-30-2016) - Saves now occur on a separate thread and saves can be compressed. Added option for compressed saves. Added preserve request toggle support. Added the missing process start code to open the latest release (when an update is detected) and fixed update notice typo. Added option to delete a request.
 //            - 1.1.6 (09-29-2016) - Fixed bug when loading old saves (bumped save version), fixed bug when copying invalid characters, fixed bug with no data in the clipboard.
 //            - 1.1.5 (09-21-2016) - Added tooltips and the export functionality.
@@ -75,7 +76,7 @@ namespace ColumnCopier
         /// <summary>
         /// The git current release tag
         /// </summary>
-        private const int GitCurrentReleaseTagVersion = 120;
+        private const int GitCurrentReleaseTagVersion = 121;
 
         /// <summary>
         /// The git repository
@@ -180,6 +181,7 @@ namespace ColumnCopier
                 Directory.Delete(destinationPath, true);
             LoadSettings($"{ExecutableDirectory}\\{fileToLoad}");
 
+            isSaving.Reset();
             gitClient = new GitHubClient(new ProductHeaderValue($"{AssemblyExecutableName}_Application"));
             CheckForUpdates(gitClient);
         }
