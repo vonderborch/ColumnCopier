@@ -4,9 +4,9 @@
 // Author           : Christian
 // Created          : 08-15-2016
 // 
-// Version          : 1.2.1
+// Version          : 1.2.2
 // Last Modified By : Christian
-// Last Modified On : 10-04-2016
+// Last Modified On : 12-27-2016
 // ***********************************************************************
 // <copyright file="Main.cs" company="Christian Webber">
 //		Copyright ©  2016
@@ -16,6 +16,7 @@
 // </summary>
 //
 // Changelog: 
+//            - 1.2.2 (12-27-2016) - Reset isSaving toggle to allow tool to continue to be used on failure of a save. Upon changing of a request preservation status, status text is displayed and the program state is saved. Added 'Copy and Replace' quick button for formatting column to SQL-style text list.
 //            - 1.2.1 (10-04-2016) - Hopefully resolved issue causing program to never enter a state where it can actually be used.
 //            - 1.2.0 (09-30-2016) - Saves now occur on a separate thread and saves can be compressed. Added option for compressed saves. Added preserve request toggle support. Added the missing process start code to open the latest release (when an update is detected) and fixed update notice typo. Added option to delete a request.
 //            - 1.1.6 (09-29-2016) - Fixed bug when loading old saves (bumped save version), fixed bug when copying invalid characters, fixed bug with no data in the clipboard.
@@ -76,7 +77,7 @@ namespace ColumnCopier
         /// <summary>
         /// The git current release tag
         /// </summary>
-        private const int GitCurrentReleaseTagVersion = 121;
+        private const int GitCurrentReleaseTagVersion = 122;
 
         /// <summary>
         /// The git repository
@@ -1314,12 +1315,16 @@ namespace ColumnCopier
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         ///  Changelog:
+        ///             - 1.2.1 (12-27-2016) - Saves the settings upon the toggle changing and displays information that the request preservation status has changed.
         ///             - 1.2.0 (09-30-2016) - Initial version.
         private void preserve_cxb_CheckedChanged(object sender, EventArgs e)
         {
             if (!string.IsNullOrWhiteSpace(currentRequest))
             {
                 history[currentRequest].PreserveRequest = preserve_cxb.Checked;
+                SaveSettings(saveFile);
+
+                StatusText = $"Preservation status on request {currentRequest} has changed to: {preserve_cxb.Checked}";
             }
         }
 
@@ -1375,6 +1380,30 @@ namespace ColumnCopier
         }
 
         /// <summary>
+        /// Handles the Click event of the replaceSqlList_btn control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        ///  Changelog:
+        ///             - 1.2.2 (12-27-2016) - Initial version.
+        private void replaceSqlList_btn_Click(object sender, EventArgs e)
+        {
+            if (isSaving.CheckSet)
+            {
+                ReplaceText = "', '";
+                ReplaceTextPost = "')";
+                ReplaceTextPre = "('";
+                SaveSettings(saveFile);
+
+                StatusText = "Changes the replace text to a [', '] character, with a (' at the beginning and a ') at the end of the resulting string.";
+            }
+            else
+            {
+                StatusText = BusySaveText;
+            }
+        }
+
+        /// <summary>
         /// Handles the Click event of the saveAsNew_btn control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -1414,6 +1443,7 @@ namespace ColumnCopier
         /// <param name="file">The file.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         ///  Changelog:
+        ///             - 1.2.2 (12-27-2016) - Reset isSaving toggle to allow tool to continue to be used on failure of a save.
         ///             - 1.2.0 (09-30-2016) - Initial version.
         private bool SaveSettingsThead(string file)
         {
@@ -1475,8 +1505,9 @@ namespace ColumnCopier
             }
             catch (Exception ex)
             {
-                
                 MessageBox.Show(ex.StackTrace.ToString(), $"Error: {ex.ToString()}", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                isSaving.Reset();
+                ToggleProgressBar();
             }
 
             return false;

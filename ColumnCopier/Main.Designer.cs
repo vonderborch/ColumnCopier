@@ -62,6 +62,8 @@
             this.header_cxb = new System.Windows.Forms.CheckBox();
             this.removeBlanks_cxb = new System.Windows.Forms.CheckBox();
             this.panel2 = new System.Windows.Forms.Panel();
+            this.replaceSqlList_btn = new System.Windows.Forms.Button();
+            this.deleteRequest_txt = new System.Windows.Forms.Button();
             this.progress_bar = new System.Windows.Forms.ProgressBar();
             this.preserve_cxb = new System.Windows.Forms.CheckBox();
             this.export_btn = new System.Windows.Forms.Button();
@@ -73,7 +75,6 @@
             this.help_btn = new System.Windows.Forms.Button();
             this.replaceSemiColon_btn = new System.Windows.Forms.Button();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.deleteRequest_txt = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.statusStrip1.SuspendLayout();
@@ -224,7 +225,7 @@
             // replaceComma_btn
             // 
             this.replaceComma_btn.AutoSize = true;
-            this.replaceComma_btn.Location = new System.Drawing.Point(79, 317);
+            this.replaceComma_btn.Location = new System.Drawing.Point(51, 324);
             this.replaceComma_btn.Name = "replaceComma_btn";
             this.replaceComma_btn.Size = new System.Drawing.Size(84, 57);
             this.replaceComma_btn.TabIndex = 13;
@@ -439,6 +440,7 @@
             // panel2
             // 
             this.panel2.AutoSize = true;
+            this.panel2.Controls.Add(this.replaceSqlList_btn);
             this.panel2.Controls.Add(this.deleteRequest_txt);
             this.panel2.Controls.Add(this.progress_bar);
             this.panel2.Controls.Add(this.preserve_cxb);
@@ -481,6 +483,31 @@
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(1454, 774);
             this.panel2.TabIndex = 28;
+            // 
+            // replaceSqlList_btn
+            // 
+            this.replaceSqlList_btn.AutoSize = true;
+            this.replaceSqlList_btn.Location = new System.Drawing.Point(231, 324);
+            this.replaceSqlList_btn.Name = "replaceSqlList_btn";
+            this.replaceSqlList_btn.Size = new System.Drawing.Size(85, 57);
+            this.replaceSqlList_btn.TabIndex = 38;
+            this.replaceSqlList_btn.Text = "(\' \',\' \')";
+            this.toolTip.SetToolTip(this.replaceSqlList_btn, "Changes the replace text to a [\', \'] character, with a (\' at the beginning and a " +
+        "\') at the end of the resulting string.");
+            this.replaceSqlList_btn.UseVisualStyleBackColor = true;
+            this.replaceSqlList_btn.Click += new System.EventHandler(this.replaceSqlList_btn_Click);
+            // 
+            // deleteRequest_txt
+            // 
+            this.deleteRequest_txt.AutoSize = true;
+            this.deleteRequest_txt.Location = new System.Drawing.Point(22, 499);
+            this.deleteRequest_txt.Name = "deleteRequest_txt";
+            this.deleteRequest_txt.Size = new System.Drawing.Size(391, 58);
+            this.deleteRequest_txt.TabIndex = 37;
+            this.deleteRequest_txt.Text = "Delete Current Request";
+            this.toolTip.SetToolTip(this.deleteRequest_txt, "Exports the current request to a tab and line seperated format.");
+            this.deleteRequest_txt.UseVisualStyleBackColor = true;
+            this.deleteRequest_txt.Click += new System.EventHandler(this.deleteRequest_txt_Click);
             // 
             // progress_bar
             // 
@@ -537,7 +564,7 @@
             // replaceQuotedComma_btn
             // 
             this.replaceQuotedComma_btn.AutoSize = true;
-            this.replaceQuotedComma_btn.Location = new System.Drawing.Point(189, 317);
+            this.replaceQuotedComma_btn.Location = new System.Drawing.Point(141, 324);
             this.replaceQuotedComma_btn.Name = "replaceQuotedComma_btn";
             this.replaceQuotedComma_btn.Size = new System.Drawing.Size(84, 57);
             this.replaceQuotedComma_btn.TabIndex = 31;
@@ -578,7 +605,7 @@
             // replaceSemiColon_btn
             // 
             this.replaceSemiColon_btn.AutoSize = true;
-            this.replaceSemiColon_btn.Location = new System.Drawing.Point(299, 317);
+            this.replaceSemiColon_btn.Location = new System.Drawing.Point(324, 324);
             this.replaceSemiColon_btn.Name = "replaceSemiColon_btn";
             this.replaceSemiColon_btn.Size = new System.Drawing.Size(84, 57);
             this.replaceSemiColon_btn.TabIndex = 28;
@@ -587,18 +614,6 @@
         "or end of the resulting string.");
             this.replaceSemiColon_btn.UseVisualStyleBackColor = true;
             this.replaceSemiColon_btn.Click += new System.EventHandler(this.replaceSemiColon_btn_Click);
-            // 
-            // deleteRequest_txt
-            // 
-            this.deleteRequest_txt.AutoSize = true;
-            this.deleteRequest_txt.Location = new System.Drawing.Point(22, 499);
-            this.deleteRequest_txt.Name = "deleteRequest_txt";
-            this.deleteRequest_txt.Size = new System.Drawing.Size(391, 58);
-            this.deleteRequest_txt.TabIndex = 37;
-            this.deleteRequest_txt.Text = "Delete Current Request";
-            this.toolTip.SetToolTip(this.deleteRequest_txt, "Exports the current request to a tab and line seperated format.");
-            this.deleteRequest_txt.UseVisualStyleBackColor = true;
-            this.deleteRequest_txt.Click += new System.EventHandler(this.deleteRequest_txt_Click);
             // 
             // Main
             // 
@@ -669,6 +684,7 @@
         private System.Windows.Forms.CheckBox preserve_cxb;
         private System.Windows.Forms.ProgressBar progress_bar;
         private System.Windows.Forms.Button deleteRequest_txt;
+        private System.Windows.Forms.Button replaceSqlList_btn;
     }
 }
 
