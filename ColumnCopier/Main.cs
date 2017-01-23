@@ -4,18 +4,19 @@
 // Author           : Christian
 // Created          : 08-15-2016
 // 
-// Version          : 1.2.2
+// Version          : 1.2.3
 // Last Modified By : Christian
-// Last Modified On : 12-27-2016
+// Last Modified On : 01-23-2017
 // ***********************************************************************
 // <copyright file="Main.cs" company="Christian Webber">
-//		Copyright ©  2016
+//		Copyright ©  2016 - 2017
 // </copyright>
 // <summary>
 //      The Main class.
 // </summary>
 //
 // Changelog: 
+//            - 1.2.3 (01-23-2017) - Loading a request now updates the current line for copying lines.
 //            - 1.2.2 (12-27-2016) - Reset isSaving toggle to allow tool to continue to be used on failure of a save. Upon changing of a request preservation status, status text is displayed and the program state is saved. Added 'Copy and Replace' quick button for formatting column to SQL-style text list.
 //            - 1.2.1 (10-04-2016) - Hopefully resolved issue causing program to never enter a state where it can actually be used.
 //            - 1.2.0 (09-30-2016) - Saves now occur on a separate thread and saves can be compressed. Added option for compressed saves. Added preserve request toggle support. Added the missing process start code to open the latest release (when an update is detected) and fixed update notice typo. Added option to delete a request.
@@ -77,7 +78,7 @@ namespace ColumnCopier
         /// <summary>
         /// The git current release tag
         /// </summary>
-        private const int GitCurrentReleaseTagVersion = 122;
+        private const int GitCurrentReleaseTagVersion = 123;
 
         /// <summary>
         /// The git repository
@@ -649,6 +650,7 @@ namespace ColumnCopier
         /// </summary>
         /// <param name="name">The name.</param>
         ///  Changelog:
+        ///             - 1.2.3 (01-23-2017) - Loading a request now updates the current line for copying lines.
         ///             - 1.2.0 (09-30-2016) - Added preserve request toggle support.
         ///             - 1.0.0 (08-15-2016) - Initial version.
         public void LoadRequest(string name)
@@ -664,6 +666,7 @@ namespace ColumnCopier
 
                 column_cmb.SelectedIndex = DetermineSelectedIndex();
                 preserve_cxb.Checked = history[currentRequest].PreserveRequest;
+                CurrentLine = history[currentRequest].CurrentRowId;
             }
             catch
             {
