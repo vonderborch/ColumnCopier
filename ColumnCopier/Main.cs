@@ -4,7 +4,7 @@
 // Author           : Christian
 // Created          : 08-15-2016
 // 
-// Version          : 1.2.3
+// Version          : 1.2.4
 // Last Modified By : Christian
 // Last Modified On : 01-23-2017
 // ***********************************************************************
@@ -16,6 +16,7 @@
 // </summary>
 //
 // Changelog: 
+//            - 1.2.4 (01-23-2017) - Slight UI changes, added new Copy and Replace option.
 //            - 1.2.3 (01-23-2017) - Loading a request now updates the current line for copying lines.
 //            - 1.2.2 (12-27-2016) - Reset isSaving toggle to allow tool to continue to be used on failure of a save. Upon changing of a request preservation status, status text is displayed and the program state is saved. Added 'Copy and Replace' quick button for formatting column to SQL-style text list.
 //            - 1.2.1 (10-04-2016) - Hopefully resolved issue causing program to never enter a state where it can actually be used.
@@ -78,7 +79,7 @@ namespace ColumnCopier
         /// <summary>
         /// The git current release tag
         /// </summary>
-        private const int GitCurrentReleaseTagVersion = 123;
+        private const int GitCurrentReleaseTagVersion = 124;
 
         /// <summary>
         /// The git repository
@@ -1350,6 +1351,30 @@ namespace ColumnCopier
                 SaveSettings(saveFile);
 
                 StatusText = "Changed replacement text to [,]";
+            }
+            else
+            {
+                StatusText = BusySaveText;
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the replaceQuote_btn control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        ///  Changelog:
+        ///             - 1.2.4 (01-23-2017) - Added the new button.
+        private void replaceQuote_btn_Click(object sender, EventArgs e)
+        {
+            if (isSaving.CheckSet)
+            {
+                ReplaceText = "\", \"";
+                ReplaceTextPost = "\")";
+                ReplaceTextPre = "(\"";
+                SaveSettings(saveFile);
+
+                StatusText = "Changes the replace text to a [\", \"] character, with a (\" at the beginning and a \") at the end of the resulting string.";
             }
             else
             {

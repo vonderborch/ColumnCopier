@@ -75,6 +75,7 @@
             this.help_btn = new System.Windows.Forms.Button();
             this.replaceSemiColon_btn = new System.Windows.Forms.Button();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
+            this.replaceQuote_btn = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.statusStrip1.SuspendLayout();
@@ -225,9 +226,9 @@
             // replaceComma_btn
             // 
             this.replaceComma_btn.AutoSize = true;
-            this.replaceComma_btn.Location = new System.Drawing.Point(51, 324);
+            this.replaceComma_btn.Location = new System.Drawing.Point(9, 324);
             this.replaceComma_btn.Name = "replaceComma_btn";
-            this.replaceComma_btn.Size = new System.Drawing.Size(84, 57);
+            this.replaceComma_btn.Size = new System.Drawing.Size(52, 57);
             this.replaceComma_btn.TabIndex = 13;
             this.replaceComma_btn.Text = ", ";
             this.toolTip.SetToolTip(this.replaceComma_btn, "Changes the replace text to a [, ] character, with no characters at the beginning" +
@@ -440,6 +441,7 @@
             // panel2
             // 
             this.panel2.AutoSize = true;
+            this.panel2.Controls.Add(this.replaceQuote_btn);
             this.panel2.Controls.Add(this.replaceSqlList_btn);
             this.panel2.Controls.Add(this.deleteRequest_txt);
             this.panel2.Controls.Add(this.progress_bar);
@@ -487,13 +489,13 @@
             // replaceSqlList_btn
             // 
             this.replaceSqlList_btn.AutoSize = true;
-            this.replaceSqlList_btn.Location = new System.Drawing.Point(231, 324);
+            this.replaceSqlList_btn.Location = new System.Drawing.Point(150, 324);
             this.replaceSqlList_btn.Name = "replaceSqlList_btn";
             this.replaceSqlList_btn.Size = new System.Drawing.Size(85, 57);
             this.replaceSqlList_btn.TabIndex = 38;
             this.replaceSqlList_btn.Text = "(\' \',\' \')";
-            this.toolTip.SetToolTip(this.replaceSqlList_btn, "Changes the replace text to a [\', \'] character, with a (\' at the beginning and a " +
-        "\') at the end of the resulting string.");
+            this.toolTip.SetToolTip(this.replaceSqlList_btn, "Changes the replace text to a [\', \'] character, with a [(\'] at the beginning and " +
+        "a [\')] at the end of the resulting string.");
             this.replaceSqlList_btn.UseVisualStyleBackColor = true;
             this.replaceSqlList_btn.Click += new System.EventHandler(this.replaceSqlList_btn_Click);
             // 
@@ -564,13 +566,13 @@
             // replaceQuotedComma_btn
             // 
             this.replaceQuotedComma_btn.AutoSize = true;
-            this.replaceQuotedComma_btn.Location = new System.Drawing.Point(141, 324);
+            this.replaceQuotedComma_btn.Location = new System.Drawing.Point(71, 324);
             this.replaceQuotedComma_btn.Name = "replaceQuotedComma_btn";
-            this.replaceQuotedComma_btn.Size = new System.Drawing.Size(84, 57);
+            this.replaceQuotedComma_btn.Size = new System.Drawing.Size(60, 57);
             this.replaceQuotedComma_btn.TabIndex = 31;
             this.replaceQuotedComma_btn.Text = "\",\" ";
-            this.toolTip.SetToolTip(this.replaceQuotedComma_btn, "Changes the replace text to a [\", \"] character, with a \" at the beginning and end" +
-        " of the resulting string.");
+            this.toolTip.SetToolTip(this.replaceQuotedComma_btn, "Changes the replace text to a [\", \"] character, with a [\"] at the beginning and e" +
+        "nd of the resulting string.");
             this.replaceQuotedComma_btn.UseVisualStyleBackColor = true;
             this.replaceQuotedComma_btn.Click += new System.EventHandler(this.replaceQuotedComma_btn_Click);
             // 
@@ -605,15 +607,28 @@
             // replaceSemiColon_btn
             // 
             this.replaceSemiColon_btn.AutoSize = true;
-            this.replaceSemiColon_btn.Location = new System.Drawing.Point(324, 324);
+            this.replaceSemiColon_btn.Location = new System.Drawing.Point(369, 324);
             this.replaceSemiColon_btn.Name = "replaceSemiColon_btn";
-            this.replaceSemiColon_btn.Size = new System.Drawing.Size(84, 57);
+            this.replaceSemiColon_btn.Size = new System.Drawing.Size(41, 57);
             this.replaceSemiColon_btn.TabIndex = 28;
             this.replaceSemiColon_btn.Text = ";";
             this.toolTip.SetToolTip(this.replaceSemiColon_btn, "Changes the replace text to a [;] character, with no characters at the beginning " +
         "or end of the resulting string.");
             this.replaceSemiColon_btn.UseVisualStyleBackColor = true;
             this.replaceSemiColon_btn.Click += new System.EventHandler(this.replaceSemiColon_btn_Click);
+            // 
+            // replaceQuote_btn
+            // 
+            this.replaceQuote_btn.AutoSize = true;
+            this.replaceQuote_btn.Location = new System.Drawing.Point(248, 324);
+            this.replaceQuote_btn.Name = "replaceQuote_btn";
+            this.replaceQuote_btn.Size = new System.Drawing.Size(105, 57);
+            this.replaceQuote_btn.TabIndex = 39;
+            this.replaceQuote_btn.Text = "(\" \",\" \")";
+            this.toolTip.SetToolTip(this.replaceQuote_btn, "Changes the replace text to a [\", \"] character, with a [(\"] at the beginning and " +
+        "a [\")] at the end of the resulting string.");
+            this.replaceQuote_btn.UseVisualStyleBackColor = true;
+            this.replaceQuote_btn.Click += new System.EventHandler(this.replaceQuote_btn_Click);
             // 
             // Main
             // 
@@ -685,6 +700,7 @@
         private System.Windows.Forms.ProgressBar progress_bar;
         private System.Windows.Forms.Button deleteRequest_txt;
         private System.Windows.Forms.Button replaceSqlList_btn;
+        private System.Windows.Forms.Button replaceQuote_btn;
     }
 }
 
