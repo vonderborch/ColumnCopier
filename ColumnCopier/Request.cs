@@ -4,18 +4,19 @@
 // Author           : Christian
 // Created          : 08-18-2016
 // 
-// Version          : 1.1.6
+// Version          : 1.3.0
 // Last Modified By : Christian
-// Last Modified On : 09-29-2016
+// Last Modified On : 05-30-2017
 // ***********************************************************************
 // <copyright file="Request.cs" company="Christian Webber">
-//		Copyright ©  2016
+//		Copyright ©  2016 - 2017
 // </copyright>
 // <summary>
 //      The Request class.
 // </summary>
 //
 // Changelog: 
+//            - 1.3.0 (05-30-2017) - More extensive text cleaning.
 //            - 1.2.0 (09-30-2016) - Added preserve request toggle support.
 //            - 1.1.6 (09-29-2016) - Fixed bug when loading old saves (bumped save version), fixed bug when copying invalid characters, fixed bug with no data in the clipboard
 //            - 1.1.5 (09-21-2016) - Added request exporting functionality.
@@ -215,6 +216,33 @@ namespace ColumnCopier
         #region Public Methods
 
         /// <summary>
+        /// Cleans the text.
+        /// </summary>
+        /// <param name="text">The text.</param>
+        /// <returns>System.String.</returns>
+        ///  Changelog:
+        ///             - 1.3.0 (05-30-2017) - More extensive cleaning of the text.
+        ///             - 1.0.0 (08-18-2016) - Initial version.
+        public static string CleanText(string text)
+        {
+            // trim the text...
+            text = text.Trim();
+
+            // now we go through and replace invalid characters...
+            StringBuilder result = new StringBuilder(text.Length);
+            foreach (char c in text)
+            {
+                string replace;
+                if (Constants.Instance.CharacterReplacements.TryGetValue(c, out replace))
+                    result.Append(replace);
+                else
+                    result.Append(c);
+            }
+
+            return result.ToString();
+        }
+
+        /// <summary>
         /// Exports this instance.
         /// </summary>
         /// <returns>System.String.</returns>
@@ -273,6 +301,7 @@ namespace ColumnCopier
         /// <param name="columnName">Name of the column.</param>
         /// <returns>System.String.</returns>
         ///  Changelog:
+        ///             - 1.3.0 (05-30-2017) - Parses the text to display special characters
         ///             - 1.0.0 (08-18-2016) - Initial version.
         public string GetColumnText(string columnName)
         {
@@ -282,14 +311,20 @@ namespace ColumnCopier
                 CurrentColumnNumberOfRows = columnsData[columnName].Count;
                 var str = new StringBuilder();
 
+                // create the text to display...
                 for (int i = 0; i < columnsData[columnName].Count; i++)
                     str.AppendLine(columnsData[columnName][i]);
+                
+                // cleanup the text...
+                foreach (var pair in Constants.Instance.StringReplacements)
+                    str = str.Replace(pair.Key, pair.Value);
 
                 return str.ToString();
             }
 
-            return "";
+            return string.Empty;
         }
+
 
         /// <summary>
         /// Gets the column text.
@@ -380,6 +415,7 @@ namespace ColumnCopier
         /// </summary>
         /// <returns>System.String.</returns>
         ///  Changelog:
+        ///             - 1.3.0 (05-30-2017) - Cleans text upon saving to prevent exceptions during saving.
         ///             - 1.1.6 (09-29-2016) - Fixed bug when loading old saves (bumped save version).
         ///             - 1.1.4 (09-21-2016) - Adjusted saving of ColumnKeys to split the value between two items to prevent a crash during saving.
         ///             - 1.1.3 (08-30-2016) - Removed string.format to new format approach.
@@ -397,7 +433,7 @@ namespace ColumnCopier
             {
                 str.AppendLine("<ColumnKey>");
                 str.AppendLine($"<Key>{key.Key}</Key>");
-                str.AppendLine($"<Value>{key.Value}</Value>");
+                str.AppendLine($"<Value>{CleanText(key.Value)}</Value>");
                 str.AppendLine("</ColumnKey>");
             }
             str.AppendLine("</ColumnKeys>");
@@ -406,9 +442,9 @@ namespace ColumnCopier
             foreach (var key in columnKeys)
             {
                 str.AppendLine("<Column>");
-                str.AppendLine($"<Name>{key.Value}</Name>");
+                str.AppendLine($"<Name>{CleanText(key.Value)}</Name>");
                 for (int i = 0; i < columnsData[key.Value].Count; i++)
-                    str.AppendLine($"<Row>{columnsData[key.Value][i]}</Row>");
+                    str.AppendLine($"<Row>{CleanText(columnsData[key.Value][i])}</Row>");
                 str.AppendLine("</Column>");
             }
             str.AppendLine("</ColumnsData>");
@@ -421,18 +457,6 @@ namespace ColumnCopier
         #endregion Public Methods
 
         #region Private Methods
-
-        /// <summary>
-        /// Cleans the text.
-        /// </summary>
-        /// <param name="text">The text.</param>
-        /// <returns>System.String.</returns>
-        ///  Changelog:
-        ///             - 1.0.0 (08-18-2016) - Initial version.
-        private string CleanText(string text)
-        {
-            return text.Trim();
-        }
 
         /// <summary>
         /// Parses the text.

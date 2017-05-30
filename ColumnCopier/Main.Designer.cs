@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Main));
             this.paste_btn = new System.Windows.Forms.Button();
             this.pasteCopy_btn = new System.Windows.Forms.Button();
             this.copy_btn = new System.Windows.Forms.Button();
@@ -42,7 +43,6 @@
             this.clearHistory_btn = new System.Windows.Forms.Button();
             this.replaceText_txt = new System.Windows.Forms.TextBox();
             this.copyReplace_btn = new System.Windows.Forms.Button();
-            this.replaceComma_btn = new System.Windows.Forms.Button();
             this.columnNum_txt = new System.Windows.Forms.Label();
             this.rowNum_txt = new System.Windows.Forms.Label();
             this.currentColumn_txt = new System.Windows.Forms.Label();
@@ -62,20 +62,18 @@
             this.header_cxb = new System.Windows.Forms.CheckBox();
             this.removeBlanks_cxb = new System.Windows.Forms.CheckBox();
             this.panel2 = new System.Windows.Forms.Panel();
-            this.replaceSqlList_btn = new System.Windows.Forms.Button();
+            this.label5 = new System.Windows.Forms.Label();
+            this.copyLineOptions_cmb = new System.Windows.Forms.ComboBox();
             this.deleteRequest_txt = new System.Windows.Forms.Button();
             this.progress_bar = new System.Windows.Forms.ProgressBar();
             this.preserve_cxb = new System.Windows.Forms.CheckBox();
             this.export_btn = new System.Windows.Forms.Button();
             this.replaceTextPost_txt = new System.Windows.Forms.TextBox();
             this.replaceTextPre_txt = new System.Windows.Forms.TextBox();
-            this.replaceQuotedComma_btn = new System.Windows.Forms.Button();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.status_txt = new System.Windows.Forms.ToolStripStatusLabel();
             this.help_btn = new System.Windows.Forms.Button();
-            this.replaceSemiColon_btn = new System.Windows.Forms.Button();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.replaceQuote_btn = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.statusStrip1.SuspendLayout();
@@ -213,7 +211,7 @@
             // copyReplace_btn
             // 
             this.copyReplace_btn.AutoSize = true;
-            this.copyReplace_btn.Location = new System.Drawing.Point(79, 380);
+            this.copyReplace_btn.Location = new System.Drawing.Point(49, 369);
             this.copyReplace_btn.Name = "copyReplace_btn";
             this.copyReplace_btn.Size = new System.Drawing.Size(304, 58);
             this.copyReplace_btn.TabIndex = 11;
@@ -222,19 +220,6 @@
         " characters in their place.");
             this.copyReplace_btn.UseVisualStyleBackColor = true;
             this.copyReplace_btn.Click += new System.EventHandler(this.copyReplace_btn_Click);
-            // 
-            // replaceComma_btn
-            // 
-            this.replaceComma_btn.AutoSize = true;
-            this.replaceComma_btn.Location = new System.Drawing.Point(9, 324);
-            this.replaceComma_btn.Name = "replaceComma_btn";
-            this.replaceComma_btn.Size = new System.Drawing.Size(52, 57);
-            this.replaceComma_btn.TabIndex = 13;
-            this.replaceComma_btn.Text = ", ";
-            this.toolTip.SetToolTip(this.replaceComma_btn, "Changes the replace text to a [, ] character, with no characters at the beginning" +
-        " or end of the resulting string.");
-            this.replaceComma_btn.UseVisualStyleBackColor = true;
-            this.replaceComma_btn.Click += new System.EventHandler(this.replaceComma_btn_Click);
             // 
             // columnNum_txt
             // 
@@ -441,18 +426,16 @@
             // panel2
             // 
             this.panel2.AutoSize = true;
-            this.panel2.Controls.Add(this.replaceQuote_btn);
-            this.panel2.Controls.Add(this.replaceSqlList_btn);
+            this.panel2.Controls.Add(this.label5);
+            this.panel2.Controls.Add(this.copyLineOptions_cmb);
             this.panel2.Controls.Add(this.deleteRequest_txt);
             this.panel2.Controls.Add(this.progress_bar);
             this.panel2.Controls.Add(this.preserve_cxb);
             this.panel2.Controls.Add(this.export_btn);
             this.panel2.Controls.Add(this.replaceTextPost_txt);
             this.panel2.Controls.Add(this.replaceTextPre_txt);
-            this.panel2.Controls.Add(this.replaceQuotedComma_btn);
             this.panel2.Controls.Add(this.statusStrip1);
             this.panel2.Controls.Add(this.help_btn);
-            this.panel2.Controls.Add(this.replaceSemiColon_btn);
             this.panel2.Controls.Add(this.paste_btn);
             this.panel2.Controls.Add(this.removeBlanks_cxb);
             this.panel2.Controls.Add(this.pasteCopy_btn);
@@ -479,25 +462,39 @@
             this.panel2.Controls.Add(this.currentColumn_txt);
             this.panel2.Controls.Add(this.replaceText_txt);
             this.panel2.Controls.Add(this.rowNum_txt);
-            this.panel2.Controls.Add(this.replaceComma_btn);
             this.panel2.Controls.Add(this.columnNum_txt);
             this.panel2.Location = new System.Drawing.Point(2, 1);
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(1454, 774);
             this.panel2.TabIndex = 28;
             // 
-            // replaceSqlList_btn
+            // label5
             // 
-            this.replaceSqlList_btn.AutoSize = true;
-            this.replaceSqlList_btn.Location = new System.Drawing.Point(150, 324);
-            this.replaceSqlList_btn.Name = "replaceSqlList_btn";
-            this.replaceSqlList_btn.Size = new System.Drawing.Size(85, 57);
-            this.replaceSqlList_btn.TabIndex = 38;
-            this.replaceSqlList_btn.Text = "(\' \',\' \')";
-            this.toolTip.SetToolTip(this.replaceSqlList_btn, "Changes the replace text to a [\', \'] character, with a [(\'] at the beginning and " +
-        "a [\')] at the end of the resulting string.");
-            this.replaceSqlList_btn.UseVisualStyleBackColor = true;
-            this.replaceSqlList_btn.Click += new System.EventHandler(this.replaceSqlList_btn_Click);
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(15, 327);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(243, 32);
+            this.label5.TabIndex = 41;
+            this.label5.Text = "Copy Line Option:";
+            // 
+            // copyLineOptions_cmb
+            // 
+            this.copyLineOptions_cmb.FormattingEnabled = true;
+            this.copyLineOptions_cmb.Items.AddRange(new object[] {
+            ",",
+            "",
+            "\",\"",
+            "( , )",
+            "(\' \', \' \')",
+            "(\" \", \" \")",
+            ";"});
+            this.copyLineOptions_cmb.Location = new System.Drawing.Point(264, 324);
+            this.copyLineOptions_cmb.Name = "copyLineOptions_cmb";
+            this.copyLineOptions_cmb.Size = new System.Drawing.Size(152, 39);
+            this.copyLineOptions_cmb.TabIndex = 40;
+            this.copyLineOptions_cmb.Text = ",";
+            this.toolTip.SetToolTip(this.copyLineOptions_cmb, "A list of previous requests.");
+            this.copyLineOptions_cmb.SelectedIndexChanged += new System.EventHandler(this.copyLineOptions_cmb_SelectedIndexChanged);
             // 
             // deleteRequest_txt
             // 
@@ -563,19 +560,6 @@
             this.replaceTextPre_txt.TabIndex = 32;
             this.toolTip.SetToolTip(this.replaceTextPre_txt, "The text that begins the resulting line when copying and replacing.");
             // 
-            // replaceQuotedComma_btn
-            // 
-            this.replaceQuotedComma_btn.AutoSize = true;
-            this.replaceQuotedComma_btn.Location = new System.Drawing.Point(71, 324);
-            this.replaceQuotedComma_btn.Name = "replaceQuotedComma_btn";
-            this.replaceQuotedComma_btn.Size = new System.Drawing.Size(60, 57);
-            this.replaceQuotedComma_btn.TabIndex = 31;
-            this.replaceQuotedComma_btn.Text = "\",\" ";
-            this.toolTip.SetToolTip(this.replaceQuotedComma_btn, "Changes the replace text to a [\", \"] character, with a [\"] at the beginning and e" +
-        "nd of the resulting string.");
-            this.replaceQuotedComma_btn.UseVisualStyleBackColor = true;
-            this.replaceQuotedComma_btn.Click += new System.EventHandler(this.replaceQuotedComma_btn_Click);
-            // 
             // statusStrip1
             // 
             this.statusStrip1.ImageScalingSize = new System.Drawing.Size(40, 40);
@@ -604,32 +588,6 @@
             this.help_btn.UseVisualStyleBackColor = true;
             this.help_btn.Click += new System.EventHandler(this.help_btn_Click);
             // 
-            // replaceSemiColon_btn
-            // 
-            this.replaceSemiColon_btn.AutoSize = true;
-            this.replaceSemiColon_btn.Location = new System.Drawing.Point(369, 324);
-            this.replaceSemiColon_btn.Name = "replaceSemiColon_btn";
-            this.replaceSemiColon_btn.Size = new System.Drawing.Size(41, 57);
-            this.replaceSemiColon_btn.TabIndex = 28;
-            this.replaceSemiColon_btn.Text = ";";
-            this.toolTip.SetToolTip(this.replaceSemiColon_btn, "Changes the replace text to a [;] character, with no characters at the beginning " +
-        "or end of the resulting string.");
-            this.replaceSemiColon_btn.UseVisualStyleBackColor = true;
-            this.replaceSemiColon_btn.Click += new System.EventHandler(this.replaceSemiColon_btn_Click);
-            // 
-            // replaceQuote_btn
-            // 
-            this.replaceQuote_btn.AutoSize = true;
-            this.replaceQuote_btn.Location = new System.Drawing.Point(248, 324);
-            this.replaceQuote_btn.Name = "replaceQuote_btn";
-            this.replaceQuote_btn.Size = new System.Drawing.Size(105, 57);
-            this.replaceQuote_btn.TabIndex = 39;
-            this.replaceQuote_btn.Text = "(\" \",\" \")";
-            this.toolTip.SetToolTip(this.replaceQuote_btn, "Changes the replace text to a [\", \"] character, with a [(\"] at the beginning and " +
-        "a [\")] at the end of the resulting string.");
-            this.replaceQuote_btn.UseVisualStyleBackColor = true;
-            this.replaceQuote_btn.Click += new System.EventHandler(this.replaceQuote_btn_Click);
-            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(240F, 240F);
@@ -638,6 +596,7 @@
             this.ClientSize = new System.Drawing.Size(1457, 773);
             this.Controls.Add(this.panel2);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.Name = "Main";
             this.Text = "Column Copier";
@@ -667,7 +626,6 @@
         private System.Windows.Forms.Button clearHistory_btn;
         private System.Windows.Forms.TextBox replaceText_txt;
         private System.Windows.Forms.Button copyReplace_btn;
-        private System.Windows.Forms.Button replaceComma_btn;
         private System.Windows.Forms.Label columnNum_txt;
         private System.Windows.Forms.Label rowNum_txt;
         private System.Windows.Forms.Label currentColumn_txt;
@@ -687,11 +645,9 @@
         private System.Windows.Forms.TextBox threshold_txt;
         private System.Windows.Forms.CheckBox removeBlanks_cxb;
         private System.Windows.Forms.Panel panel2;
-        private System.Windows.Forms.Button replaceSemiColon_btn;
         private System.Windows.Forms.Button help_btn;
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripStatusLabel status_txt;
-        private System.Windows.Forms.Button replaceQuotedComma_btn;
         private System.Windows.Forms.TextBox replaceTextPost_txt;
         private System.Windows.Forms.TextBox replaceTextPre_txt;
         private System.Windows.Forms.ToolTip toolTip;
@@ -699,8 +655,8 @@
         private System.Windows.Forms.CheckBox preserve_cxb;
         private System.Windows.Forms.ProgressBar progress_bar;
         private System.Windows.Forms.Button deleteRequest_txt;
-        private System.Windows.Forms.Button replaceSqlList_btn;
-        private System.Windows.Forms.Button replaceQuote_btn;
+        private System.Windows.Forms.ComboBox copyLineOptions_cmb;
+        private System.Windows.Forms.Label label5;
     }
 }
 

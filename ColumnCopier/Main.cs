@@ -4,9 +4,9 @@
 // Author           : Christian
 // Created          : 08-15-2016
 // 
-// Version          : 1.2.4
+// Version          : 1.3.0
 // Last Modified By : Christian
-// Last Modified On : 01-23-2017
+// Last Modified On : 05-30-2017
 // ***********************************************************************
 // <copyright file="Main.cs" company="Christian Webber">
 //		Copyright ©  2016 - 2017
@@ -16,6 +16,7 @@
 // </summary>
 //
 // Changelog: 
+//            - 1.3.0 (05-30-2017) - Removed dependency on Octokit. Made line copy pre-set options a combobox rather than separate buttons. Adjustments to saving and loading to handle cleaning column name and row data. CurrentColumn save field is now actually used.
 //            - 1.2.4 (01-23-2017) - Slight UI changes, added new Copy and Replace option.
 //            - 1.2.3 (01-23-2017) - Loading a request now updates the current line for copying lines.
 //            - 1.2.2 (12-27-2016) - Reset isSaving toggle to allow tool to continue to be used on failure of a save. Upon changing of a request preservation status, status text is displayed and the program state is saved. Added 'Copy and Replace' quick button for formatting column to SQL-style text list.
@@ -32,7 +33,6 @@
 //            - 0.5.0 (08-18-2016) - Initial version created.
 //            - 0.0.0 (08-15-2016) - Initial version created.
 // ***********************************************************************
-using Octokit;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -79,7 +79,7 @@ namespace ColumnCopier
         /// <summary>
         /// The git current release tag
         /// </summary>
-        private const int GitCurrentReleaseTagVersion = 124;
+        private const int GitCurrentReleaseTagVersion = 130;
 
         /// <summary>
         /// The git repository
@@ -109,7 +109,12 @@ namespace ColumnCopier
         /// <summary>
         /// The save version
         /// </summary>
-        private const string SaveVersion = "1.3";
+        private const string SaveVersion = "1.4";
+
+        /// <summary>
+        /// The copy line option index
+        /// </summary>
+        private int copyLineOptionIndex = 0;
 
         /// <summary>
         /// The current request
@@ -120,11 +125,6 @@ namespace ColumnCopier
         /// The default column priority
         /// </summary>
         private string defaultColumnPriority = "Number";
-
-        /// <summary>
-        /// The git client
-        /// </summary>
-        private GitHubClient gitClient;
 
         /// <summary>
         /// The history
@@ -185,8 +185,7 @@ namespace ColumnCopier
             LoadSettings($"{ExecutableDirectory}\\{fileToLoad}");
 
             isSaving.Reset();
-            gitClient = new GitHubClient(new ProductHeaderValue($"{AssemblyExecutableName}_Application"));
-            CheckForUpdates(gitClient);
+            CheckForUpdates();
         }
 
         #endregion Public Constructors
@@ -323,6 +322,15 @@ namespace ColumnCopier
         {
             get { return column_txt.Text; }
             set { column_txt.Text = value; }
+        }
+
+        /// <summary>
+        /// Gets the index of the copy line option.
+        /// </summary>
+        /// <value>The index of the copy line option.</value>
+        public int CopyLineOptionIndex
+        {
+            get { return copyLineOptionIndex; }
         }
 
         /// <summary>
@@ -496,34 +504,38 @@ namespace ColumnCopier
         /// </summary>
         /// <param name="client">The client.</param>
         ///  Changelog:
+        ///             - 1.3.0 (05-30-2017) - Removed dependency on Octokit.
         ///             - 1.2.0 (09-30-2016) - Removed update text typo. Added actual functionality to go to the update.
         ///             - 1.0.0 (08-29-2016) - Initial version.
-        public static async void CheckForUpdates(GitHubClient client)
+        public static void CheckForUpdates()
         {
-            var latestRelease = await client.Repository.Release.GetLatest(GitUser, GitRepository);
+            var latestRelease = GitHub.GitHub.GetLatestRelease();
 
-            var releaseVersion = ConvertReleaseTagVersionToInt(latestRelease.TagName);
-
-            if (releaseVersion > GitCurrentReleaseTagVersion)
+            if (latestRelease != null)
             {
-                var result = MessageBox.Show($"A newly released version is available, version {latestRelease.TagName}. Would you like to download the update?",
-                                "Update Available", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                var releaseVersion = ConvertReleaseTagVersionToInt(latestRelease.tag_name);
 
-                switch(result)
+                if (releaseVersion > GitCurrentReleaseTagVersion)
                 {
-                    case DialogResult.Yes:
-                        Process.Start(latestRelease.HtmlUrl);
-                        break;
+                    var result = MessageBox.Show($"A newly released version is available, version {latestRelease.tag_name}. Would you like to download the update?",
+                                    "Update Available", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+                    switch (result)
+                    {
+                        case DialogResult.Yes:
+                            Process.Start(latestRelease.html_url);
+                            break;
+                    }
                 }
             }
         }
 
         /// <summary>
-        /// Computes the specified s.
+        /// Computes the similarity between two strings.
         /// </summary>
-        /// <param name="s">The s.</param>
-        /// <param name="t">The t.</param>
-        /// <returns>System.Int32.</returns>
+        /// <param name="s">The first string.</param>
+        /// <param name="t">The second string.</param>
+        /// <returns>The similarity of the strings.</returns>
         ///  Changelog:
         ///             - 1.0.0 (08-15-2016) - Initial version.
         public static int Compute(string s, string t)
@@ -534,40 +546,30 @@ namespace ColumnCopier
 
             // Step 1
             if (n == 0)
-            {
                 return m;
-            }
-
             if (m == 0)
-            {
                 return n;
-            }
 
             // Step 2
-            for (int i = 0; i <= n; d[i, 0] = i++)
-            {
-            }
-
-            for (int j = 0; j <= m; d[0, j] = j++)
-            {
-            }
+            for (int i = 0; i <= n; d[i, 0] = i++) { }
+            for (int j = 0; j <= m; d[0, j] = j++) { }
 
             // Step 3
             for (int i = 1; i <= n; i++)
             {
-                //Step 4
                 for (int j = 1; j <= m; j++)
                 {
-                    // Step 5
+                    // Step 3a
                     int cost = (t[j - 1] == s[i - 1]) ? 0 : 1;
 
-                    // Step 6
+                    // Step 3b
                     d[i, j] = Math.Min(
                         Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1),
                         d[i - 1, j - 1] + cost);
                 }
             }
-            // Step 7
+
+            // Step 4
             return d[n, m];
         }
 
@@ -651,6 +653,7 @@ namespace ColumnCopier
         /// </summary>
         /// <param name="name">The name.</param>
         ///  Changelog:
+        ///             - 1.3.0 (05-30-2017) - Cleans column name text.
         ///             - 1.2.3 (01-23-2017) - Loading a request now updates the current line for copying lines.
         ///             - 1.2.0 (09-30-2016) - Added preserve request toggle support.
         ///             - 1.0.0 (08-15-2016) - Initial version.
@@ -663,7 +666,12 @@ namespace ColumnCopier
 
                 column_cmb.Items.Clear();
                 foreach (var newColumn in history[currentRequest].ColumnKeys.Values)
-                    column_cmb.Items.Add(newColumn);
+                {
+                    var text = newColumn;
+                    foreach (var pair in Constants.Instance.StringReplacements)
+                        text = text.Replace(pair.Key, pair.Value);
+                    column_cmb.Items.Add(text);
+                }
 
                 column_cmb.SelectedIndex = DetermineSelectedIndex();
                 preserve_cxb.Checked = history[currentRequest].PreserveRequest;
@@ -681,6 +689,7 @@ namespace ColumnCopier
         /// <param name="file">The file.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         ///  Changelog:
+        ///             - 1.3.0 (05-30-2017) - Loads the current column field properly now.
         ///             - 1.1.3 (08-30-2016) - Enhanced error message.
         ///             - 1.1.0 (08-29-2016) - Added error message.
         ///             - 1.0.0 (08-15-2016) - Initial version.
@@ -735,8 +744,21 @@ namespace ColumnCopier
                                     line_txt.Text = settingNode.Value.ToString();
                                     break;
 
+                                case "ReplaceTextOption":
+                                    copyLineOptionIndex = ParseTextToInt(settingNode.Value.ToString(), 1);
+                                    copyLineOptions_cmb.SelectedIndex = copyLineOptionIndex;
+                                    break;
+
                                 case "ReplaceText":
                                     ReplaceText = settingNode.Value.ToString();
+                                    break;
+
+                                case "ReplaceTextPost":
+                                    ReplaceTextPost = settingNode.Value.ToString();
+                                    break;
+
+                                case "ReplaceTextPre":
+                                    ReplaceTextPre = settingNode.Value.ToString();
                                     break;
 
                                 case "DefaultColumn":
@@ -784,7 +806,10 @@ namespace ColumnCopier
                             }
                             else if (historyName == "CurrentColumn")
                             {
-                                currentColumn = historyNode.Value.ToString();
+                                var text = historyNode.Value.ToString();
+                                foreach (var pair in Constants.Instance.StringReplacements)
+                                    text = text.Replace(pair.Key, pair.Value);
+                                currentColumn = text;
                             }
                             else if (historyName == "Requests")
                             {
@@ -817,6 +842,22 @@ namespace ColumnCopier
                 history_cmb.SelectedIndex = history_cmb.Items.Count - 1;
 
                 LoadRequest(currentRequest);
+
+                var index = 0;
+                try
+                {
+                    for (var i = 0; i < column_cmb.Items.Count; i++)
+                    {
+                        if (column_cmb.Items[i].ToString() == currentColumn)
+                        {
+                            index = i;
+                            break;
+                        }
+                    }
+                }
+                catch { index = 0; }
+
+                column_cmb.SelectedIndex = index;
                 requestID = maxId + 1;
 
                 if (isCompressed)
@@ -1085,6 +1126,70 @@ namespace ColumnCopier
         }
 
         /// <summary>
+        /// Handles the SelectedIndexChanged event of the copyLineOptions_cmb control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        ///  Changelog:
+        ///             - 1.3.0 (05-30-2017) - Initial version.
+        private void copyLineOptions_cmb_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            copyLineOptionIndex = copyLineOptions_cmb.SelectedIndex;
+            var selection = copyLineOptions_cmb.Items[copyLineOptionIndex].ToString();
+
+            var statusTextFormat = "Changed replacement text to ";
+            var statusTextPostfix = "";
+            switch (selection)
+            {
+                case "":
+                    ReplaceText = "";
+                    ReplaceTextPost = "";
+                    ReplaceTextPre = "";
+                    statusTextPostfix = "no seperator.";
+                    break;
+                case ",":
+                    ReplaceText = ", ";
+                    ReplaceTextPost = "";
+                    ReplaceTextPre = "";
+                    statusTextPostfix = "[,]";
+                    break;
+                case "\",\"":
+                    ReplaceText = "\", \"";
+                    ReplaceTextPost = "\"";
+                    ReplaceTextPre = "\"";
+                    statusTextPostfix = "a [\", \"], with a [\"] at the beginning and end of the result string.";
+                    break;
+                case "( , )":
+                    ReplaceText = ", ";
+                    ReplaceTextPost = ")";
+                    ReplaceTextPre = "(";
+                    statusTextPostfix = "a [, ] character, with a ( at the beginning and a ) at the end of the resulting string.";
+                    break;
+                case "(' ', ' ')":
+                    ReplaceText = "', '";
+                    ReplaceTextPost = "')";
+                    ReplaceTextPre = "('";
+                    statusTextPostfix = "a [', '] character, with a (' at the beginning and a ') at the end of the resulting string.";
+                    break;
+                case "(\" \", \" \")":
+                    ReplaceText = "\", \"";
+                    ReplaceTextPost = "\")";
+                    ReplaceTextPre = "(\"";
+                    statusTextPostfix = "a [\", \"] character, with a (\" at the beginning and a \") at the end of the resulting string.";
+                    break;
+                case ";":
+                    ReplaceText = ";";
+                    ReplaceTextPost = "";
+                    ReplaceTextPre = "";
+                    statusTextPostfix = "[;]";
+                    break;
+            }
+
+            SaveSettings(saveFile);
+            StatusText = $"{statusTextFormat}{statusTextPostfix}";
+        }
+
+        /// <summary>
         /// Handles the Click event of the copyReplace_btn control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -1333,105 +1438,6 @@ namespace ColumnCopier
         }
 
         /// <summary>
-        /// Handles the Click event of the replaceComma_btn control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        ///  Changelog:
-        ///             - 1.2.0 (09-30-2016) - Saves now occur on a separate thread. 
-        ///             - 1.1.4 (09-21-2016) - Added pre and post texts. Added status text.
-        ///             - 1.0.0 (08-15-2016) - Initial version.
-        private void replaceComma_btn_Click(object sender, EventArgs e)
-        {
-            if (isSaving.CheckSet)
-            {
-                ReplaceText = ", ";
-                ReplaceTextPost = "";
-                ReplaceTextPre = "";
-                SaveSettings(saveFile);
-
-                StatusText = "Changed replacement text to [,]";
-            }
-            else
-            {
-                StatusText = BusySaveText;
-            }
-        }
-
-        /// <summary>
-        /// Handles the Click event of the replaceQuote_btn control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        ///  Changelog:
-        ///             - 1.2.4 (01-23-2017) - Added the new button.
-        private void replaceQuote_btn_Click(object sender, EventArgs e)
-        {
-            if (isSaving.CheckSet)
-            {
-                ReplaceText = "\", \"";
-                ReplaceTextPost = "\")";
-                ReplaceTextPre = "(\"";
-                SaveSettings(saveFile);
-
-                StatusText = "Changes the replace text to a [\", \"] character, with a (\" at the beginning and a \") at the end of the resulting string.";
-            }
-            else
-            {
-                StatusText = BusySaveText;
-            }
-        }
-
-        /// <summary>
-        /// Handles the Click event of the replaceQuotedComma_btn control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        ///  Changelog:
-        ///             - 1.2.0 (09-30-2016) - Saves now occur on a separate thread. 
-        ///             - 1.1.4 (09-21-2016) - Initial version.
-        private void replaceQuotedComma_btn_Click(object sender, EventArgs e)
-        {
-            if (isSaving.CheckSet)
-            {
-                ReplaceText = "\", \"";
-                ReplaceTextPost = "\"";
-                ReplaceTextPre = "\"";
-                SaveSettings(saveFile);
-
-                StatusText = "Changed replacement text to [\", \"], with a [\"] at the beginning and end of the result string.";
-            }
-            else
-            {
-                StatusText = BusySaveText;
-            }
-        }
-
-        /// <summary>
-        /// Handles the Click event of the replaceSqlList_btn control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        ///  Changelog:
-        ///             - 1.2.2 (12-27-2016) - Initial version.
-        private void replaceSqlList_btn_Click(object sender, EventArgs e)
-        {
-            if (isSaving.CheckSet)
-            {
-                ReplaceText = "', '";
-                ReplaceTextPost = "')";
-                ReplaceTextPre = "('";
-                SaveSettings(saveFile);
-
-                StatusText = "Changes the replace text to a [', '] character, with a (' at the beginning and a ') at the end of the resulting string.";
-            }
-            else
-            {
-                StatusText = BusySaveText;
-            }
-        }
-
-        /// <summary>
         /// Handles the Click event of the saveAsNew_btn control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -1471,6 +1477,7 @@ namespace ColumnCopier
         /// <param name="file">The file.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         ///  Changelog:
+        ///             - 1.3.0 (05-30-2017) - Now remembers pre and post text.
         ///             - 1.2.2 (12-27-2016) - Reset isSaving toggle to allow tool to continue to be used on failure of a save.
         ///             - 1.2.0 (09-30-2016) - Initial version.
         private bool SaveSettingsThead(string file)
@@ -1490,7 +1497,10 @@ namespace ColumnCopier
                 str.AppendLine($"<ShowOnTop>{isTop_cbx.Checked}</ShowOnTop>");
                 str.AppendLine($"<DataHasHeaders>{header_cxb.Checked}</DataHasHeaders>");
                 str.AppendLine($"<NextLine>{line_txt.Text}</NextLine>");
+                str.AppendLine($"<ReplaceTextOption>{CopyLineOptionIndex}</ReplaceTextOption>");
                 str.AppendLine($"<ReplaceText>{ReplaceText}</ReplaceText>");
+                str.AppendLine($"<ReplaceTextPre>{ReplaceTextPre}</ReplaceTextPre>");
+                str.AppendLine($"<ReplaceTextPost>{ReplaceTextPost}</ReplaceTextPost>");
                 str.AppendLine($"<DefaultColumn>{DefaultColumn}</DefaultColumn>");
                 str.AppendLine($"<DefaultColumnName>{DefaultColumnName}</DefaultColumnName>");
                 str.AppendLine($"<Threshold>{Threshold}</Threshold>");
@@ -1502,7 +1512,7 @@ namespace ColumnCopier
                 if (!string.IsNullOrEmpty(currentRequest))
                 {
                     str.AppendLine($"<CurrentRequest>{currentRequest}</CurrentRequest>");
-                    str.AppendLine($"<CurrentColumn>{history[currentRequest].CurrentColumn}</CurrentColumn>");
+                    str.AppendLine($"<CurrentColumn>{Request.CleanText(history[currentRequest].CurrentColumn)}</CurrentColumn>");
                     str.AppendLine("<Requests>");
                     foreach (var request in history)
                         str.AppendLine(request.Value.ToXmlText());
