@@ -4,7 +4,7 @@
 // Author           : Christian
 // Created          : 08-15-2016
 // 
-// Version          : 1.3.0
+// Version          : 2.0.0
 // Last Modified By : Christian
 // Last Modified On : 05-30-2017
 // ***********************************************************************
@@ -16,6 +16,7 @@
 // </summary>
 //
 // Changelog: 
+//            - 2.0.0 (xx-xx-2017) - 
 //            - 1.3.0 (05-30-2017) - Removed dependency on Octokit. Made line copy pre-set options a combobox rather than separate buttons. Adjustments to saving and loading to handle cleaning column name and row data. CurrentColumn save field is now actually used.
 //            - 1.2.4 (01-23-2017) - Slight UI changes, added new Copy and Replace option.
 //            - 1.2.3 (01-23-2017) - Loading a request now updates the current line for copying lines.
@@ -79,7 +80,7 @@ namespace ColumnCopier
         /// <summary>
         /// The git current release tag
         /// </summary>
-        private const int GitCurrentReleaseTagVersion = 130;
+        private const int GitCurrentReleaseTagVersion = 200;
 
         /// <summary>
         /// The git repository
