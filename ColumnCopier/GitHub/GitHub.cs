@@ -1,21 +1,22 @@
 ﻿// ***********************************************************************
 // Assembly         : ColumnCopier
-// Component        : Main.cs
+// Component        : GitHub.cs
 // Author           : Christian
 // Created          : 05-30-2017
 //
-// Version          : 1.3.0
+// Version          : 2.0.0
 // Last Modified By : Christian
-// Last Modified On : 05-30-2017
+// Last Modified On : 05-31-2017
 // ***********************************************************************
-// <copyright file="Main.cs" company="Christian Webber">
+// <copyright file="GitHub.cs" company="Christian Webber">
 //		Copyright ©  2016 - 2017
 // </copyright>
 // <summary>
-//      The Main class.
+//      The GitHub class.
 // </summary>
 //
 // Changelog:
+//            - 2.0.0 (05-31-2017) - Moved public fields to Constants.cs
 //            - 1.3.0 (05-30-2017) - Initial code for detecting the latest release of the app.
 // ***********************************************************************
 
@@ -23,31 +24,16 @@ using System;
 using System.IO;
 using System.Net;
 
+/// <summary>
+/// The GitHub namespace.
+/// </summary>
 namespace ColumnCopier.GitHub
 {
+    /// <summary>
+    /// Class GitHub.
+    /// </summary>
     public class GitHub
     {
-        #region Public Fields
-
-        /// <summary>
-        /// The git hub API URL
-        /// </summary>
-        public static readonly Uri GitHubApiUrl = new Uri("https://api.github.com/");
-        /// <summary>
-        /// The git hub dot COM URL
-        /// </summary>
-        public static readonly Uri GitHubDotComUrl = new Uri("https://github.com/");
-        /// <summary>
-        /// The repo owner
-        /// </summary>
-        public static readonly string RepoOwner = "vonderborch";
-        /// <summary>
-        /// The name of the repo
-        /// </summary>
-        public static readonly string RepoRepoName = "ColumnCopier";
-
-        #endregion Public Fields
-
         #region Public Methods
 
         /// <summary>
@@ -55,12 +41,13 @@ namespace ColumnCopier.GitHub
         /// </summary>
         /// <returns>Release.</returns>
         ///  Changelog:
+        ///             - 2.0.0 (05-31-2017) - Moved public fields to Constants.cs
         ///             - 1.3.0 (05-30-2017) - Initial version.
         public static Release GetLatestRelease()
         {
             try
             {
-                var uri = $"{GitHubApiUrl}repos/{RepoOwner}/{RepoRepoName}/releases/latest";
+                var uri = $"{Constants.Instance.GitHubApiUrl}repos/{Constants.Instance.GitHubRepoOwner}/{Constants.Instance.GitHubRepository}/releases/latest";
                 WebClient client = new WebClient();
                 client.Headers.Add("user-agent", "Mozilla/5.0 (Windows NT 6.1; rv:15.0) Gecko/20120716 Firefox/15.0a2");
 

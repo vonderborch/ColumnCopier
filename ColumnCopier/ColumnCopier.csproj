@@ -103,16 +103,27 @@
     <Compile Include="About.Designer.cs">
       <DependentUpon>About.cs</DependentUpon>
     </Compile>
+    <Compile Include="CCState.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="GitHub\GitHub.cs" />
     <Compile Include="GitHub\Release.cs" />
     <Compile Include="Guard.cs" />
+    <Compile Include="Helpers\Converters.cs" />
+    <Compile Include="Helpers\XmlTextHelpers.cs" />
+    <Compile Include="LineSeperatorOptions.cs" />
     <Compile Include="Main.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Main.Designer.cs">
       <DependentUpon>Main.cs</DependentUpon>
     </Compile>
+    <Compile Include="prev\OldMain.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="prev\OldMain.Designer.cs">
+      <DependentUpon>OldMain.cs</DependentUpon>
+    </Compile>
+    <Compile Include="prev\OldRequest.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Request.cs" />
@@ -121,6 +132,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Main.resx">
       <DependentUpon>Main.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="prev\OldMain.resx">
+      <DependentUpon>OldMain.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -131,6 +145,7 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <None Include="Assets\testInput.xlsx" />
     <None Include="cert.pfx" />
     <None Include="ColumnCopier_TemporaryKey.pfx" />
     <None Include="Properties\app.manifest" />
