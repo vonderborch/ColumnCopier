@@ -4,18 +4,19 @@
 // Author           : Christian
 // Created          : 08-22-2016
 // 
-// Version          : 1.0.0
+// Version          : 2.0.0
 // Last Modified By : Christian
-// Last Modified On : 08-22-2016
+// Last Modified On : 06-01-2017
 // ***********************************************************************
 // <copyright file="About.cs" company="Christian Webber">
-//		Copyright ©  2016
+//		Copyright ©  2016 - 2017
 // </copyright>
 // <summary>
 //      The About/Help form.
 // </summary>
 //
 // Changelog: 
+///           - 2.0.0 (06-01-2017) - Help URL is now defined in the Constants.
 //            - 1.0.0 (08-22-2016) - Initial version created.
 // ***********************************************************************
 using System;
@@ -160,11 +161,12 @@ namespace ColumnCopier
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         ///  Changelog:
+        ///             - 2.0.0 (06-01-2017) - Help URL is now defined in the Constants.
         ///             - 1.0.0 (08-22-2016) - Initial version.
         private void help_btn_Click(object sender, EventArgs e)
         {
             // Open the github site in the user's default browser.
-            System.Diagnostics.Process.Start("https://github.com/vonderborch/ColumnCopier");
+            System.Diagnostics.Process.Start(Constants.Instance.UrlHelp);
         }
 
         #endregion Private Methods

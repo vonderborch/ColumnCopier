@@ -29,6 +29,7 @@
 using ColumnCopier.Helpers;
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Xml.Linq;
 
 namespace ColumnCopier
@@ -41,8 +42,8 @@ namespace ColumnCopier
         #region Private Fields
 
         private Dictionary<int, string> columnKeys = new Dictionary<int, string>();
-        private Dictionary<string, List<string>> columnsData = new Dictionary<string, List<string>>();
-        private string currentColumn = string.Empty;
+        private Dictionary<string, ColumnData> columnsData = new Dictionary<string, ColumnData>();
+        private int currentColumn = 0;
 
         #endregion Private Fields
 
@@ -57,12 +58,14 @@ namespace ColumnCopier
         /// <param name="hasHeaders">Whether the text has headers or not.</param>
         /// <param name="cleanText">Whether to clean the raw text or not.</param>
         /// <param name="removeEmptyLines">Whether to remove empty lines or not.</param>
-        public Request(int id, string rawText, bool hasHeaders, bool cleanText, bool removeEmptyLines)
+        public Request(int id, string rawText, bool hasHeaders, bool cleanText, bool removeEmptyLines, 
+            int defaultColumnIndex, string defaultColumnName, bool useNamePriority)
         {
             Id = id;
             Name = string.Format(Constants.Instance.FormatRequestName, id);
 
             ParseText(rawText, hasHeaders, cleanText, removeEmptyLines);
+            CalculateDefaultColumn(defaultColumnIndex, defaultColumnName, useNamePriority);
         }
 
         /// <summary>
@@ -78,10 +81,15 @@ namespace ColumnCopier
 
         #region Public Properties
 
-        public string CurrentColumnName
+        public int CurrentColumnIndex
         {
             get { return currentColumn; }
             private set { currentColumn = value; }
+        }
+
+        public string CurrentColumnName
+        {
+            get { return columnKeys[currentColumn]; }
         }
 
         public int Id { get; private set; }
@@ -111,29 +119,41 @@ namespace ColumnCopier
 
         public List<string> GetColumnNames()
         {
-            return null;
+            var result = new List<string>();
+            foreach (var key in columnKeys.Values)
+                result.Add(XmlTextHelpers.ConvertFromXml(key));
+
+            return result;
         }
 
         public string GetCurrentColumnText()
         {
-            return null;
+            var str = new StringBuilder();
+            foreach (var line in columnsData[CurrentColumnName].Rows)
+                str.AppendLine(XmlTextHelpers.ConvertFromXml(line));
+
+            return str.ToString();
         }
 
         public bool SetCurrentColumn(int i)
         {
-            return columnKeys.ContainsKey(i)
-                ? SetCurrentColumn(columnKeys[i])
-                : false;
-        }
+            if (!columnKeys.ContainsKey(i))
+                return false;
 
-        public bool SetCurrentColumn(string name)
-        {
-            return false;
+            currentColumn = i;
+            return true;
         }
 
         #endregion Public Methods
 
         #region Private Methods
+
+        private void CalculateDefaultColumn(int defaultColumnIndex, string defaultColumnName, bool useNamePriority)
+        {
+            currentColumn = columnKeys.Count > 0
+                ? 0
+                : 0;
+        }
 
         private void ParseText(string text, bool hasHeaders, bool cleanText, bool removeEmptyLines)
         {
@@ -155,7 +175,11 @@ namespace ColumnCopier
                         {
                             var name = string.Format(Constants.Instance.FormatColumnName, j);
                             columnKeys.Add(j, name);
-                            columnsData.Add(name, new List<string>());
+                            columnsData.Add(name, new ColumnData()
+                                {
+                                    CurrentNextLine = 0,
+                                    Rows = new List<string>()
+                                });
                         }
                     }
                     // if we've been told to use the first row as headers...
@@ -165,7 +189,11 @@ namespace ColumnCopier
                         {
                             var name = columns[j];
                             columnKeys.Add(j, name);
-                            columnsData.Add(name, new List<string>());
+                            columnsData.Add(name, new ColumnData()
+                                {
+                                    CurrentNextLine = 0,
+                                    Rows = new List<string>()
+                                });
                         }
                         // now go to i=1 since we've already used this row of data
                         continue;
@@ -175,14 +203,12 @@ namespace ColumnCopier
                 // now add the columns to their appropriate column...
                 for (var j = 0; j < columns.Length; j++)
                 {
-                    columnsData[columnKeys[j]].Add(columns[j] == null ? string.Empty : columns[j]);
+                    columnsData[columnKeys[j]].Rows.Add(columns[j] == null ? string.Empty : columns[j]);
                 }
             }
 
             // find out the meta data about this request...
-            CurrentColumnName = columnKeys.Count > 0
-                ? columnKeys[0]
-                : string.Empty;
+            if (true) ;
         }
 
         #endregion Private Methods

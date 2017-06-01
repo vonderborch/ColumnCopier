@@ -85,6 +85,9 @@ namespace ColumnCopier
         /// <value>The save version.</value>
         public static int SaveVersion { get; private set; } = 20;
 
+        public string UrlHelp { get; private set; } = "https://github.com/vonderborch/ColumnCopier/wiki";
+        public string UrlSupport { get; private set; } = "https://github.com/vonderborch/ColumnCopier/issues";
+
         public Dictionary<char, string> CharacterReplacements
         {
             get { return characterReplacements; }

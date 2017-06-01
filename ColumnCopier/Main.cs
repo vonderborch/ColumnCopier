@@ -78,19 +78,20 @@ namespace ColumnCopier
                     Clipboard.SetText(value);
             }
         }
-
-        public void AUpdateInterface()
-        {
-
-        }
         
         public void PasteInput()
         {
             ccState.AddNewRequest(ClipBoard);
+
+            requestHistory_cmb.Items.Clear();
+            foreach (var request in ccState.GetRequestHistory())
+                requestHistory_cmb.Items.Add(request);
+            requestHistory_cmb.SelectedIndex = 0;
         }
 
         public void CopyColumn(bool replace)
         {
+            ClipBoard = currentColumnText_txt.Text;
         }
 
         public void CopyLine()
@@ -133,24 +134,34 @@ namespace ColumnCopier
 
         }
 
-        public void OpenHelp()
+        public void OpenWebPage(string url)
         {
-
+            System.Diagnostics.Process.Start(url);
         }
 
         public void OpenAbout()
         {
-
+            var about = new About();
+            about.ShowDialog();
         }
 
         public void ChangeColumn(int columnIndex)
         {
+            ccState.History[ccState.CurrentRequest].SetCurrentColumn(columnIndex);
+            currentColumnText_txt.Text = ccState.History[ccState.CurrentRequest].GetCurrentColumnText();
 
+            StateSave();
         }
 
         public void ChangeRequest(int requestIndex)
         {
+            ccState.CurrentRequest = ccState.HistoryLog[ccState.GetRequestHistoryPosition(requestHistory_cmb.Items[requestIndex].ToString())];
 
+            currentColumn_cmb.Items.Clear();
+            foreach (var column in ccState.CurrentRequestColumnNames())
+                currentColumn_cmb.Items.Add(column);
+            
+            currentColumn_cmb.SelectedIndex = ccState.History[ccState.CurrentRequest].CurrentColumnIndex;
         }
 
         public void ToggleShowOnTop()
@@ -233,7 +244,7 @@ namespace ColumnCopier
 
         private void help_btn_Click(object sender, EventArgs e)
         {
-            OpenHelp();
+            OpenWebPage(Constants.Instance.UrlHelp);
         }
 
         private void about_btn_Click(object sender, EventArgs e)
@@ -254,6 +265,201 @@ namespace ColumnCopier
         private void showOnTop_cxb_CheckedChanged(object sender, EventArgs e)
         {
             ToggleShowOnTop();
+        }
+
+        private void fileNew_itm_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void fileOpen_itm_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void fileClear_itm_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void fileSave_itm_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void fileSaveAs_itm_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void fileSettingsShowOnTop_itm_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void fileExit_itm_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void inputPaste_itm_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void inputPasteAndCopy_itm_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void inputSettingsRemoveBlanks_itm_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void inputSettingsDataHasHeaders_itm_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void inputSettingsCleanInputText_itm_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void inputSettingsDefaultColumnNumber_itm_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void inputSettingsDefaultColumnName_itm_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void inputSettingsDefaultPriorityNumber_itm_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void inputSettingsDefaultPriorityName_itm_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void inputSettingsDefaultPriorityNameSimilarity_itm_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void outputCopyColumn_itm_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void outputCopyNextLine_itm_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void outputCopyLineWithSeperator_itm_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void outputExportRequest_itm_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void outputSettingsCurrentCopyNextLineLine_itm_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void outputSettingsLineReplacementSeperator_itm_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void outputSettingsLineReplacementPreString_itm_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void outputSettingsLineReplacementPostString_itm_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void outputSettingLineReplacementPresetBlank_itm_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void outputSettingLineReplacementPresetComma_itm_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void outputSettingLineReplacementPresetDoubleQuoteComma_itm_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void outputSettingLineReplacementPresetSqlComma_itm_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void outputSettingLineReplacementPresetSqlText_itm_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void outputSettingLineReplacementPresetParenthesisQuotes_itm_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void outputSettingLineReplacementPresetSemiColan_itm_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void historyDeleteRequest_itm_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void historyChangeRequest_itm_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void historySettingsPreserveCurrentRequest_itm_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void historySettingsMaxRequestHistory_itm_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void helpDocumentation_itm_Click(object sender, EventArgs e)
+        {
+            OpenWebPage(Constants.Instance.UrlHelp);
+        }
+
+        private void helpAbout_itm_Click(object sender, EventArgs e)
+        {
+            OpenAbout();
+        }
+
+        private void helpSupport_itm_Click(object sender, EventArgs e)
+        {
+            OpenWebPage(Constants.Instance.UrlSupport);
         }
     }
 }
