@@ -60,7 +60,7 @@
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>cert.pfx</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>Cert\cert.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <TargetZone>LocalIntranet</TargetZone>
@@ -105,7 +105,8 @@
     </Compile>
     <Compile Include="Classes\CCState.cs" />
     <Compile Include="Classes\ColumnData.cs" />
-    <Compile Include="Classes\Constants.cs" />
+    <Compile Include="Constants.cs" />
+    <Compile Include="Enums\DefaultColumnPriority.cs" />
     <Compile Include="GitHub\GitHub.cs" />
     <Compile Include="GitHub\Release.cs" />
     <Compile Include="Classes\Guard.cs" />
@@ -146,9 +147,12 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <None Include="..\README.md">
+      <Link>README.md</Link>
+    </None>
     <None Include="Assets\testInput.xlsx" />
-    <None Include="cert.pfx" />
-    <None Include="ColumnCopier_TemporaryKey.pfx" />
+    <None Include="Cert\cert.pfx" />
+    <None Include="Cert\ColumnCopier_TemporaryKey.pfx" />
     <None Include="Properties\app.manifest" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

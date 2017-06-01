@@ -22,7 +22,7 @@ using System.Collections.Generic;
 /// <summary>
 /// The ColumnCopier namespace.
 /// </summary>
-namespace ColumnCopier
+namespace ColumnCopier.Classes
 {
     /// <summary>
     /// Class ColumnData.

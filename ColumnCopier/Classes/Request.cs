@@ -32,7 +32,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml.Linq;
 
-namespace ColumnCopier
+namespace ColumnCopier.Classes
 {
     /// <summary>
     /// Request class.

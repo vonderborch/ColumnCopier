@@ -1,26 +1,27 @@
 ﻿// ***********************************************************************
 // Assembly         : ColumnCopier
 // Component        : Guard.cs
-// Author           : vonderborch
+// Author           : Christian
 // Created          : 09-30-2016
 // 
-// Version          : 1.2.0
-// Last Modified By : vonderborch
-// Last Modified On : 09-30-2016
+// Version          : 2.0.0
+// Last Modified By : Christian
+// Last Modified On : 06-01-2017
 // ***********************************************************************
 // <copyright file="Guard.cs">
-//		Copyright ©  2016
+//		Copyright ©  2016 - 2017
 // </copyright>
 // <summary>
 //      Defines the Guard class.
 // </summary>
 //
 // Changelog: 
+//            - 2.0.0 (06-01-2017) - Reorganized.
 //            - 1.2.0 (09-30-2016) - Initial version created.
 // ***********************************************************************
 using System.Threading;
 
-namespace ColumnCopier
+namespace ColumnCopier.Classes
 {
     /// <summary>
     /// A thread-safe boolean guard/flag.

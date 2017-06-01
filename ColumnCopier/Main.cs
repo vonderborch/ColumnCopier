@@ -34,6 +34,8 @@
 //            - 0.5.0 (08-18-2016) - Initial version created.
 //            - 0.0.0 (08-15-2016) - Initial version created.
 // ***********************************************************************
+using ColumnCopier.Classes;
+using ColumnCopier.Enums;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
