@@ -26,6 +26,7 @@
 //            - 1.0.0 (08-22-2016) - Finished initial code.
 //            - 0.0.0 (08-18-2016) - Initial version created.
 // ***********************************************************************
+using ColumnCopier.Enums;
 using ColumnCopier.Helpers;
 using System;
 using System.Collections.Generic;
@@ -51,21 +52,25 @@ namespace ColumnCopier.Classes
 
         /// <summary>
         /// Used when importing data.
-        /// Initializes a new instance of the <see cref="Request"/> class.
+        /// Initializes a new instance of the <see cref="Request" /> class.
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <param name="rawText">The raw text.</param>
         /// <param name="hasHeaders">Whether the text has headers or not.</param>
         /// <param name="cleanText">Whether to clean the raw text or not.</param>
         /// <param name="removeEmptyLines">Whether to remove empty lines or not.</param>
+        /// <param name="defaultColumnIndex">Default index of the column.</param>
+        /// <param name="defaultColumnName">Default name of the column.</param>
+        /// <param name="columnNameMatch">The column name match.</param>
+        /// <param name="defaultColumnPriority">The default column priority.</param>
         public Request(int id, string rawText, bool hasHeaders, bool cleanText, bool removeEmptyLines, 
-            int defaultColumnIndex, string defaultColumnName, bool useNamePriority)
+            int defaultColumnIndex, string defaultColumnName, int columnNameMatch, DefaultColumnPriority defaultColumnPriority)
         {
             Id = id;
             Name = string.Format(Constants.Instance.FormatRequestName, id);
 
             ParseText(rawText, hasHeaders, cleanText, removeEmptyLines);
-            CalculateDefaultColumn(defaultColumnIndex, defaultColumnName, useNamePriority);
+            CalculateDefaultColumn(defaultColumnIndex, defaultColumnName, columnNameMatch, defaultColumnPriority);
         }
 
         /// <summary>
@@ -101,7 +106,16 @@ namespace ColumnCopier.Classes
             get { return columnKeys.Count; }
         }
 
-        public int CopyNextLineIndex { get; set; }
+        public int CopyNextLineIndex
+        {
+            get { return columnsData[CurrentColumnName].CurrentNextLine; }
+            set { columnsData[CurrentColumnName].CurrentNextLine = value; }
+        }
+
+        public int CurrentColumnRowCount
+        {
+            get { return columnsData[CurrentColumnName].Rows.Count; }
+        }
 
         #endregion Public Properties
 
@@ -115,6 +129,16 @@ namespace ColumnCopier.Classes
         public string ExportRequest()
         {
             return null;
+        }
+
+        public string GetCurrentColumnNextLineText()
+        {
+            var text = XmlTextHelpers.ConvertFromXml(columnsData[CurrentColumnName].Rows[columnsData[CurrentColumnName].CurrentNextLine++]);
+
+            if (columnsData[CurrentColumnName].CurrentNextLine >= CurrentColumnRowCount)
+                columnsData[CurrentColumnName].CurrentNextLine = 0;
+
+            return text;
         }
 
         public List<string> GetColumnNames()
@@ -135,6 +159,15 @@ namespace ColumnCopier.Classes
             return str.ToString();
         }
 
+        public List<string> GetColumnRawText()
+        {
+            var result = new List<string>();
+            foreach (var line in columnsData[CurrentColumnName].Rows)
+                result.Add(XmlTextHelpers.ConvertFromXml(line));
+
+            return result;
+        }
+
         public bool SetCurrentColumn(int i)
         {
             if (!columnKeys.ContainsKey(i))
@@ -148,11 +181,35 @@ namespace ColumnCopier.Classes
 
         #region Private Methods
 
-        private void CalculateDefaultColumn(int defaultColumnIndex, string defaultColumnName, bool useNamePriority)
+        private void CalculateDefaultColumn(int defaultColumnIndex, string defaultColumnName, int columnNameMatch, DefaultColumnPriority defaultColumnPriority)
         {
-            currentColumn = columnKeys.Count > 0
-                ? 0
-                : 0;
+            var index = -1;
+
+            switch (defaultColumnPriority)
+            {
+                case DefaultColumnPriority.Number:
+                    if (defaultColumnIndex >= 0)
+                        index = defaultColumnIndex;
+                    break;
+                case DefaultColumnPriority.Name:
+                    var currentClosestDistance = int.MaxValue;
+                    var currentClosestId = int.MinValue;
+                    foreach (var pair in columnKeys)
+                    {
+                        var distance = MathHelpers.ComputeDifference(pair.Value, defaultColumnName);
+                        if (distance < currentClosestDistance)
+                        {
+                            currentClosestDistance = distance;
+                            currentClosestId = pair.Key;
+                        }
+                    }
+
+                    if (currentClosestDistance <= columnNameMatch)
+                        index = currentClosestId;
+                    break;
+            }
+
+            currentColumn = MathHelpers.ClampInt(index, 0, columnKeys.Count - 1);
         }
 
         private void ParseText(string text, bool hasHeaders, bool cleanText, bool removeEmptyLines)

@@ -64,6 +64,30 @@ namespace ColumnCopier.Helpers
         }
 
         /// <summary>
+        /// Converts text to an int.
+        /// </summary>
+        /// <param name="text">The text.</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="min">The minimum.</param>
+        /// <param name="max">The maximum.</param>
+        /// <returns>System.Int32.</returns>
+        /// Changelog:
+        ///             - 2.0.0 (05-31-2017) - Initial version.
+        public static int ConvertToIntWithClamp(string text, int defaultValue = 0, int min = int.MinValue, int max = int.MaxValue)
+        {
+            int output;
+            if (!int.TryParse(text, out output))
+                output = defaultValue;
+
+            if (output < min)
+                output = min;
+            if (output > max)
+                output = max;
+
+            return output;
+        }
+
+        /// <summary>
         /// Converts text to a long.
         /// </summary>
         /// <param name="text">The text.</param>

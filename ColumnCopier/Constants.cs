@@ -106,6 +106,24 @@ namespace ColumnCopier
         public string FormatRequestName { get; private set; } = "Request {0}";
 
         /// <summary>
+        /// Gets the format stat current column.
+        /// </summary>
+        /// <value>The format stat current column.</value>
+        public string FormatStatCurrentColumn { get; private set; } = "Current Column #: {0} ({1})";
+
+        /// <summary>
+        /// Gets the format stat number columns.
+        /// </summary>
+        /// <value>The format stat number columns.</value>
+        public string FormatStatNumberColumns { get; private set; } = "# of Columns: {0}";
+
+        /// <summary>
+        /// Gets the format stat number rows.
+        /// </summary>
+        /// <value>The format stat number rows.</value>
+        public string FormatStatNumberRows { get; private set; } = "# of Rows: {0}";
+
+        /// <summary>
         /// Gets the git hub API URL.
         /// </summary>
         /// <value>The git hub API URL.</value>

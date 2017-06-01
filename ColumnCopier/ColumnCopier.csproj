@@ -111,6 +111,7 @@
     <Compile Include="GitHub\Release.cs" />
     <Compile Include="Classes\Guard.cs" />
     <Compile Include="Helpers\Converters.cs" />
+    <Compile Include="Helpers\MathHelpers.cs" />
     <Compile Include="Helpers\XmlTextHelpers.cs" />
     <Compile Include="Enums\LineSeperatorOptions.cs" />
     <Compile Include="Main.cs">

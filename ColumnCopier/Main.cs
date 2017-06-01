@@ -36,6 +36,7 @@
 // ***********************************************************************
 using ColumnCopier.Classes;
 using ColumnCopier.Enums;
+using ColumnCopier.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -58,12 +59,14 @@ namespace ColumnCopier
     public partial class Main : Form
     {
         private CCState ccState;
+        private Guard checkGuard;
 
         public Main()
         {
             InitializeComponent();
 
             ccState = new CCState();
+            checkGuard = new Guard();
         }
         private string ClipBoard
         {
@@ -83,6 +86,14 @@ namespace ColumnCopier
         
         public void PasteInput()
         {
+            ccState.DefaultColumnIndex = Converters.ConvertToInt(defaultColumnNumber_txt.Text, 0);
+            ccState.DefaultColumnName = defaultColumnName_txt.Text;
+            ccState.DefaultColumnNameMatch = Converters.ConvertToIntWithClamp(defaultPriorityNameSimilarity_txt.Text, 0, 0);
+            if (defaultPriorityName_rbn.Checked)
+                ccState.DefaultColumnPriority = DefaultColumnPriority.Name;
+            else
+                ccState.DefaultColumnPriority = DefaultColumnPriority.Number;
+
             ccState.AddNewRequest(ClipBoard);
 
             requestHistory_cmb.Items.Clear();
@@ -93,11 +104,43 @@ namespace ColumnCopier
 
         public void CopyColumn(bool replace)
         {
-            ClipBoard = currentColumnText_txt.Text;
+            var text = string.Empty;
+
+            if (replace)
+            {
+                var pre = seperatorItemPre_txt.Text;
+                var post = seperatorItemPost_txt.Text;
+                var intr = seperatorItem_txt.Text;
+                var lines = ccState.History[ccState.CurrentRequest].GetColumnRawText();
+
+                var str = new StringBuilder();
+                str.Append(pre);
+
+                var last = lines.Count - 1;
+                for (var i = 0; i < lines.Count; i++)
+                    str.AppendFormat("{0}{1}", lines[i], i == last ? "" : intr);
+
+                str.Append(post);
+                text = str.ToString();
+            }
+            else
+                text = currentColumnText_txt.Text;
+
+            ClipBoard = text;
+            currentColumnText_txt.Focus();
+            currentColumnText_txt.SelectAll();
         }
 
         public void CopyLine()
         {
+            var index = Converters.ConvertToIntWithClamp(copyLineNumber_txt.Text, ccState.History[ccState.CurrentRequest].CopyNextLineIndex, 0, ccState.History[ccState.CurrentRequest].CurrentColumnRowCount - 1);
+
+            if (index != ccState.History[ccState.CurrentRequest].CopyNextLineIndex)
+                ccState.History[ccState.CurrentRequest].CopyNextLineIndex = index;
+
+            var text = ccState.History[ccState.CurrentRequest].GetCurrentColumnNextLineText();
+            copyLineNumber_txt.Text = ccState.History[ccState.CurrentRequest].CopyNextLineIndex.ToString();
+            ClipBoard = text;
         }
 
         public void ExportRequest()
@@ -138,7 +181,7 @@ namespace ColumnCopier
 
         public void OpenWebPage(string url)
         {
-            System.Diagnostics.Process.Start(url);
+            Process.Start(url);
         }
 
         public void OpenAbout()
@@ -151,6 +194,14 @@ namespace ColumnCopier
         {
             ccState.History[ccState.CurrentRequest].SetCurrentColumn(columnIndex);
             currentColumnText_txt.Text = ccState.History[ccState.CurrentRequest].GetCurrentColumnText();
+            
+            statCurrentColumn_txt.Text = string.Format(Constants.Instance.FormatStatCurrentColumn,
+                ccState.History[ccState.CurrentRequest].CurrentColumnIndex + 1,
+                ccState.History[ccState.CurrentRequest].CurrentColumnIndex);
+            statNumberColumns_txt.Text = string.Format(Constants.Instance.FormatStatNumberColumns,
+                ccState.History[ccState.CurrentRequest].NumberOfColumns);
+            statNumberRows_txt.Text = string.Format(Constants.Instance.FormatStatNumberRows,
+                ccState.History[ccState.CurrentRequest].GetColumnRawText().Count);
 
             StateSave();
         }
@@ -164,11 +215,6 @@ namespace ColumnCopier
                 currentColumn_cmb.Items.Add(column);
             
             currentColumn_cmb.SelectedIndex = ccState.History[ccState.CurrentRequest].CurrentColumnIndex;
-        }
-
-        public void ToggleShowOnTop()
-        {
-
         }
 
         private void paste_btn_Click(object sender, EventArgs e)
@@ -266,7 +312,7 @@ namespace ColumnCopier
 
         private void showOnTop_cxb_CheckedChanged(object sender, EventArgs e)
         {
-            ToggleShowOnTop();
+            ToggleShowOnTop(showOnTop_cxb.Checked);
         }
 
         private void fileNew_itm_Click(object sender, EventArgs e)
@@ -296,12 +342,12 @@ namespace ColumnCopier
 
         private void fileSettingsShowOnTop_itm_Click(object sender, EventArgs e)
         {
-
+            ToggleShowOnTop(showOnTop_cxb.Checked);
         }
 
         private void fileExit_itm_Click(object sender, EventArgs e)
         {
-
+            this.Close();
         }
 
         private void inputPaste_itm_Click(object sender, EventArgs e)
@@ -316,17 +362,17 @@ namespace ColumnCopier
 
         private void inputSettingsRemoveBlanks_itm_Click(object sender, EventArgs e)
         {
-
+            ToggleCleanInputText(removeBlankLines_cxb.Checked);
         }
 
         private void inputSettingsDataHasHeaders_itm_Click(object sender, EventArgs e)
         {
-
+            ToggleDataHasHeaders(dataHasHeaders_cxb.Checked);
         }
 
         private void inputSettingsCleanInputText_itm_Click(object sender, EventArgs e)
         {
-
+            ToggleRemoveBlankLines(cleanInputText_cxb.Checked);
         }
 
         private void inputSettingsDefaultColumnNumber_itm_Click(object sender, EventArgs e)
@@ -462,6 +508,107 @@ namespace ColumnCopier
         private void helpSupport_itm_Click(object sender, EventArgs e)
         {
             OpenWebPage(Constants.Instance.UrlSupport);
+        }
+
+        private void removeBlankLines_cxb_CheckedChanged(object sender, EventArgs e)
+        {
+            ToggleRemoveBlankLines(removeBlankLines_cxb.Checked);
+        }
+
+        private void dataHasHeaders_cxb_CheckedChanged(object sender, EventArgs e)
+        {
+            ToggleDataHasHeaders(dataHasHeaders_cxb.Checked);
+        }
+
+        private void cleanInputText_cxb_CheckedChanged(object sender, EventArgs e)
+        {
+            ToggleRemoveBlankLines(cleanInputText_cxb.Checked);
+        }
+
+        public void ToggleRemoveBlankLines(bool? set = null)
+        {
+            if (checkGuard.CheckSet)
+            {
+                if (set == null)
+                {
+                    removeBlankLines_cxb.Checked = !removeBlankLines_cxb.Checked;
+                    inputSettingsRemoveBlanks_itm.Checked = !inputSettingsRemoveBlanks_itm.Checked;
+                }
+                else
+                {
+                    removeBlankLines_cxb.Checked = (bool)set;
+                    inputSettingsRemoveBlanks_itm.Checked = (bool)set;
+                }
+
+                ccState.RemoveEmptyLines = removeBlankLines_cxb.Checked;
+                StateSave();
+                checkGuard.Reset();
+            }
+        }
+
+        public void ToggleDataHasHeaders(bool? set = null)
+        {
+            if (checkGuard.CheckSet)
+            {
+                if (set == null)
+                {
+                    dataHasHeaders_cxb.Checked = !dataHasHeaders_cxb.Checked;
+                    inputSettingsDataHasHeaders_itm.Checked = !inputSettingsDataHasHeaders_itm.Checked;
+                }
+                else
+                {
+                    dataHasHeaders_cxb.Checked = (bool)set;
+                    inputSettingsDataHasHeaders_itm.Checked = (bool)set;
+                }
+
+                ccState.DataHasHeaders = dataHasHeaders_cxb.Checked;
+                StateSave();
+                checkGuard.Reset();
+            }
+        }
+
+        public void ToggleCleanInputText(bool? set = null)
+        {
+            if (checkGuard.CheckSet)
+            {
+                if (set == null)
+                {
+                    cleanInputText_cxb.Checked = !cleanInputText_cxb.Checked;
+                    inputSettingsCleanInputText_itm.Checked = !inputSettingsCleanInputText_itm.Checked;
+                }
+                else
+                {
+                    cleanInputText_cxb.Checked = (bool)set;
+                    inputSettingsCleanInputText_itm.Checked = (bool)set;
+                }
+
+                ccState.RemoveEmptyLines = cleanInputText_cxb.Checked;
+                StateSave();
+                checkGuard.Reset();
+            }
+        }
+
+        public void ToggleShowOnTop(bool? set = null)
+        {
+            if (checkGuard.CheckSet)
+            {
+                if (set == null)
+                {
+                    showOnTop_cxb.Checked = !showOnTop_cxb.Checked;
+                    fileSettingsShowOnTop_itm.Checked = !fileSettingsShowOnTop_itm.Checked;
+                }
+                else
+                {
+                    showOnTop_cxb.Checked = (bool)set;
+                    fileSettingsShowOnTop_itm.Checked = (bool)set;
+                }
+
+                ccState.ShowOnTop = showOnTop_cxb.Checked;
+                this.TopMost = ccState.ShowOnTop;
+
+                StateSave();
+                checkGuard.Reset();
+            }
         }
     }
 }

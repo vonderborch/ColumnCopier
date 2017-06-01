@@ -122,6 +122,7 @@
             this.historySettingsPreserveCurrentRequest_itm = new System.Windows.Forms.ToolStripMenuItem();
             this.historySettingsMaxRequestHistory_itm = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.helpSupport_itm = new System.Windows.Forms.ToolStripMenuItem();
             this.helpDocumentation_itm = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.helpAbout_itm = new System.Windows.Forms.ToolStripMenuItem();
@@ -153,7 +154,6 @@
             this.groupBox7 = new System.Windows.Forms.GroupBox();
             this.label16 = new System.Windows.Forms.Label();
             this.flowLayoutPanel5 = new System.Windows.Forms.FlowLayoutPanel();
-            this.helpSupport_itm = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.flowLayoutPanel1.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -542,7 +542,7 @@
             this.helpToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1524, 52);
+            this.menuStrip1.Size = new System.Drawing.Size(1524, 49);
             this.menuStrip1.TabIndex = 29;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -560,7 +560,7 @@
             this.toolStripSeparator4,
             this.fileExit_itm});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(75, 48);
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(75, 45);
             this.fileToolStripMenuItem.Text = "File";
             // 
             // fileNew_itm
@@ -619,7 +619,7 @@
             // fileSettingsShowOnTop_itm
             // 
             this.fileSettingsShowOnTop_itm.Name = "fileSettingsShowOnTop_itm";
-            this.fileSettingsShowOnTop_itm.Size = new System.Drawing.Size(326, 46);
+            this.fileSettingsShowOnTop_itm.Size = new System.Drawing.Size(310, 46);
             this.fileSettingsShowOnTop_itm.Text = "Show On Top";
             this.fileSettingsShowOnTop_itm.Click += new System.EventHandler(this.fileSettingsShowOnTop_itm_Click);
             // 
@@ -643,7 +643,7 @@
             this.toolStripSeparator8,
             this.inputSettingsToolStripMenuItem});
             this.requestToolStripMenuItem.Name = "requestToolStripMenuItem";
-            this.requestToolStripMenuItem.Size = new System.Drawing.Size(100, 48);
+            this.requestToolStripMenuItem.Size = new System.Drawing.Size(100, 45);
             this.requestToolStripMenuItem.Text = "Input";
             // 
             // inputPaste_itm
@@ -775,7 +775,7 @@
             this.toolStripSeparator10,
             this.outputSettingsToolStripMenuItem});
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(125, 48);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(125, 45);
             this.toolStripMenuItem1.Text = "Output";
             // 
             // outputCopyColumn_itm
@@ -847,28 +847,28 @@
             // outputSettingsLineReplacementSeperator_itm
             // 
             this.outputSettingsLineReplacementSeperator_itm.Name = "outputSettingsLineReplacementSeperator_itm";
-            this.outputSettingsLineReplacementSeperator_itm.Size = new System.Drawing.Size(326, 46);
+            this.outputSettingsLineReplacementSeperator_itm.Size = new System.Drawing.Size(323, 46);
             this.outputSettingsLineReplacementSeperator_itm.Text = "Line Seperator";
             this.outputSettingsLineReplacementSeperator_itm.Click += new System.EventHandler(this.outputSettingsLineReplacementSeperator_itm_Click);
             // 
             // outputSettingsLineReplacementPreString_itm
             // 
             this.outputSettingsLineReplacementPreString_itm.Name = "outputSettingsLineReplacementPreString_itm";
-            this.outputSettingsLineReplacementPreString_itm.Size = new System.Drawing.Size(326, 46);
+            this.outputSettingsLineReplacementPreString_itm.Size = new System.Drawing.Size(323, 46);
             this.outputSettingsLineReplacementPreString_itm.Text = "Pre- String";
             this.outputSettingsLineReplacementPreString_itm.Click += new System.EventHandler(this.outputSettingsLineReplacementPreString_itm_Click);
             // 
             // outputSettingsLineReplacementPostString_itm
             // 
             this.outputSettingsLineReplacementPostString_itm.Name = "outputSettingsLineReplacementPostString_itm";
-            this.outputSettingsLineReplacementPostString_itm.Size = new System.Drawing.Size(326, 46);
+            this.outputSettingsLineReplacementPostString_itm.Size = new System.Drawing.Size(323, 46);
             this.outputSettingsLineReplacementPostString_itm.Text = "Post- String";
             this.outputSettingsLineReplacementPostString_itm.Click += new System.EventHandler(this.outputSettingsLineReplacementPostString_itm_Click);
             // 
             // toolStripSeparator6
             // 
             this.toolStripSeparator6.Name = "toolStripSeparator6";
-            this.toolStripSeparator6.Size = new System.Drawing.Size(323, 6);
+            this.toolStripSeparator6.Size = new System.Drawing.Size(320, 6);
             // 
             // preSetsToolStripMenuItem
             // 
@@ -881,55 +881,55 @@
             this.outputSettingLineReplacementPresetParenthesisQuotes_itm,
             this.outputSettingLineReplacementPresetSemiColan_itm});
             this.preSetsToolStripMenuItem.Name = "preSetsToolStripMenuItem";
-            this.preSetsToolStripMenuItem.Size = new System.Drawing.Size(326, 46);
+            this.preSetsToolStripMenuItem.Size = new System.Drawing.Size(323, 46);
             this.preSetsToolStripMenuItem.Text = "Pre-Sets";
             // 
             // outputSettingLineReplacementPresetBlank_itm
             // 
             this.outputSettingLineReplacementPresetBlank_itm.Name = "outputSettingLineReplacementPresetBlank_itm";
-            this.outputSettingLineReplacementPresetBlank_itm.Size = new System.Drawing.Size(326, 46);
+            this.outputSettingLineReplacementPresetBlank_itm.Size = new System.Drawing.Size(229, 46);
             this.outputSettingLineReplacementPresetBlank_itm.Text = " ";
             this.outputSettingLineReplacementPresetBlank_itm.Click += new System.EventHandler(this.outputSettingLineReplacementPresetBlank_itm_Click);
             // 
             // outputSettingLineReplacementPresetComma_itm
             // 
             this.outputSettingLineReplacementPresetComma_itm.Name = "outputSettingLineReplacementPresetComma_itm";
-            this.outputSettingLineReplacementPresetComma_itm.Size = new System.Drawing.Size(326, 46);
+            this.outputSettingLineReplacementPresetComma_itm.Size = new System.Drawing.Size(229, 46);
             this.outputSettingLineReplacementPresetComma_itm.Text = ",";
             this.outputSettingLineReplacementPresetComma_itm.Click += new System.EventHandler(this.outputSettingLineReplacementPresetComma_itm_Click);
             // 
             // outputSettingLineReplacementPresetDoubleQuoteComma_itm
             // 
             this.outputSettingLineReplacementPresetDoubleQuoteComma_itm.Name = "outputSettingLineReplacementPresetDoubleQuoteComma_itm";
-            this.outputSettingLineReplacementPresetDoubleQuoteComma_itm.Size = new System.Drawing.Size(326, 46);
+            this.outputSettingLineReplacementPresetDoubleQuoteComma_itm.Size = new System.Drawing.Size(229, 46);
             this.outputSettingLineReplacementPresetDoubleQuoteComma_itm.Text = "\", \"";
             this.outputSettingLineReplacementPresetDoubleQuoteComma_itm.Click += new System.EventHandler(this.outputSettingLineReplacementPresetDoubleQuoteComma_itm_Click);
             // 
             // outputSettingLineReplacementPresetSqlComma_itm
             // 
             this.outputSettingLineReplacementPresetSqlComma_itm.Name = "outputSettingLineReplacementPresetSqlComma_itm";
-            this.outputSettingLineReplacementPresetSqlComma_itm.Size = new System.Drawing.Size(326, 46);
+            this.outputSettingLineReplacementPresetSqlComma_itm.Size = new System.Drawing.Size(229, 46);
             this.outputSettingLineReplacementPresetSqlComma_itm.Text = "( , )";
             this.outputSettingLineReplacementPresetSqlComma_itm.Click += new System.EventHandler(this.outputSettingLineReplacementPresetSqlComma_itm_Click);
             // 
             // outputSettingLineReplacementPresetSqlText_itm
             // 
             this.outputSettingLineReplacementPresetSqlText_itm.Name = "outputSettingLineReplacementPresetSqlText_itm";
-            this.outputSettingLineReplacementPresetSqlText_itm.Size = new System.Drawing.Size(326, 46);
+            this.outputSettingLineReplacementPresetSqlText_itm.Size = new System.Drawing.Size(229, 46);
             this.outputSettingLineReplacementPresetSqlText_itm.Text = "(\' \', \' \')";
             this.outputSettingLineReplacementPresetSqlText_itm.Click += new System.EventHandler(this.outputSettingLineReplacementPresetSqlText_itm_Click);
             // 
             // outputSettingLineReplacementPresetParenthesisQuotes_itm
             // 
             this.outputSettingLineReplacementPresetParenthesisQuotes_itm.Name = "outputSettingLineReplacementPresetParenthesisQuotes_itm";
-            this.outputSettingLineReplacementPresetParenthesisQuotes_itm.Size = new System.Drawing.Size(326, 46);
+            this.outputSettingLineReplacementPresetParenthesisQuotes_itm.Size = new System.Drawing.Size(229, 46);
             this.outputSettingLineReplacementPresetParenthesisQuotes_itm.Text = "(\" \", \" \")";
             this.outputSettingLineReplacementPresetParenthesisQuotes_itm.Click += new System.EventHandler(this.outputSettingLineReplacementPresetParenthesisQuotes_itm_Click);
             // 
             // outputSettingLineReplacementPresetSemiColan_itm
             // 
             this.outputSettingLineReplacementPresetSemiColan_itm.Name = "outputSettingLineReplacementPresetSemiColan_itm";
-            this.outputSettingLineReplacementPresetSemiColan_itm.Size = new System.Drawing.Size(326, 46);
+            this.outputSettingLineReplacementPresetSemiColan_itm.Size = new System.Drawing.Size(229, 46);
             this.outputSettingLineReplacementPresetSemiColan_itm.Text = ";";
             this.outputSettingLineReplacementPresetSemiColan_itm.Click += new System.EventHandler(this.outputSettingLineReplacementPresetSemiColan_itm_Click);
             // 
@@ -942,7 +942,7 @@
             this.toolStripSeparator12,
             this.historySettingsToolStripMenuItem});
             this.historyToolStripMenuItem.Name = "historyToolStripMenuItem";
-            this.historyToolStripMenuItem.Size = new System.Drawing.Size(124, 48);
+            this.historyToolStripMenuItem.Size = new System.Drawing.Size(124, 45);
             this.historyToolStripMenuItem.Text = "History";
             // 
             // historyDeleteRequest_itm
@@ -1000,8 +1000,15 @@
             this.toolStripSeparator1,
             this.helpAbout_itm});
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
-            this.helpToolStripMenuItem.Size = new System.Drawing.Size(92, 48);
+            this.helpToolStripMenuItem.Size = new System.Drawing.Size(92, 45);
             this.helpToolStripMenuItem.Text = "Help";
+            // 
+            // helpSupport_itm
+            // 
+            this.helpSupport_itm.Name = "helpSupport_itm";
+            this.helpSupport_itm.Size = new System.Drawing.Size(338, 46);
+            this.helpSupport_itm.Text = "Support";
+            this.helpSupport_itm.Click += new System.EventHandler(this.helpSupport_itm_Click);
             // 
             // helpDocumentation_itm
             // 
@@ -1067,6 +1074,7 @@
             this.cleanInputText_cxb.TabIndex = 47;
             this.cleanInputText_cxb.Text = "Clean Input Text";
             this.cleanInputText_cxb.UseVisualStyleBackColor = true;
+            this.cleanInputText_cxb.CheckedChanged += new System.EventHandler(this.cleanInputText_cxb_CheckedChanged);
             // 
             // panel3
             // 
@@ -1131,6 +1139,7 @@
             this.dataHasHeaders_cxb.TabIndex = 3;
             this.dataHasHeaders_cxb.Text = "Data Has Headers";
             this.dataHasHeaders_cxb.UseVisualStyleBackColor = true;
+            this.dataHasHeaders_cxb.CheckedChanged += new System.EventHandler(this.dataHasHeaders_cxb_CheckedChanged);
             // 
             // removeBlankLines_cxb
             // 
@@ -1144,6 +1153,7 @@
             this.removeBlankLines_cxb.TabIndex = 2;
             this.removeBlankLines_cxb.Text = "Remove Blank Lines";
             this.removeBlankLines_cxb.UseVisualStyleBackColor = true;
+            this.removeBlankLines_cxb.CheckedChanged += new System.EventHandler(this.removeBlankLines_cxb_CheckedChanged);
             // 
             // pasteAndCopy_btn
             // 
@@ -1355,13 +1365,6 @@
             this.flowLayoutPanel5.Name = "flowLayoutPanel5";
             this.flowLayoutPanel5.Size = new System.Drawing.Size(1477, 62);
             this.flowLayoutPanel5.TabIndex = 34;
-            // 
-            // helpSupport_itm
-            // 
-            this.helpSupport_itm.Name = "helpSupport_itm";
-            this.helpSupport_itm.Size = new System.Drawing.Size(338, 46);
-            this.helpSupport_itm.Text = "Support";
-            this.helpSupport_itm.Click += new System.EventHandler(this.helpSupport_itm_Click);
             // 
             // Main
             // 

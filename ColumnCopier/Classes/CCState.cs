@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ColumnCopier.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,7 +17,7 @@ namespace ColumnCopier.Classes
             set { currentRequest = value; }
         }
 
-        public string DefaultColumnPriority { get; set; }
+        public DefaultColumnPriority DefaultColumnPriority { get; set; }
 
         private Dictionary<string, Request> history = new Dictionary<string, Request>();
 
@@ -46,6 +47,10 @@ namespace ColumnCopier.Classes
         public bool CleanInputData { get; set; } = true;
         public bool RemoveEmptyLines { get; set; } = true;
 
+        public int DefaultColumnIndex { get; set; } = 0;
+        public int DefaultColumnNameMatch { get; set; } = 5;
+        public string DefaultColumnName { get; set; } = string.Empty;
+
         public CCState()
         {
 
@@ -63,7 +68,8 @@ namespace ColumnCopier.Classes
 
         public void AddNewRequest(string text)
         {
-            var request = new Request(requestId++, text, DataHasHeaders, CleanInputData, RemoveEmptyLines, 0, "", true);
+            var request = new Request(requestId++, text, DataHasHeaders, CleanInputData, RemoveEmptyLines, 
+                DefaultColumnIndex, DefaultColumnName, DefaultColumnNameMatch, DefaultColumnPriority);
             AddRequestToHistory(request);
 
         }
