@@ -128,7 +128,37 @@ namespace ColumnCopier.Classes
 
         public string ExportRequest()
         {
-            return null;
+            var str = new StringBuilder();
+
+            // export headers
+            var rawHeader = new StringBuilder();
+            foreach (var item in columnKeys)
+                rawHeader.AppendFormat("{0}\t", item.Value);
+            var header = rawHeader.ToString();
+            str.AppendFormat("{0}{1}", header.Remove(header.Length - 1), Environment.NewLine);
+
+            // export rows
+            var maxColumn = int.MinValue;
+            foreach (var column in columnsData)
+            {
+                if (column.Value.Rows.Count > maxColumn)
+                    maxColumn = column.Value.Rows.Count;
+            }
+
+            for (var i = 0; i < maxColumn; i++)
+            {
+                var rawRow = new StringBuilder();
+                foreach (var column in columnsData)
+                {
+                    if (i < column.Value.Rows.Count)
+                        rawRow.AppendFormat("{0}\t", column.Value.Rows[i]);
+                }
+
+                var row = rawRow.ToString();
+                str.AppendFormat("{0}{1}", row.Remove(row.Length - 1), Environment.NewLine);
+            }
+
+            return XmlTextHelpers.ConvertFromXml(str.ToString());
         }
 
         public string GetCurrentColumnNextLineText()

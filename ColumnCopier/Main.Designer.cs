@@ -154,6 +154,7 @@
             this.groupBox7 = new System.Windows.Forms.GroupBox();
             this.label16 = new System.Windows.Forms.Label();
             this.flowLayoutPanel5 = new System.Windows.Forms.FlowLayoutPanel();
+            this.historyClearHistory_itm = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.flowLayoutPanel1.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -303,9 +304,9 @@
             this.statCurrentColumn_txt.AutoSize = true;
             this.statCurrentColumn_txt.Location = new System.Drawing.Point(3, 677);
             this.statCurrentColumn_txt.Name = "statCurrentColumn_txt";
-            this.statCurrentColumn_txt.Size = new System.Drawing.Size(245, 32);
+            this.statCurrentColumn_txt.Size = new System.Drawing.Size(270, 32);
             this.statCurrentColumn_txt.TabIndex = 19;
-            this.statCurrentColumn_txt.Text = "Current Column #:";
+            this.statCurrentColumn_txt.Text = "Current Column #: ()";
             this.toolTip.SetToolTip(this.statCurrentColumn_txt, "The current column number in the current request.");
             // 
             // statNumberRows_txt
@@ -542,7 +543,7 @@
             this.helpToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1524, 49);
+            this.menuStrip1.Size = new System.Drawing.Size(1524, 52);
             this.menuStrip1.TabIndex = 29;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -560,7 +561,7 @@
             this.toolStripSeparator4,
             this.fileExit_itm});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(75, 45);
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(75, 48);
             this.fileToolStripMenuItem.Text = "File";
             // 
             // fileNew_itm
@@ -643,7 +644,7 @@
             this.toolStripSeparator8,
             this.inputSettingsToolStripMenuItem});
             this.requestToolStripMenuItem.Name = "requestToolStripMenuItem";
-            this.requestToolStripMenuItem.Size = new System.Drawing.Size(100, 45);
+            this.requestToolStripMenuItem.Size = new System.Drawing.Size(100, 48);
             this.requestToolStripMenuItem.Text = "Input";
             // 
             // inputPaste_itm
@@ -775,7 +776,7 @@
             this.toolStripSeparator10,
             this.outputSettingsToolStripMenuItem});
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(125, 45);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(125, 48);
             this.toolStripMenuItem1.Text = "Output";
             // 
             // outputCopyColumn_itm
@@ -940,9 +941,10 @@
             this.toolStripSeparator11,
             this.historyChangeRequest_itm,
             this.toolStripSeparator12,
+            this.historyClearHistory_itm,
             this.historySettingsToolStripMenuItem});
             this.historyToolStripMenuItem.Name = "historyToolStripMenuItem";
-            this.historyToolStripMenuItem.Size = new System.Drawing.Size(124, 45);
+            this.historyToolStripMenuItem.Size = new System.Drawing.Size(124, 48);
             this.historyToolStripMenuItem.Text = "History";
             // 
             // historyDeleteRequest_itm
@@ -1000,7 +1002,7 @@
             this.toolStripSeparator1,
             this.helpAbout_itm});
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
-            this.helpToolStripMenuItem.Size = new System.Drawing.Size(92, 45);
+            this.helpToolStripMenuItem.Size = new System.Drawing.Size(92, 48);
             this.helpToolStripMenuItem.Text = "Help";
             // 
             // helpSupport_itm
@@ -1366,6 +1368,13 @@
             this.flowLayoutPanel5.Size = new System.Drawing.Size(1477, 62);
             this.flowLayoutPanel5.TabIndex = 34;
             // 
+            // historyClearHistory_itm
+            // 
+            this.historyClearHistory_itm.Name = "historyClearHistory_itm";
+            this.historyClearHistory_itm.Size = new System.Drawing.Size(440, 46);
+            this.historyClearHistory_itm.Text = "ClearHistory";
+            this.historyClearHistory_itm.Click += new System.EventHandler(this.historyClearHistory_itm_Click);
+            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(16F, 31F);
@@ -1538,6 +1547,7 @@
         private System.Windows.Forms.Button about_btn;
         private System.Windows.Forms.ToolStripMenuItem outputSettingLineReplacementPresetDoubleQuoteComma_itm;
         private System.Windows.Forms.ToolStripMenuItem helpSupport_itm;
+        private System.Windows.Forms.ToolStripMenuItem historyClearHistory_itm;
     }
 }
 

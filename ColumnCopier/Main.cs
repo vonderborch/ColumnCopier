@@ -60,6 +60,8 @@ namespace ColumnCopier
     {
         private CCState ccState;
         private Guard checkGuard;
+        private Guard saveGuard;
+        private Guard pasteGuard;
 
         public Main()
         {
@@ -67,6 +69,8 @@ namespace ColumnCopier
 
             ccState = new CCState();
             checkGuard = new Guard();
+            saveGuard = new Guard();
+            pasteGuard = new Guard();
         }
         private string ClipBoard
         {
@@ -86,20 +90,28 @@ namespace ColumnCopier
         
         public void PasteInput()
         {
-            ccState.DefaultColumnIndex = Converters.ConvertToInt(defaultColumnNumber_txt.Text, 0);
-            ccState.DefaultColumnName = defaultColumnName_txt.Text;
-            ccState.DefaultColumnNameMatch = Converters.ConvertToIntWithClamp(defaultPriorityNameSimilarity_txt.Text, 0, 0);
-            if (defaultPriorityName_rbn.Checked)
-                ccState.DefaultColumnPriority = DefaultColumnPriority.Name;
-            else
-                ccState.DefaultColumnPriority = DefaultColumnPriority.Number;
+            if (pasteGuard.CheckSet)
+            {
+                var lastPreservationState = preserveCurrentRequest_cxb.Checked;
+                preserveCurrentRequest_cxb.Checked = false;
+                historySettingsPreserveCurrentRequest_itm.Checked = false;
+                ccState.SetCurrentRequestPreservationToggle(lastPreservationState);
 
-            ccState.AddNewRequest(ClipBoard);
+                ccState.MaxHistory = Converters.ConvertToIntWithClamp(maxHistory_txt.Text, 0, 0);
+                ccState.DefaultColumnIndex = Converters.ConvertToInt(defaultColumnNumber_txt.Text, 0);
+                ccState.DefaultColumnName = defaultColumnName_txt.Text;
+                ccState.DefaultColumnNameMatch = Converters.ConvertToIntWithClamp(defaultPriorityNameSimilarity_txt.Text, 0, 0);
+                if (defaultPriorityName_rbn.Checked)
+                    ccState.DefaultColumnPriority = DefaultColumnPriority.Name;
+                else
+                    ccState.DefaultColumnPriority = DefaultColumnPriority.Number;
 
-            requestHistory_cmb.Items.Clear();
-            foreach (var request in ccState.GetRequestHistory())
-                requestHistory_cmb.Items.Add(request);
-            requestHistory_cmb.SelectedIndex = 0;
+                ccState.AddNewRequest(ClipBoard);
+
+                UpdateRequestHistory();
+                requestHistory_cmb.SelectedIndex = 0;
+                pasteGuard.Reset();
+            }
         }
 
         public void CopyColumn(bool replace)
@@ -145,23 +157,43 @@ namespace ColumnCopier
 
         public void ExportRequest()
         {
+            ClipBoard = ccState.ExportCurrentRequest();
         }
 
         public void DeleteRequest()
         {
+            ccState.DeleteCurrentRequest();
+            UpdateRequestHistory();
+            if (requestHistory_cmb.Items.Count > 0)
+                requestHistory_cmb.SelectedIndex = 0;
+            StateSave();
         }
 
         public void UpdateLineSeperatorOptions(LineSeperatorOptions option)
         {
         }
 
-        public void ClearHistory()
+        private void UpdateRequestHistory()
         {
+            requestHistory_cmb.Items.Clear();
+            foreach (var request in ccState.GetRequestHistory())
+                requestHistory_cmb.Items.Add(request);
+
+            currentColumnText_txt.Text = string.Empty;
+            currentColumn_cmb.Items.Clear();
+
+            currentColumn_cmb.Text = string.Empty;
+            requestHistory_cmb.Text = string.Empty;
+            statCurrentColumn_txt.Text = string.Format(Constants.Instance.FormatStatCurrentColumn, string.Empty, string.Empty);
+            statNumberColumns_txt.Text = string.Format(Constants.Instance.FormatStatNumberColumns, string.Empty);
+            statNumberRows_txt.Text = string.Format(Constants.Instance.FormatStatNumberRows, string.Empty);
         }
 
-        public void PreserveCurrentRequest()
+        public void ClearHistory()
         {
-
+            ccState.CleanHistory(ccState.HistoryLog.Count, false);
+            UpdateRequestHistory();
+            StateSave();
         }
 
         public void StateNew()
@@ -263,11 +295,6 @@ namespace ColumnCopier
             ClearHistory();
         }
 
-        private void preserveCurrentRequest_cxb_CheckedChanged(object sender, EventArgs e)
-        {
-            PreserveCurrentRequest();
-        }
-
         private void stateNew_btn_Click(object sender, EventArgs e)
         {
             StateNew();
@@ -342,7 +369,7 @@ namespace ColumnCopier
 
         private void fileSettingsShowOnTop_itm_Click(object sender, EventArgs e)
         {
-            ToggleShowOnTop(showOnTop_cxb.Checked);
+            ToggleShowOnTop(!showOnTop_cxb.Checked);
         }
 
         private void fileExit_itm_Click(object sender, EventArgs e)
@@ -352,27 +379,28 @@ namespace ColumnCopier
 
         private void inputPaste_itm_Click(object sender, EventArgs e)
         {
-
+            PasteInput();
         }
 
         private void inputPasteAndCopy_itm_Click(object sender, EventArgs e)
         {
-
+            PasteInput();
+            CopyColumn(false);
         }
 
         private void inputSettingsRemoveBlanks_itm_Click(object sender, EventArgs e)
         {
-            ToggleCleanInputText(removeBlankLines_cxb.Checked);
+            ToggleCleanInputText(!removeBlankLines_cxb.Checked);
         }
 
         private void inputSettingsDataHasHeaders_itm_Click(object sender, EventArgs e)
         {
-            ToggleDataHasHeaders(dataHasHeaders_cxb.Checked);
+            ToggleDataHasHeaders(!dataHasHeaders_cxb.Checked);
         }
 
         private void inputSettingsCleanInputText_itm_Click(object sender, EventArgs e)
         {
-            ToggleRemoveBlankLines(cleanInputText_cxb.Checked);
+            ToggleRemoveBlankLines(!cleanInputText_cxb.Checked);
         }
 
         private void inputSettingsDefaultColumnNumber_itm_Click(object sender, EventArgs e)
@@ -402,22 +430,22 @@ namespace ColumnCopier
 
         private void outputCopyColumn_itm_Click(object sender, EventArgs e)
         {
-
+            CopyColumn(false);
         }
 
         private void outputCopyNextLine_itm_Click(object sender, EventArgs e)
         {
-
+            CopyLine();
         }
 
         private void outputCopyLineWithSeperator_itm_Click(object sender, EventArgs e)
         {
-
+            CopyColumn(true);
         }
 
         private void outputExportRequest_itm_Click(object sender, EventArgs e)
         {
-
+            ExportRequest();
         }
 
         private void outputSettingsCurrentCopyNextLineLine_itm_Click(object sender, EventArgs e)
@@ -477,15 +505,10 @@ namespace ColumnCopier
 
         private void historyDeleteRequest_itm_Click(object sender, EventArgs e)
         {
-
+            DeleteRequest();
         }
 
         private void historyChangeRequest_itm_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void historySettingsPreserveCurrentRequest_itm_Click(object sender, EventArgs e)
         {
 
         }
@@ -609,6 +632,44 @@ namespace ColumnCopier
                 StateSave();
                 checkGuard.Reset();
             }
+        }
+
+        private void historySettingsPreserveCurrentRequest_itm_Click(object sender, EventArgs e)
+        {
+            PreserveCurrentRequest(!preserveCurrentRequest_cxb.Checked);
+        }
+
+        private void preserveCurrentRequest_cxb_CheckedChanged(object sender, EventArgs e)
+        {
+            PreserveCurrentRequest(preserveCurrentRequest_cxb.Checked);
+        }
+
+        public void PreserveCurrentRequest(bool? set = null)
+        {
+            if (checkGuard.CheckSet)
+            {
+                if (set == null)
+                {
+                    preserveCurrentRequest_cxb.Checked = !preserveCurrentRequest_cxb.Checked;
+                    historySettingsPreserveCurrentRequest_itm.Checked = !historySettingsPreserveCurrentRequest_itm.Checked;
+                }
+                else
+                {
+                    preserveCurrentRequest_cxb.Checked = (bool)set;
+                    historySettingsPreserveCurrentRequest_itm.Checked = (bool)set;
+                }
+
+                ccState.SetCurrentRequestPreservationToggle(preserveCurrentRequest_cxb.Checked);
+                if (!pasteGuard.Check)
+                    StateSave();
+                
+                checkGuard.Reset();
+            }
+        }
+
+        private void historyClearHistory_itm_Click(object sender, EventArgs e)
+        {
+            ClearHistory();
         }
     }
 }

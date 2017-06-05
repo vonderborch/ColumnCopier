@@ -6,7 +6,7 @@
 // 
 // Version          : 2.0.0
 // Last Modified By : Christian
-// Last Modified On : 06-01-2017
+// Last Modified On : 06-05-2017
 // ***********************************************************************
 // <copyright file="Guard.cs">
 //		Copyright ©  2016 - 2017
@@ -16,6 +16,7 @@
 // </summary>
 //
 // Changelog: 
+//            - 2.0.0 (06-05-2017) - Added Check method (which won't set the toggle).
 //            - 2.0.0 (06-01-2017) - Reorganized.
 //            - 1.2.0 (09-30-2016) - Initial version created.
 // ***********************************************************************
@@ -47,6 +48,15 @@ namespace ColumnCopier.Classes
         #endregion Private Fields
 
         #region Public Properties
+
+        /// <summary>
+        /// Gets a value indicating whether this <see cref="Guard"/> is check.
+        /// </summary>
+        /// <value><c>true</c> if check; otherwise, <c>false</c>.</value>
+        public bool Check
+        {
+            get { return state == TRUE; }
+        }
 
         /// <summary>
         /// Gets a value indicating whether [check set].

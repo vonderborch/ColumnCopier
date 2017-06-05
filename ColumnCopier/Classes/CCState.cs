@@ -22,6 +22,7 @@ namespace ColumnCopier.Classes
         private Dictionary<string, Request> history = new Dictionary<string, Request>();
 
         private List<string> historyLog = new List<string>();
+        private List<string> preservedRequests = new List<string>();
 
         public Dictionary<string, Request> History
         {
@@ -58,12 +59,16 @@ namespace ColumnCopier.Classes
 
         public List<string> CurrentRequestColumnNames()
         {
-            return new List<string>(history[CurrentRequest].GetColumnNames());
+            return !string.IsNullOrWhiteSpace(CurrentRequest)
+                ? new List<string>(history[CurrentRequest].GetColumnNames())
+                : new List<string>();
         }
 
         public string CurrentRequestCurrentColumnText()
         {
-            return history[CurrentRequest].GetCurrentColumnText();
+            return !string.IsNullOrWhiteSpace(CurrentRequest)
+                ? history[CurrentRequest].GetCurrentColumnText()
+                : string.Empty;
         }
 
         public void AddNewRequest(string text)
@@ -93,21 +98,72 @@ namespace ColumnCopier.Classes
             history.Add(request.Name, request);
             historyLog.Add(request.Name);
 
-            var item = 0;
-            while (historyLog.Count > MaxHistory)
+            // do we need to clean any of the history?
+            if (historyLog.Count > MaxHistory)
+                CleanHistory(historyLog.Count - MaxHistory);
+        }
+
+        public void DeleteCurrentRequest()
+        {
+            history.Remove(CurrentRequest);
+            historyLog.Remove(CurrentRequest);
+        }
+
+        public string ExportCurrentRequest()
+        {
+            return !string.IsNullOrWhiteSpace(CurrentRequest)
+                ? history[CurrentRequest].ExportRequest()
+                : string.Empty;
+        }
+
+        public void CleanHistory(int number, bool respectPreservedRequests = true)
+        {
+            // modify the number we have to delete by scanning for preserved requests
+            if (respectPreservedRequests)
+                number -= PreservedRequestCount;
+
+            if (number > 0)
             {
-                if (history[historyLog[item]].IsPreserved)
+                var i = 0;
+                for (var j = 0; j < number && i < historyLog.Count; j++)
                 {
-                    item++;
-                    if (item >= history.Count)
-                        break;
+                    if (respectPreservedRequests && history[historyLog[i]].IsPreserved)
+                    {
+                        j--;
+                    }
+                    else
+                    {
+                        history.Remove(historyLog[i]);
+                        historyLog.RemoveAt(i);
+                        i--;
+                    }
+                    i++;
+                }
+            }
+        }
+
+        public void SetCurrentRequestPreservationToggle(bool state)
+        {
+            if (!string.IsNullOrWhiteSpace(CurrentRequest))
+            {
+                history[CurrentRequest].IsPreserved = state;
+
+                if (state)
+                {
+                    if (!preservedRequests.Contains(CurrentRequest))
+                        preservedRequests.Add(CurrentRequest);
                 }
                 else
                 {
-                    history.Remove(historyLog[item]);
-                    historyLog.RemoveAt(item);
+                    if (preservedRequests.Contains(CurrentRequest))
+                        preservedRequests.Remove(CurrentRequest);
                 }
             }
+        }
+
+        public int PreservedRequestCount
+        {
+            get { return preservedRequests.Count; }
         }
     }
 }
