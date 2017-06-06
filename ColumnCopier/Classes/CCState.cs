@@ -20,6 +20,11 @@ namespace ColumnCopier.Classes
             set { currentRequest = value; }
         }
 
+        public int CurrentRequestIndex
+        {
+            get { return historyLog.FindIndex(x => x == CurrentRequest); }
+        }
+
         public DefaultColumnPriority DefaultColumnPriority { get; set; }
 
         private Dictionary<string, Request> history = new Dictionary<string, Request>();

@@ -189,8 +189,9 @@ namespace ColumnCopier
             if (pasteGuard.CheckSet)
             {
                 var lastPreservationState = preserveCurrentRequest_cxb.Checked;
-                preserveCurrentRequest_cxb.Checked = false;
-                historySettingsPreserveCurrentRequest_itm.Checked = false;
+
+                UpdateCheckBox(preserveCurrentRequest_cxb, false);
+                UpdateMenuItemChecked(historySettingsPreserveCurrentRequest_itm, false);
                 ccState.SetCurrentRequestPreservationToggle(lastPreservationState);
 
                 ccState.MaxHistory = Converters.ConvertToIntWithClamp(maxHistory_txt.Text, 0, 0);
@@ -205,7 +206,7 @@ namespace ColumnCopier
                 ccState.AddNewRequest(ClipBoard);
 
                 UpdateRequestHistory();
-                requestHistory_cmb.SelectedIndex = 0;
+                UpdateComboBoxIndex(requestHistory_cmb, 0);
                 pasteGuard.Reset();
             }
         }
@@ -244,7 +245,7 @@ namespace ColumnCopier
                 ccState.History[ccState.CurrentRequest].CopyNextLineIndex = index;
 
             var text = ccState.History[ccState.CurrentRequest].GetCurrentColumnNextLineText();
-            copyLineNumber_txt.Text = ccState.History[ccState.CurrentRequest].CopyNextLineIndex.ToString();
+            UpdateTextBox(copyLineNumber_txt, ccState.History[ccState.CurrentRequest].CopyNextLineIndex.ToString());
             ClipBoard = text;
         }
 
@@ -317,10 +318,11 @@ namespace ColumnCopier
                 }
 
                 ccState.LineSeparatorOptionIndex = seperatorOption;
-                seperatorOption_cmb.SelectedIndex = seperatorOption;
-                seperatorItem_txt.Text = sep;
-                seperatorItemPre_txt.Text = pre;
-                seperatorItemPost_txt.Text = post;
+
+                UpdateComboBoxIndex(seperatorOption_cmb, seperatorOption);
+                UpdateTextBox(seperatorItem_txt, sep);
+                UpdateTextBox(seperatorItemPre_txt, pre);
+                UpdateTextBox(seperatorItemPost_txt, post);
 
                 checkGuard.Reset();
             }
@@ -328,18 +330,17 @@ namespace ColumnCopier
 
         private void UpdateRequestHistory()
         {
-            requestHistory_cmb.Items.Clear();
-            foreach (var request in ccState.GetRequestHistory())
-                requestHistory_cmb.Items.Add(request);
+            UpdateComboBoxItems(requestHistory_cmb, ccState.GetRequestHistory());
 
-            currentColumnText_txt.Text = string.Empty;
-            currentColumn_cmb.Items.Clear();
+            UpdateTextBox(currentColumnText_txt, string.Empty);
+            UpdateComboBoxItems(currentColumn_cmb, new List<string>());
 
-            currentColumn_cmb.Text = string.Empty;
-            requestHistory_cmb.Text = string.Empty;
-            statCurrentColumn_txt.Text = string.Format(Constants.Instance.FormatStatCurrentColumn, string.Empty, string.Empty);
-            statNumberColumns_txt.Text = string.Format(Constants.Instance.FormatStatNumberColumns, string.Empty);
-            statNumberRows_txt.Text = string.Format(Constants.Instance.FormatStatNumberRows, string.Empty);
+            UpdateComboBoxText(currentColumn_cmb, string.Empty);
+            UpdateComboBoxText(requestHistory_cmb, string.Empty);
+
+            UpdateLabelText(statCurrentColumn_txt, string.Format(Constants.Instance.FormatStatCurrentColumn, string.Empty, string.Empty));
+            UpdateLabelText(statNumberColumns_txt, string.Format(Constants.Instance.FormatStatNumberColumns, string.Empty));
+            UpdateLabelText(statNumberRows_txt, string.Format(Constants.Instance.FormatStatNumberRows, string.Empty));
         }
 
         public void ClearHistory()
@@ -366,11 +367,21 @@ namespace ColumnCopier
 
         public void StateSave(bool guardAlreadySet = false)
         {
-            if (!guardAlreadySet) while (!saveGuard.CheckSet) ;
-            
-            var saveThread = new Thread(() => StateSaveHelper());
+            if (!guardAlreadySet)
+            {
+                if (saveGuard.CheckSet)
+                {
+                    var saveThread = new Thread(() => StateSaveHelper());
 
-            saveThread.Start();
+                    saveThread.Start();
+                }
+            }
+            else
+            {
+                var saveThread = new Thread(() => StateSaveHelper());
+
+                saveThread.Start();
+            }
         }
 
         private void StateSaveHelper()
@@ -387,15 +398,157 @@ namespace ColumnCopier
         {
             ToggleProgressBar();
 
-            ccState.Load();
+            var result = ccState.Load();
+            if (result)
+            {
+                // update gui here
+                UpdateCheckBox(removeBlankLines_cxb, ccState.RemoveEmptyLines);
+                UpdateCheckBox(dataHasHeaders_cxb, ccState.DataHasHeaders);
+                UpdateCheckBox(cleanInputText_cxb, ccState.CleanInputData);
+                UpdateCheckBox(showOnTop_cxb, ccState.ShowOnTop);
 
-            // update gui here
+                UpdateTextBox(defaultColumnName_txt, ccState.DefaultColumnName);
+                UpdateTextBox(defaultColumnNumber_txt, ccState.DefaultColumnIndex.ToString());
+                UpdateTextBox(defaultPriorityNameSimilarity_txt, ccState.DefaultColumnNameMatch.ToString());
+
+                switch (ccState.DefaultColumnPriority)
+                {
+                    case DefaultColumnPriority.Name:
+                        UpdateRadioButton(defaultPriorityName_rbn, true);
+                        UpdateRadioButton(defaultPriorityNumber_rbn, false);
+                        break;
+                    case DefaultColumnPriority.Number:
+                        UpdateRadioButton(defaultPriorityName_rbn, false);
+                        UpdateRadioButton(defaultPriorityNumber_rbn, true);
+                        break;
+                }
+                UpdateRequestHistory();
+
+                UpdateComboBoxIndex(requestHistory_cmb, ccState.CurrentRequestIndex);
+            }
 
             ToggleProgressBar();
             saveGuard.Reset();
         }
 
+        private delegate void UpdateTextBoxDelegate(TextBox textbox, string text);
+        private delegate void UpdateLabelDelegate(Label label, string text);
+        private delegate void UpdateCheckBoxDelegate(CheckBox checkbox, bool value);
+        private delegate void UpdateRadioButtonDelegate(RadioButton radiobutton, bool value);
+        private delegate void UpdateComboBoxItemsDelegate(ComboBox comboBox, List<string> values);
+        private delegate void UpdateComboBoxIndexDelegate(ComboBox combobox, int index);
+        private delegate void UpdateComboBoxTextDelegate(ComboBox combobox, string text);
+        private delegate void UpdateMenuItemCheckedDelegate(ToolStripMenuItem menuitem, bool value);
         private delegate void UpdateProgressBar();
+
+        private void UpdateMenuItemChecked(ToolStripMenuItem menuitem, bool value)
+        {
+            menuitem.Checked = value;
+
+            /*
+            if (menuitem.InvokeRequired)
+            {
+                var d = new UpdateMenuItemCheckedDelegate(UpdateMenuItemChecked);
+                this.Invoke(d, new object[] { menuitem, value });
+            }
+            else
+            {
+                menuitem.Checked = value;
+            }*/
+        }
+
+        private void UpdateLabelText(Label label, string text)
+        {
+            if (label.InvokeRequired)
+            {
+                var d = new UpdateLabelDelegate(UpdateLabelText);
+                this.Invoke(d, new object[] { label, text });
+            }
+            else
+            {
+                label.Text = text;
+            }
+        }
+
+        private void UpdateComboBoxText(ComboBox combobox, string text)
+        {
+            if (combobox.InvokeRequired)
+            {
+                var d = new UpdateComboBoxTextDelegate(UpdateComboBoxText);
+                this.Invoke(d, new object[] { combobox, text });
+            }
+            else
+            {
+                combobox.Text = text;
+            }
+        }
+
+        private void UpdateComboBoxIndex(ComboBox comboBox, int index)
+        {
+            if (comboBox.InvokeRequired)
+            {
+                var d = new UpdateComboBoxIndexDelegate(UpdateComboBoxIndex);
+                this.Invoke(d, new object[] { comboBox, index });
+            }
+            else
+            {
+                comboBox.SelectedIndex = index;
+            }
+        }
+
+        private void UpdateRadioButton(RadioButton radiobutton, bool value)
+        {
+            if (radiobutton.InvokeRequired)
+            {
+                var d = new UpdateRadioButtonDelegate(UpdateRadioButton);
+                this.Invoke(d, new object[] { radiobutton, value });
+            }
+            else
+            {
+                radiobutton.Checked = value;
+            }
+        }
+
+        private void UpdateComboBoxItems(ComboBox comboBox, List<string> values)
+        {
+            if (comboBox.InvokeRequired)
+            {
+                var d = new UpdateComboBoxItemsDelegate(UpdateComboBoxItems);
+                this.Invoke(d, new object[] { comboBox, values });
+            }
+            else
+            {
+                comboBox.Items.Clear();
+                for (var i = 0; i < values.Count; i++)
+                    comboBox.Items.Add(values[i]);
+            }
+        }
+
+        private void UpdateTextBox(TextBox textbox, string text)
+        {
+            if (textbox.InvokeRequired)
+            {
+                var d = new UpdateTextBoxDelegate(UpdateTextBox);
+                this.Invoke(d, new object[] { textbox, text });
+            }
+            else
+            {
+                textbox.Text = text;
+            }
+        }
+
+        private void UpdateCheckBox(CheckBox checkbox, bool value)
+        {
+            if (checkbox.InvokeRequired)
+            {
+                var d = new UpdateCheckBoxDelegate(UpdateCheckBox);
+                this.Invoke(d, new object[] { checkbox, value });
+            }
+            else
+            {
+                checkbox.Checked = value;
+            }
+        }
 
         private void ToggleProgressBar()
         {
@@ -440,15 +593,15 @@ namespace ColumnCopier
         public void ChangeColumn(int columnIndex)
         {
             ccState.History[ccState.CurrentRequest].SetCurrentColumn(columnIndex);
-            currentColumnText_txt.Text = ccState.History[ccState.CurrentRequest].GetCurrentColumnText();
-            
-            statCurrentColumn_txt.Text = string.Format(Constants.Instance.FormatStatCurrentColumn,
+            UpdateTextBox(currentColumnText_txt, ccState.History[ccState.CurrentRequest].GetCurrentColumnText());
+
+            UpdateLabelText(statCurrentColumn_txt, string.Format(Constants.Instance.FormatStatCurrentColumn,
                 ccState.History[ccState.CurrentRequest].CurrentColumnIndex + 1,
-                ccState.History[ccState.CurrentRequest].CurrentColumnIndex);
-            statNumberColumns_txt.Text = string.Format(Constants.Instance.FormatStatNumberColumns,
-                ccState.History[ccState.CurrentRequest].NumberOfColumns);
-            statNumberRows_txt.Text = string.Format(Constants.Instance.FormatStatNumberRows,
-                ccState.History[ccState.CurrentRequest].GetColumnRawText().Count);
+                ccState.History[ccState.CurrentRequest].CurrentColumnIndex));
+            UpdateLabelText(statNumberColumns_txt, string.Format(Constants.Instance.FormatStatNumberColumns,
+                ccState.History[ccState.CurrentRequest].NumberOfColumns));
+            UpdateLabelText(statNumberRows_txt, string.Format(Constants.Instance.FormatStatNumberRows,
+                ccState.History[ccState.CurrentRequest].GetColumnRawText().Count));
 
             StateSave();
         }
@@ -457,11 +610,8 @@ namespace ColumnCopier
         {
             ccState.CurrentRequest = ccState.HistoryLog[ccState.GetRequestHistoryPosition(requestHistory_cmb.Items[requestIndex].ToString())];
 
-            currentColumn_cmb.Items.Clear();
-            foreach (var column in ccState.CurrentRequestColumnNames())
-                currentColumn_cmb.Items.Add(column);
-            
-            currentColumn_cmb.SelectedIndex = ccState.History[ccState.CurrentRequest].CurrentColumnIndex;
+            UpdateComboBoxItems(currentColumn_cmb, ccState.CurrentRequestColumnNames());
+            UpdateComboBoxIndex(currentColumn_cmb, ccState.History[ccState.CurrentRequest].CurrentColumnIndex);
         }
 
         private void paste_btn_Click(object sender, EventArgs e)
@@ -515,9 +665,24 @@ namespace ColumnCopier
             StateNew();
         }
 
+        public void StateLoad()
+        {
+            var fileSelector = new OpenFileDialog();
+            fileSelector.DefaultExt = Constants.Instance.SaveExtension;
+            fileSelector.Filter = string.Format("Column Copier Save File ({0})|*{0}|Compressed Column Copier Save File ({1})|*{1}",
+                                                Constants.Instance.SaveExtension, Constants.Instance.SaveExtensionCompressed);
+            fileSelector.InitialDirectory = ExecutableDirectory;
+
+            fileSelector.ShowDialog();
+            var file = fileSelector.FileName;
+            ccState.SaveFile = file;
+
+            StateOpen();
+        }
+
         private void stateOpen_btn_Click(object sender, EventArgs e)
         {
-            StateOpen();
+            StateLoad();
         }
 
         private void stateSave_btn_Click(object sender, EventArgs e)
@@ -642,7 +807,7 @@ namespace ColumnCopier
 
         private void outputSettingsCurrentCopyNextLineLine_itm_Click(object sender, EventArgs e)
         {
-            copyLineNumber_txt.Text = GetTextboxInputResults(Constants.Instance.InputQueryNextLineCopyLine, copyLineNumber_txt.Text);
+            UpdateTextBox(copyLineNumber_txt, GetTextboxInputResults(Constants.Instance.InputQueryNextLineCopyLine, copyLineNumber_txt.Text));
         }
 
         private string GetTextboxInputResults(string question, string defaultText)
@@ -662,17 +827,17 @@ namespace ColumnCopier
 
         private void outputSettingsLineReplacementSeperator_itm_Click(object sender, EventArgs e)
         {
-            seperatorItem_txt.Text = GetTextboxInputResults(Constants.Instance.InputQueryLineReplacementSeparator, seperatorItem_txt.Text);
+            UpdateTextBox(seperatorItem_txt, GetTextboxInputResults(Constants.Instance.InputQueryLineReplacementSeparator, seperatorItem_txt.Text));
         }
 
         private void outputSettingsLineReplacementPreString_itm_Click(object sender, EventArgs e)
         {
-            seperatorItemPre_txt.Text = GetTextboxInputResults(Constants.Instance.InputQueryLineReplacementPre, seperatorItemPre_txt.Text);
+            UpdateTextBox(seperatorItemPre_txt, GetTextboxInputResults(Constants.Instance.InputQueryLineReplacementPre, seperatorItemPre_txt.Text));
         }
 
         private void outputSettingsLineReplacementPostString_itm_Click(object sender, EventArgs e)
         {
-            seperatorItemPost_txt.Text = GetTextboxInputResults(Constants.Instance.InputQueryLineReplacementPost, seperatorItemPost_txt.Text);
+            UpdateTextBox(seperatorItemPost_txt, GetTextboxInputResults(Constants.Instance.InputQueryLineReplacementPost, seperatorItemPost_txt.Text));
         }
 
         private void outputSettingLineReplacementPresetBlank_itm_Click(object sender, EventArgs e)
@@ -717,7 +882,7 @@ namespace ColumnCopier
 
         private void historySettingsMaxRequestHistory_itm_Click(object sender, EventArgs e)
         {
-            maxHistory_txt.Text = GetTextboxInputResults(Constants.Instance.InputQueryMaxHistory, maxHistory_txt.Text);
+            UpdateTextBox(maxHistory_txt, GetTextboxInputResults(Constants.Instance.InputQueryMaxHistory, maxHistory_txt.Text));
         }
 
         private void helpDocumentation_itm_Click(object sender, EventArgs e)
@@ -756,13 +921,13 @@ namespace ColumnCopier
             {
                 if (set == null)
                 {
-                    removeBlankLines_cxb.Checked = !removeBlankLines_cxb.Checked;
-                    inputSettingsRemoveBlanks_itm.Checked = !inputSettingsRemoveBlanks_itm.Checked;
+                    UpdateCheckBox(removeBlankLines_cxb, !removeBlankLines_cxb.Checked);
+                    UpdateMenuItemChecked(inputSettingsRemoveBlanks_itm, !inputSettingsRemoveBlanks_itm.Checked);
                 }
                 else
                 {
-                    removeBlankLines_cxb.Checked = (bool)set;
-                    inputSettingsRemoveBlanks_itm.Checked = (bool)set;
+                    UpdateCheckBox(removeBlankLines_cxb, (bool)set);
+                    UpdateMenuItemChecked(inputSettingsRemoveBlanks_itm, (bool)set);
                 }
 
                 ccState.RemoveEmptyLines = removeBlankLines_cxb.Checked;
@@ -777,13 +942,13 @@ namespace ColumnCopier
             {
                 if (set == null)
                 {
-                    dataHasHeaders_cxb.Checked = !dataHasHeaders_cxb.Checked;
-                    inputSettingsDataHasHeaders_itm.Checked = !inputSettingsDataHasHeaders_itm.Checked;
+                    UpdateCheckBox(dataHasHeaders_cxb, !dataHasHeaders_cxb.Checked);
+                    UpdateMenuItemChecked(inputSettingsDataHasHeaders_itm, !inputSettingsDataHasHeaders_itm.Checked);
                 }
                 else
                 {
-                    dataHasHeaders_cxb.Checked = (bool)set;
-                    inputSettingsDataHasHeaders_itm.Checked = (bool)set;
+                    UpdateCheckBox(dataHasHeaders_cxb, (bool)set);
+                    UpdateMenuItemChecked(inputSettingsDataHasHeaders_itm, (bool)set);
                 }
 
                 ccState.DataHasHeaders = dataHasHeaders_cxb.Checked;
@@ -798,13 +963,13 @@ namespace ColumnCopier
             {
                 if (set == null)
                 {
-                    cleanInputText_cxb.Checked = !cleanInputText_cxb.Checked;
-                    inputSettingsCleanInputText_itm.Checked = !inputSettingsCleanInputText_itm.Checked;
+                    UpdateCheckBox(cleanInputText_cxb, !cleanInputText_cxb.Checked);
+                    UpdateMenuItemChecked(inputSettingsCleanInputText_itm, !inputSettingsCleanInputText_itm.Checked);
                 }
                 else
                 {
-                    cleanInputText_cxb.Checked = (bool)set;
-                    inputSettingsCleanInputText_itm.Checked = (bool)set;
+                    UpdateCheckBox(cleanInputText_cxb, (bool)set);
+                    UpdateMenuItemChecked(inputSettingsCleanInputText_itm, (bool)set);
                 }
 
                 ccState.RemoveEmptyLines = cleanInputText_cxb.Checked;
@@ -819,13 +984,13 @@ namespace ColumnCopier
             {
                 if (set == null)
                 {
-                    showOnTop_cxb.Checked = !showOnTop_cxb.Checked;
-                    fileSettingsShowOnTop_itm.Checked = !fileSettingsShowOnTop_itm.Checked;
+                    UpdateCheckBox(showOnTop_cxb, !showOnTop_cxb.Checked);
+                    UpdateMenuItemChecked(fileSettingsShowOnTop_itm, !fileSettingsShowOnTop_itm.Checked);
                 }
                 else
                 {
-                    showOnTop_cxb.Checked = (bool)set;
-                    fileSettingsShowOnTop_itm.Checked = (bool)set;
+                    UpdateCheckBox(showOnTop_cxb, (bool)set);
+                    UpdateMenuItemChecked(fileSettingsShowOnTop_itm, (bool)set);
                 }
 
                 ccState.ShowOnTop = showOnTop_cxb.Checked;
@@ -852,13 +1017,13 @@ namespace ColumnCopier
             {
                 if (set == null)
                 {
-                    preserveCurrentRequest_cxb.Checked = !preserveCurrentRequest_cxb.Checked;
-                    historySettingsPreserveCurrentRequest_itm.Checked = !historySettingsPreserveCurrentRequest_itm.Checked;
+                    UpdateCheckBox(preserveCurrentRequest_cxb, !preserveCurrentRequest_cxb.Checked);
+                    UpdateMenuItemChecked(historySettingsPreserveCurrentRequest_itm, !historySettingsPreserveCurrentRequest_itm.Checked);
                 }
                 else
                 {
-                    preserveCurrentRequest_cxb.Checked = (bool)set;
-                    historySettingsPreserveCurrentRequest_itm.Checked = (bool)set;
+                    UpdateCheckBox(preserveCurrentRequest_cxb, (bool)set);
+                    UpdateMenuItemChecked(historySettingsPreserveCurrentRequest_itm, (bool)set);
                 }
 
                 ccState.SetCurrentRequestPreservationToggle(preserveCurrentRequest_cxb.Checked);
@@ -890,10 +1055,11 @@ namespace ColumnCopier
                     break;
             }
 
-            defaultPriorityName_rbn.Checked = nameChecked;
-            inputSettingsDefaultPriorityName_itm.Checked = nameChecked;
-            defaultPriorityNumber_rbn.Checked = numberChecked;
-            inputSettingsDefaultPriorityNumber_itm.Checked = numberChecked;
+
+            UpdateRadioButton(defaultPriorityName_rbn, nameChecked);
+            UpdateRadioButton(defaultPriorityNumber_rbn, numberChecked);
+            UpdateMenuItemChecked(inputSettingsDefaultPriorityName_itm, nameChecked);
+            UpdateMenuItemChecked(inputSettingsDefaultPriorityNumber_itm, numberChecked);
         }
 
         private void defaultPriorityNumber_rbn_CheckedChanged(object sender, EventArgs e)
@@ -918,12 +1084,12 @@ namespace ColumnCopier
 
         private void inputSettingsDefaultColumnNumber_itm_Click(object sender, EventArgs e)
         {
-            defaultColumnNumber_txt.Text = GetTextboxInputResults(Constants.Instance.InputQueryDefaultColumnNumber, defaultColumnNumber_txt.Text);
+            UpdateTextBox(defaultColumnNumber_txt, GetTextboxInputResults(Constants.Instance.InputQueryDefaultColumnNumber, defaultColumnNumber_txt.Text));
         }
 
         private void inputSettingsDefaultColumnName_itm_Click(object sender, EventArgs e)
         {
-            defaultColumnName_txt.Text = GetTextboxInputResults(Constants.Instance.InputQueryDefaultColumnName, defaultColumnName_txt.Text);
+            UpdateTextBox(defaultColumnName_txt, GetTextboxInputResults(Constants.Instance.InputQueryDefaultColumnName, defaultColumnName_txt.Text));
         }
 
         private void inputSettingsDefaultPriorityNumber_itm_Click(object sender, EventArgs e)
@@ -948,7 +1114,7 @@ namespace ColumnCopier
 
         private void inputSettingsDefaultPriorityNameSimilarity_itm_Click(object sender, EventArgs e)
         {
-            defaultPriorityNameSimilarity_txt.Text = GetTextboxInputResults(Constants.Instance.InputQueryNameSimilarityValue, defaultPriorityNameSimilarity_txt.Text);
+            UpdateTextBox(defaultPriorityNameSimilarity_txt, GetTextboxInputResults(Constants.Instance.InputQueryNameSimilarityValue, defaultPriorityNameSimilarity_txt.Text));
         }
 
         private int GetComboboxInputResults(string question, List<string> items, int defaultReturn)
@@ -980,8 +1146,8 @@ namespace ColumnCopier
                 for (var i = 0; i < requestHistory_cmb.Items.Count; i++)
                     inputItems.Add(requestHistory_cmb.Items[i].ToString());
 
-                requestHistory_cmb.SelectedIndex = GetComboboxInputResults(Constants.Instance.InputQueryChangeHistoryRequest,
-                                                        inputItems, requestHistory_cmb.SelectedIndex);
+                UpdateComboBoxIndex(requestHistory_cmb, GetComboboxInputResults(Constants.Instance.InputQueryChangeHistoryRequest,
+                                                            inputItems, requestHistory_cmb.SelectedIndex));
             }
             else
             {
@@ -996,8 +1162,8 @@ namespace ColumnCopier
             for (var i = 0; i < seperatorOption_cmb.Items.Count; i++)
                 inputItems.Add(seperatorOption_cmb.Items[i].ToString());
 
-            seperatorOption_cmb.SelectedIndex = GetComboboxInputResults(Constants.Instance.InputQueryChangeHistoryRequest,
-                                                    inputItems, seperatorOption_cmb.SelectedIndex);
+            UpdateComboBoxIndex(seperatorOption_cmb, GetComboboxInputResults(Constants.Instance.InputQueryChangeHistoryRequest,
+                                                        inputItems, seperatorOption_cmb.SelectedIndex));
         }
 
         private void seperatorItemPre_txt_TextChanged(object sender, EventArgs e)

@@ -238,7 +238,7 @@ namespace ColumnCopier.Classes
                 str.AppendLine($"<Rows>");
                 for (var i = 0; i < key.Value.Rows.Count; i++)
                 {
-                    str.AppendLine($"<Row>{key.Value.Rows[i]}</Row>");
+                    str.AppendLine($"<Row>{XmlTextHelpers.ConvertForXml(key.Value.Rows[i])}</Row>");
                 }
                 str.AppendLine($"</Rows>");
                 str.AppendLine("</Column>");
