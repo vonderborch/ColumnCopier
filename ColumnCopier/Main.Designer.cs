@@ -156,6 +156,7 @@
             this.flowLayoutPanel5 = new System.Windows.Forms.FlowLayoutPanel();
             this.helpUpdateCheck_itm = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator13 = new System.Windows.Forms.ToolStripSeparator();
+            this.fileSettingsCompressSave_itm = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.flowLayoutPanel1.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -610,7 +611,8 @@
             // clearToolStripMenuItem
             // 
             this.clearToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.fileSettingsShowOnTop_itm});
+            this.fileSettingsShowOnTop_itm,
+            this.fileSettingsCompressSave_itm});
             this.clearToolStripMenuItem.Name = "clearToolStripMenuItem";
             this.clearToolStripMenuItem.Size = new System.Drawing.Size(361, 46);
             this.clearToolStripMenuItem.Text = "Program Settings";
@@ -618,7 +620,7 @@
             // fileSettingsShowOnTop_itm
             // 
             this.fileSettingsShowOnTop_itm.Name = "fileSettingsShowOnTop_itm";
-            this.fileSettingsShowOnTop_itm.Size = new System.Drawing.Size(310, 46);
+            this.fileSettingsShowOnTop_itm.Size = new System.Drawing.Size(334, 46);
             this.fileSettingsShowOnTop_itm.Text = "Show On Top";
             this.fileSettingsShowOnTop_itm.Click += new System.EventHandler(this.fileSettingsShowOnTop_itm_Click);
             // 
@@ -1388,6 +1390,13 @@
             this.toolStripSeparator13.Name = "toolStripSeparator13";
             this.toolStripSeparator13.Size = new System.Drawing.Size(380, 6);
             // 
+            // fileSettingsCompressSave_itm
+            // 
+            this.fileSettingsCompressSave_itm.Name = "fileSettingsCompressSave_itm";
+            this.fileSettingsCompressSave_itm.Size = new System.Drawing.Size(334, 46);
+            this.fileSettingsCompressSave_itm.Text = "Compress Save";
+            this.fileSettingsCompressSave_itm.Click += new System.EventHandler(this.fileSettingsCompressSave_itm_Click);
+            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(16F, 31F);
@@ -1562,6 +1571,7 @@
         private System.Windows.Forms.ToolStripMenuItem historyClearHistory_itm;
         private System.Windows.Forms.ToolStripMenuItem helpUpdateCheck_itm;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator13;
+        private System.Windows.Forms.ToolStripMenuItem fileSettingsCompressSave_itm;
     }
 }
 

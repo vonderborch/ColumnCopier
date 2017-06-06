@@ -1019,5 +1019,39 @@ namespace ColumnCopier
         {
             CheckForUpdates();
         }
+
+        private void fileSettingsCompressSave_itm_Click(object sender, EventArgs e)
+        {
+            ToggleSaveCompression();
+        }
+
+        public void ToggleSaveCompression()
+        {
+            if (saveGuard.CheckSet)
+            {
+                var file = ccState.SaveFile;
+
+                var extension = Path.GetExtension(file);
+                var fileName = Path.GetFileNameWithoutExtension(file);
+                var directory = Path.GetDirectoryName(file);
+
+
+                if (extension == Constants.Instance.SaveExtensionCompressed)
+                    fileSettingsCompressSave_itm.Checked = false;
+                else if (extension == Constants.Instance.SaveExtension)
+                    fileSettingsCompressSave_itm.Checked = true;
+
+
+                var newFile = Path.Combine(directory,
+                                    string.Format("{0}{1}", fileName, fileSettingsCompressSave_itm.Checked
+                                        ? Constants.Instance.SaveExtensionCompressed : Constants.Instance.SaveExtension));
+
+                ccState.SaveFile = newFile;
+                StateSave(true);
+                // delete the old save file...
+                if (File.Exists(file))
+                    File.Delete(file);
+            }
+        }
     }
 }
