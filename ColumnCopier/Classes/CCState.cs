@@ -1,9 +1,11 @@
 ﻿using ColumnCopier.Enums;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace ColumnCopier.Classes
 {
@@ -164,6 +166,76 @@ namespace ColumnCopier.Classes
         public int PreservedRequestCount
         {
             get { return preservedRequests.Count; }
+        }
+
+        public int LineSeparatorOptionIndex { get; set; }
+        public string LineSeparatorOptionPre { get; set; }
+        public string LineSeparatorOptionPost { get; set; }
+        public string LineSeparatorOptionInter { get; set; }
+
+        public bool Save()
+        {
+            if (saveGuard.CheckSet)
+            {
+                var str = new StringBuilder();
+
+                str.AppendLine("<ColumnCopier>");
+
+                str.AppendLine($"<SaveVersion>{Constants.SaveVersion}</SaveVersion>");
+                str.AppendLine("<Settings>");
+                str.AppendLine($"<ShowOnTop>{ShowOnTop}</ShowOnTop>");
+                str.AppendLine($"<DataHasHeaders>{DataHasHeaders}</DataHasHeaders>");
+                str.AppendLine($"<CleanInputData>{CleanInputData}</CleanInputData>");
+                str.AppendLine($"<RemoveEmptyLines>{RemoveEmptyLines}</RemoveEmptyLines>");
+
+                str.AppendLine($"<LineSeparatorOptionIndex>{LineSeparatorOptionIndex}</LineSeparatorOptionIndex>");
+                str.AppendLine($"<LineSeparatorOptionPre>{LineSeparatorOptionPre}</LineSeparatorOptionPre>");
+                str.AppendLine($"<LineSeparatorOptionPost>{LineSeparatorOptionPost}</LineSeparatorOptionPost>");
+                str.AppendLine($"<LineSeparatorOptionInter>{LineSeparatorOptionInter}</LineSeparatorOptionInter>");
+
+                str.AppendLine($"<DefaultColumnIndex>{DefaultColumnIndex}</DefaultColumnIndex>");
+                str.AppendLine($"<DefaultColumnName>{DefaultColumnName}</DefaultColumnName>");
+                str.AppendLine($"<DefaultColumnNameMatch>{DefaultColumnNameMatch}</DefaultColumnNameMatch>");
+                str.AppendLine($"<DefaultColumnPriority>{(int)DefaultColumnPriority}</DefaultColumnPriority>");
+
+                str.AppendLine($"<MaxHistory>{MaxHistory}</MaxHistory>");
+
+                str.AppendLine($"<CurrentRequest>{currentRequest}</CurrentRequest>");
+                str.AppendLine("</Settings>");
+
+                str.AppendLine("<History>");
+                if (!string.IsNullOrEmpty(currentRequest))
+                {
+                    foreach (var request in history)
+                        str.AppendLine(request.Value.ConvertRequestToXml());
+                }
+                str.AppendLine("</History>");
+
+                str.AppendLine("</ColumnCopier>");
+
+                var result = str.ToString();
+                var doc = XDocument.Parse(result);
+
+                if (File.Exists(SaveFile))
+                    File.Delete(SaveFile);
+                doc.Save(SaveFile);
+
+                saveGuard.Reset();
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool Load()
+        {
+            if (saveGuard.CheckSet)
+            {
+                saveGuard.Reset();
+                return true;
+            }
+
+            return false;
         }
     }
 }

@@ -6,7 +6,7 @@
 // 
 // Version          : 2.0.0
 // Last Modified By : Christian
-// Last Modified On : 05-30-2017
+// Last Modified On : 06-06-2017
 // ***********************************************************************
 // <copyright file="Main.cs" company="Christian Webber">
 //		Copyright ©  2016 - 2017
@@ -71,7 +71,42 @@ namespace ColumnCopier
             checkGuard = new Guard();
             saveGuard = new Guard();
             pasteGuard = new Guard();
+
+            string defaultName = this.Text;
+
+            string fileToLoad = "";
+            if (AssemblyExecutableName != ExecutableName)
+            {
+                var regularFile = $"{ExecutableName}{Constants.Instance.SaveExtension}";
+                var compressedFile = $"{ExecutableName}{Constants.Instance.SaveExtensionCompressed}";
+
+                if (File.Exists(compressedFile))
+                    fileToLoad = compressedFile;
+                else // default to using a non-compressed file
+                    fileToLoad = regularFile;
+            }
+            else
+                fileToLoad = $"ColumnCopier-{DateTime.Now.Ticks}{Constants.Instance.SaveExtension}";
+
+            //while (!isSaving.CheckSet) ;
+            var destinationPath = Path.Combine(ExecutableDirectory, "TEMPORARY");
+            if (Directory.Exists(destinationPath))
+                Directory.Delete(destinationPath, true);
+            ccState.SaveFile = $"{ExecutableDirectory}\\{fileToLoad}";
+            StateOpen();
+            //LoadSettings($"{ExecutableDirectory}\\{fileToLoad}");
         }
+
+        private string ExecutableName
+        {
+            get { return System.IO.Path.GetFileNameWithoutExtension(System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase); }
+        }
+
+        private string AssemblyExecutableName
+        {
+            get { return this.ProductName; }
+        }
+
         private string ClipBoard
         {
             get
@@ -223,6 +258,7 @@ namespace ColumnCopier
                         break;
                 }
 
+                ccState.LineSeparatorOptionIndex = seperatorOption;
                 seperatorOption_cmb.SelectedIndex = seperatorOption;
                 seperatorItem_txt.Text = sep;
                 seperatorItemPre_txt.Text = pre;
@@ -257,17 +293,77 @@ namespace ColumnCopier
 
         public void StateNew()
         {
-
+            ClearHistory();
+            StateSaveAs();
         }
 
-        public void StateOpen()
+        public void StateOpen(bool guardAlreadySet = false)
         {
+            if (!guardAlreadySet) while (!saveGuard.CheckSet) ;
 
+            var loadThread = new Thread(() => StateLoadHelper());
+
+            loadThread.Start();
         }
 
-        public void StateSave()
+        public void StateSave(bool guardAlreadySet = false)
         {
+            if (!guardAlreadySet) while (!saveGuard.CheckSet) ;
+            
+            var saveThread = new Thread(() => StateSaveHelper());
 
+            saveThread.Start();
+        }
+
+        private void StateSaveHelper()
+        {
+            ToggleProgressBar();
+
+            ccState.Save();
+
+            ToggleProgressBar();
+            saveGuard.Reset();
+        }
+
+        private void StateLoadHelper()
+        {
+            ToggleProgressBar();
+
+            ccState.Load();
+
+            ToggleProgressBar();
+            saveGuard.Reset();
+        }
+
+        private delegate void UpdateProgressBar();
+
+        private void ToggleProgressBar()
+        {
+            if (progress_bar.InvokeRequired)
+            {
+                var d = new UpdateProgressBar(ToggleProgressBar);
+                this.Invoke(d);
+            }
+            else
+            {
+                progress_bar.Visible = !progress_bar.Visible;
+            }
+        }
+
+        public void StateSaveAs()
+        {
+            while (!saveGuard.CheckSet) ;
+
+            SaveFileDialog fileSelector = new SaveFileDialog();
+            fileSelector.DefaultExt = Constants.Instance.SaveExtension;
+            fileSelector.Filter = string.Format("Column Copier Save File ({0})|*{0}|Compressed Column Copier Save File ({1})|*{1}",
+                                                Constants.Instance.SaveExtension, Constants.Instance.SaveExtensionCompressed);
+            fileSelector.InitialDirectory = ExecutableDirectory;
+
+            fileSelector.ShowDialog();
+            var file = fileSelector.FileName;
+            ccState.SaveFile = file;
+            StateSave(true);
         }
 
         public void OpenWebPage(string url)
@@ -368,12 +464,19 @@ namespace ColumnCopier
         {
             StateSave();
         }
+        private string ExecutableDirectory
+        {
+            get
+            {
+                var dirName = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase);
+
+                return dirName.Remove(0, 6);
+            }
+        }
 
         private void stateSaveAs_btn_Click(object sender, EventArgs e)
         {
-            // Insert code to change the save file/location HERE
-
-            StateSave();
+            StateSaveAs();
         }
 
         private void help_btn_Click(object sender, EventArgs e)
@@ -403,27 +506,22 @@ namespace ColumnCopier
 
         private void fileNew_itm_Click(object sender, EventArgs e)
         {
-
+            stateNew_btn_Click(sender, e);
         }
 
         private void fileOpen_itm_Click(object sender, EventArgs e)
         {
-
-        }
-
-        private void fileClear_itm_Click(object sender, EventArgs e)
-        {
-
+            stateOpen_btn_Click(sender, e);
         }
 
         private void fileSave_itm_Click(object sender, EventArgs e)
         {
-
+            stateSave_btn_Click(sender, e);
         }
 
         private void fileSaveAs_itm_Click(object sender, EventArgs e)
         {
-
+            stateSaveAs_btn_Click(sender, e);
         }
 
         private void fileSettingsShowOnTop_itm_Click(object sender, EventArgs e)
@@ -840,6 +938,21 @@ namespace ColumnCopier
 
             seperatorOption_cmb.SelectedIndex = GetComboboxInputResults(Constants.Instance.InputQueryChangeHistoryRequest,
                                                     inputItems, seperatorOption_cmb.SelectedIndex);
+        }
+
+        private void seperatorItemPre_txt_TextChanged(object sender, EventArgs e)
+        {
+            ccState.LineSeparatorOptionPre = seperatorItemPre_txt.Text;
+        }
+
+        private void seperatorItem_txt_TextChanged(object sender, EventArgs e)
+        {
+            ccState.LineSeparatorOptionInter = seperatorItem_txt.Text;
+        }
+
+        private void seperatorItemPost_txt_TextChanged(object sender, EventArgs e)
+        {
+            ccState.LineSeparatorOptionPost = seperatorItemPost_txt.Text;
         }
     }
 }

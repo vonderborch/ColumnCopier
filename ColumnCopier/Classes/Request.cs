@@ -123,7 +123,43 @@ namespace ColumnCopier.Classes
 
         public string ConvertRequestToXml()
         {
-            return null;
+            var str = new StringBuilder();
+
+            str.AppendLine("<Request>");
+
+            str.AppendLine($"<Name>{Name}</Name>");
+            str.AppendLine($"<Id>{Id}</Id>");
+            str.AppendLine($"<IsPreserved>{IsPreserved}</IsPreserved>");
+            str.AppendLine($"<CurrentColumnIndex>{CurrentColumnIndex}</CurrentColumnIndex>");
+
+            str.AppendLine("<ColumnKeys>");
+            foreach (var key in columnKeys)
+            {
+                str.AppendLine("<ColumnKey>");
+                str.AppendLine($"<Key>{key.Key}</Key>");
+                str.AppendLine($"<Value>{XmlTextHelpers.ConvertForXml(key.Value)}</Value>");
+                str.AppendLine("</ColumnKey>");
+            }
+            str.AppendLine("</ColumnKeys>");
+
+            str.AppendLine("<ColumnsData>");
+            foreach (var key in columnsData)
+            {
+                str.AppendLine("<Column>");
+                str.AppendLine($"<Name>{XmlTextHelpers.ConvertForXml(key.Key)}</Name>");
+                str.AppendLine($"<CurrentNextLine>{key.Value.CurrentNextLine}</CurrentNextLine>");
+                str.AppendLine($"<Rows>");
+                for (var i = 0; i < key.Value.Rows.Count; i++)
+                {
+                    str.AppendLine($"<Row>{key.Value.Rows[i]}</Row>");
+                }
+                str.AppendLine($"</Rows>");
+                str.AppendLine("</Column>");
+            }
+            str.AppendLine("</ColumnsData>");
+
+            str.AppendLine("</Request>");
+            return str.ToString();
         }
 
         public string ExportRequest()
