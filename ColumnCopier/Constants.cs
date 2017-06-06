@@ -6,7 +6,7 @@
 //
 // Version          : 2.0.0
 // Last Modified By : Christian
-// Last Modified On : 05-31-2017
+// Last Modified On : 06-06-2017
 // ***********************************************************************
 // <copyright file="Constants.cs" company="Christian Webber">
 //		Copyright ©  2016 - 2017
@@ -16,6 +16,7 @@
 // </summary>
 //
 // Changelog:
+//            - 2.0.0 (06-06-2017) - New constants + comments.
 //            - 2.0.0 (05-31-2017) - Moved more constants over here.
 //            - 1.3.0 (05-30-2017) - Initial code.
 // ***********************************************************************
@@ -39,10 +40,12 @@ namespace ColumnCopier
         /// The instance
         /// </summary>
         private static Constants instance = new Constants();
+
         /// <summary>
         /// The character replacements
         /// </summary>
         private Dictionary<char, string> characterReplacements;
+
         /// <summary>
         /// The string replacements
         /// </summary>
@@ -85,9 +88,10 @@ namespace ColumnCopier
         /// <value>The save version.</value>
         public static int SaveVersion { get; private set; } = 20;
 
-        public string UrlHelp { get; private set; } = "https://github.com/vonderborch/ColumnCopier/wiki";
-        public string UrlSupport { get; private set; } = "https://github.com/vonderborch/ColumnCopier/issues";
-
+        /// <summary>
+        /// Gets the character replacements.
+        /// </summary>
+        /// <value>The character replacements.</value>
         public Dictionary<char, string> CharacterReplacements
         {
             get { return characterReplacements; }
@@ -146,19 +150,6 @@ namespace ColumnCopier
         /// </summary>
         /// <value>The git hub repository.</value>
         public string GitHubRepository { get; private set; } = "ColumnCopier";
-        
-        public string MessageTitleLatestReleaseUnavailable { get; private set; } = "Unable to Find Latest Release";
-        public string MessageBodyLatestReleaseUnavailable { get; private set; } = "Unable to discover the latest release!";
-
-        public string MessageTitleNewReleaseAvailable { get; private set; } = "Update Available";
-        public string MessageBodyNewReleaseAvailable { get; private set; } = "A newly released version is available, version {0}. Would you like to download the update?";
-
-        public string MessageTitleNoNewRelease { get; private set; } = "No Updates";
-        public string MessageBodyNoNewRelease { get; private set; } = "You already have the latest version of this program!";
-
-
-        public string MessageBodyNoRequestHistory { get; private set; } = "There are currently no requests available.";
-        public string MessageTitleNoRequestHistory { get; private set; } = "No Request History";
 
         /// <summary>
         /// Gets the input query change history request.
@@ -179,10 +170,10 @@ namespace ColumnCopier
         public string InputQueryDefaultColumnNumber { get; private set; } = "Default column number?";
 
         /// <summary>
-        /// Gets the input query for line separators.
+        /// Gets the input query for line replacement post-text.
         /// </summary>
-        /// <value>The input query for line separators.</value>
-        public string InputQueryLineReplacementSeparator { get; private set; } = "What should replace line seperators?";
+        /// <value>The input query for line replacement post-text.</value>
+        public string InputQueryLineReplacementPost { get; private set; } = "What should the post-line text be?";
 
         /// <summary>
         /// Gets the input query for line replacement pre-text.
@@ -191,10 +182,10 @@ namespace ColumnCopier
         public string InputQueryLineReplacementPre { get; private set; } = "What should the pre-line text be?";
 
         /// <summary>
-        /// Gets the input query for line replacement post-text.
+        /// Gets the input query for line separators.
         /// </summary>
-        /// <value>The input query for line replacement post-text.</value>
-        public string InputQueryLineReplacementPost { get; private set; } = "What should the post-line text be?";
+        /// <value>The input query for line separators.</value>
+        public string InputQueryLineReplacementSeparator { get; private set; } = "What should replace line seperators?";
 
         /// <summary>
         /// Gets the input query max history.
@@ -221,6 +212,54 @@ namespace ColumnCopier
         public string InputQueryProgramOpacity { get; private set; } = "Program opacity?";
 
         /// <summary>
+        /// Gets the message body latest release unavailable.
+        /// </summary>
+        /// <value>The message body latest release unavailable.</value>
+        public string MessageBodyLatestReleaseUnavailable { get; private set; } = "Unable to discover the latest release!";
+
+        /// <summary>
+        /// Gets the message body new release available.
+        /// </summary>
+        /// <value>The message body new release available.</value>
+        public string MessageBodyNewReleaseAvailable { get; private set; } = "A newly released version is available, version {0}. Would you like to download the update?";
+
+        /// <summary>
+        /// Gets the message body no new release.
+        /// </summary>
+        /// <value>The message body no new release.</value>
+        public string MessageBodyNoNewRelease { get; private set; } = "You already have the latest version of this program!";
+
+        /// <summary>
+        /// Gets the message body no request history.
+        /// </summary>
+        /// <value>The message body no request history.</value>
+        public string MessageBodyNoRequestHistory { get; private set; } = "There are currently no requests available.";
+
+        /// <summary>
+        /// Gets the message title latest release unavailable.
+        /// </summary>
+        /// <value>The message title latest release unavailable.</value>
+        public string MessageTitleLatestReleaseUnavailable { get; private set; } = "Unable to Find Latest Release";
+
+        /// <summary>
+        /// Gets the message title new release available.
+        /// </summary>
+        /// <value>The message title new release available.</value>
+        public string MessageTitleNewReleaseAvailable { get; private set; } = "Update Available";
+
+        /// <summary>
+        /// Gets the message title no new release.
+        /// </summary>
+        /// <value>The message title no new release.</value>
+        public string MessageTitleNoNewRelease { get; private set; } = "No Updates";
+
+        /// <summary>
+        /// Gets the message title no request history.
+        /// </summary>
+        /// <value>The message title no request history.</value>
+        public string MessageTitleNoRequestHistory { get; private set; } = "No Request History";
+
+        /// <summary>
         /// Gets the save extension.
         /// </summary>
         /// <value>The save extension.</value>
@@ -231,6 +270,19 @@ namespace ColumnCopier
         /// </summary>
         /// <value>The save extension compressed.</value>
         public string SaveExtensionCompressed { get; private set; } = ".ccx";
+
+        /// <summary>
+        /// Gets the splitters column.
+        /// </summary>
+        /// <value>The splitters column.</value>
+        public char SplittersColumn { get; private set; } = '\t';
+
+        /// <summary>
+        /// Gets the string splitters.
+        /// </summary>
+        /// <value>The string splitters.</value>
+        public string[] SplittersRow { get; private set; } = { "\r\n", "\n", "\r" };
+
         /// <summary>
         /// Gets the string replacement pattern.
         /// </summary>
@@ -247,16 +299,16 @@ namespace ColumnCopier
         }
 
         /// <summary>
-        /// Gets the splitters column.
+        /// Gets the URL help.
         /// </summary>
-        /// <value>The splitters column.</value>
-        public char SplittersColumn { get; private set; } = '\t';
+        /// <value>The URL help.</value>
+        public string UrlHelp { get; private set; } = "https://github.com/vonderborch/ColumnCopier/wiki";
 
         /// <summary>
-        /// Gets the string splitters.
+        /// Gets the URL support.
         /// </summary>
-        /// <value>The string splitters.</value>
-        public string[] SplittersRow { get; private set; } = { "\r\n", "\n", "\r" };
+        /// <value>The URL support.</value>
+        public string UrlSupport { get; private set; } = "https://github.com/vonderborch/ColumnCopier/issues";
 
         #endregion Public Properties
 

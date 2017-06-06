@@ -1,11 +1,43 @@
-﻿using System;
+﻿// ***********************************************************************
+// Assembly         : ColumnCopier
+// Component        : MathHelpers.cs
+// Author           : Christian
+// Created          : 06-01-2017
+// 
+// Version          : 2.0.0
+// Last Modified By : Christian
+// Last Modified On : 06-01-2017
+// ***********************************************************************
+// <copyright file="MathHelpers.cs" company="Christian Webber">
+//		Copyright ©  2016 - 2017
+// </copyright>
+// <summary>
+//      Defines the MathHelpers class.
+// </summary>
+//
+// Changelog: 
+//            - 2.0.0 (06-01-2017) - Initial version created.
+// ***********************************************************************
+using System;
 
 namespace ColumnCopier.Helpers
 {
+    /// <summary>
+    /// Class MathHelpers.
+    /// </summary>
     public static class MathHelpers
     {
         #region Public Methods
 
+        /// <summary>
+        /// Clamps the int.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="min">The minimum.</param>
+        /// <param name="max">The maximum.</param>
+        /// <returns>System.Int32.</returns>
+        ///  Changelog:
+        ///             - 2.0.0 (06-01-2017) - Initial version.
         public static int ClampInt(int input, int min = int.MinValue, int max = int.MaxValue)
         {
             return input < min
@@ -15,6 +47,14 @@ namespace ColumnCopier.Helpers
                     : input;
         }
 
+        /// <summary>
+        /// Computes the difference.
+        /// </summary>
+        /// <param name="a">a.</param>
+        /// <param name="b">The b.</param>
+        /// <returns>System.Int32.</returns>
+        ///  Changelog:
+        ///             - 2.0.0 (06-01-2017) - Initial version.
         public static int ComputeDifference(string a, string b)
         {
             int n = a.Length;

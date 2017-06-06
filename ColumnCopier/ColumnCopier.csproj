@@ -97,35 +97,35 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="About.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="About.Designer.cs">
-      <DependentUpon>About.cs</DependentUpon>
-    </Compile>
     <Compile Include="Classes\CCState.cs" />
     <Compile Include="Classes\ColumnData.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Enums\DefaultColumnPriority.cs" />
+    <Compile Include="Enums\LineSeparatorOptions.cs" />
+    <Compile Include="Forms\About.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\About.Designer.cs">
+      <DependentUpon>About.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\InputComboDialogBox.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\InputComboDialogBox.Designer.cs">
+      <DependentUpon>InputComboDialogBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\InputTextDialogBox.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\InputTextDialogBox.Designer.cs">
+      <DependentUpon>InputTextDialogBox.cs</DependentUpon>
+    </Compile>
     <Compile Include="GitHub\GitHub.cs" />
     <Compile Include="GitHub\Release.cs" />
     <Compile Include="Classes\Guard.cs" />
     <Compile Include="Helpers\Converters.cs" />
     <Compile Include="Helpers\MathHelpers.cs" />
     <Compile Include="Helpers\XmlTextHelpers.cs" />
-    <Compile Include="Enums\LineSeperatorOptions.cs" />
-    <Compile Include="InputComboDialogBox.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="InputComboDialogBox.Designer.cs">
-      <DependentUpon>InputComboDialogBox.cs</DependentUpon>
-    </Compile>
-    <Compile Include="InputTextDialogBox.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="InputTextDialogBox.Designer.cs">
-      <DependentUpon>InputTextDialogBox.cs</DependentUpon>
-    </Compile>
     <Compile Include="Main.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -142,13 +142,13 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Classes\Request.cs" />
-    <EmbeddedResource Include="About.resx">
+    <EmbeddedResource Include="Forms\About.resx">
       <DependentUpon>About.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="InputComboDialogBox.resx">
+    <EmbeddedResource Include="Forms\InputComboDialogBox.resx">
       <DependentUpon>InputComboDialogBox.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="InputTextDialogBox.resx">
+    <EmbeddedResource Include="Forms\InputTextDialogBox.resx">
       <DependentUpon>InputTextDialogBox.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Main.resx">

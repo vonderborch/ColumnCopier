@@ -2,21 +2,22 @@
 // Assembly         : ColumnCopier
 // Component        : ColumnData.cs
 // Author           : Christian
-// Created          : 06-01-2017
-//
+// Created          : 06-06-2017
+// 
 // Version          : 2.0.0
 // Last Modified By : Christian
-// Last Modified On : 06-01-2017
+// Last Modified On : 06-06-2017
 // ***********************************************************************
 // <copyright file="ColumnData.cs" company="Christian Webber">
-//		Copyright © 2017
+//		Copyright ©  2016 - 2017
 // </copyright>
 // <summary>
-//      The ColumnData class.
+//      Defines the ColumnData class.
 // </summary>
 //
-// Changelog:
-//            - 2.0.0 (06-01-2017) - Initial version created.
+// Changelog: 
+//            - 2.0.0 (06-06-2017) - Initial version created.
+// ***********************************************************************
 using System.Collections.Generic;
 
 /// <summary>

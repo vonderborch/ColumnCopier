@@ -4,9 +4,9 @@
 // Author           : Christian
 // Created          : 08-18-2016
 //
-// Version          : 1.3.0
+// Version          : 2.0.0
 // Last Modified By : Christian
-// Last Modified On : 05-30-2017
+// Last Modified On : 06-06-2017
 // ***********************************************************************
 // <copyright file="Request.cs" company="Christian Webber">
 //		Copyright ©  2016 - 2017
@@ -16,7 +16,7 @@
 // </summary>
 //
 // Changelog:
-//            - 2.0.0 (xx-xx-2017) - Rebuilt!
+//            - 2.0.0 (06-06-2017) - Rebuilt!
 //            - 1.3.0 (05-30-2017) - More extensive text cleaning.
 //            - 1.2.0 (09-30-2016) - Added preserve request toggle support.
 //            - 1.1.6 (09-29-2016) - Fixed bug when loading old saves (bumped save version), fixed bug when copying invalid characters, fixed bug with no data in the clipboard
@@ -42,8 +42,19 @@ namespace ColumnCopier.Classes
     {
         #region Private Fields
 
+        /// <summary>
+        /// The column keys
+        /// </summary>
         private Dictionary<int, string> columnKeys = new Dictionary<int, string>();
+
+        /// <summary>
+        /// The columns data
+        /// </summary>
         private Dictionary<string, ColumnData> columnsData = new Dictionary<string, ColumnData>();
+
+        /// <summary>
+        /// The current column
+        /// </summary>
         private int currentColumn = 0;
 
         #endregion Private Fields
@@ -173,32 +184,66 @@ namespace ColumnCopier.Classes
 
         #region Public Properties
 
+        /// <summary>
+        /// Gets the index of the current column.
+        /// </summary>
+        /// <value>The index of the current column.</value>
         public int CurrentColumnIndex
         {
             get { return currentColumn; }
             private set { currentColumn = value; }
         }
 
+        /// <summary>
+        /// Gets the name of the current column.
+        /// </summary>
+        /// <value>The name of the current column.</value>
         public string CurrentColumnName
         {
             get { return columnKeys[currentColumn]; }
         }
 
+        /// <summary>
+        /// Gets the identifier.
+        /// </summary>
+        /// <value>The identifier.</value>
         public int Id { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is preserved.
+        /// </summary>
+        /// <value><c>true</c> if this instance is preserved; otherwise, <c>false</c>.</value>
         public bool IsPreserved { get; set; }
+
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
         public string Name { get; private set; }
 
+        /// <summary>
+        /// Gets the number of columns.
+        /// </summary>
+        /// <value>The number of columns.</value>
         public int NumberOfColumns
         {
             get { return columnKeys.Count; }
         }
 
+        /// <summary>
+        /// Gets or sets the index of the copy next line.
+        /// </summary>
+        /// <value>The index of the copy next line.</value>
         public int CopyNextLineIndex
         {
             get { return columnsData[CurrentColumnName].CurrentNextLine; }
             set { columnsData[CurrentColumnName].CurrentNextLine = value; }
         }
 
+        /// <summary>
+        /// Gets the current column row count.
+        /// </summary>
+        /// <value>The current column row count.</value>
         public int CurrentColumnRowCount
         {
             get { return columnsData[CurrentColumnName].Rows.Count; }
@@ -208,6 +253,12 @@ namespace ColumnCopier.Classes
 
         #region Public Methods
 
+        /// <summary>
+        /// Converts the request to XML.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        ///  Changelog:
+        ///             - 2.0.0 (06-06-2017) - Initial version.
         public string ConvertRequestToXml()
         {
             var str = new StringBuilder();
@@ -249,6 +300,12 @@ namespace ColumnCopier.Classes
             return str.ToString();
         }
 
+        /// <summary>
+        /// Exports the request.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        ///  Changelog:
+        ///             - 2.0.0 (06-06-2017) - Initial version.
         public string ExportRequest()
         {
             var str = new StringBuilder();
@@ -284,6 +341,12 @@ namespace ColumnCopier.Classes
             return XmlTextHelpers.ConvertFromXml(str.ToString());
         }
 
+        /// <summary>
+        /// Gets the current column next line text.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        ///  Changelog:
+        ///             - 2.0.0 (06-06-2017) - Initial version.
         public string GetCurrentColumnNextLineText()
         {
             var text = XmlTextHelpers.ConvertFromXml(columnsData[CurrentColumnName].Rows[columnsData[CurrentColumnName].CurrentNextLine++]);
@@ -294,6 +357,12 @@ namespace ColumnCopier.Classes
             return text;
         }
 
+        /// <summary>
+        /// Gets the column names.
+        /// </summary>
+        /// <returns>List&lt;System.String&gt;.</returns>
+        ///  Changelog:
+        ///             - 2.0.0 (06-06-2017) - Initial version.
         public List<string> GetColumnNames()
         {
             var result = new List<string>();
@@ -303,6 +372,12 @@ namespace ColumnCopier.Classes
             return result;
         }
 
+        /// <summary>
+        /// Gets the current column text.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        ///  Changelog:
+        ///             - 2.0.0 (06-06-2017) - Initial version.
         public string GetCurrentColumnText()
         {
             var str = new StringBuilder();
@@ -312,6 +387,12 @@ namespace ColumnCopier.Classes
             return str.ToString();
         }
 
+        /// <summary>
+        /// Gets the column raw text.
+        /// </summary>
+        /// <returns>List&lt;System.String&gt;.</returns>
+        ///  Changelog:
+        ///             - 2.0.0 (06-06-2017) - Initial version.
         public List<string> GetColumnRawText()
         {
             var result = new List<string>();
@@ -321,6 +402,13 @@ namespace ColumnCopier.Classes
             return result;
         }
 
+        /// <summary>
+        /// Sets the current column.
+        /// </summary>
+        /// <param name="i">The i.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        ///  Changelog:
+        ///             - 2.0.0 (06-06-2017) - Initial version.
         public bool SetCurrentColumn(int i)
         {
             if (!columnKeys.ContainsKey(i))
@@ -334,6 +422,15 @@ namespace ColumnCopier.Classes
 
         #region Private Methods
 
+        /// <summary>
+        /// Calculates the default column.
+        /// </summary>
+        /// <param name="defaultColumnIndex">Default index of the column.</param>
+        /// <param name="defaultColumnName">Default name of the column.</param>
+        /// <param name="columnNameMatch">The column name match.</param>
+        /// <param name="defaultColumnPriority">The default column priority.</param>
+        ///  Changelog:
+        ///             - 2.0.0 (06-06-2017) - Initial version.
         private void CalculateDefaultColumn(int defaultColumnIndex, string defaultColumnName, int columnNameMatch, DefaultColumnPriority defaultColumnPriority)
         {
             var index = -1;
@@ -365,6 +462,15 @@ namespace ColumnCopier.Classes
             currentColumn = MathHelpers.ClampInt(index, 0, columnKeys.Count - 1);
         }
 
+        /// <summary>
+        /// Parses the text.
+        /// </summary>
+        /// <param name="text">The text.</param>
+        /// <param name="hasHeaders">if set to <c>true</c> [has headers].</param>
+        /// <param name="cleanText">if set to <c>true</c> [clean text].</param>
+        /// <param name="removeEmptyLines">if set to <c>true</c> [remove empty lines].</param>
+        ///  Changelog:
+        ///             - 2.0.0 (06-06-2017) - Initial version.
         private void ParseText(string text, bool hasHeaders, bool cleanText, bool removeEmptyLines)
         {
             var rawRows = text.Split(Constants.Instance.SplittersRow, removeEmptyLines == true ? StringSplitOptions.RemoveEmptyEntries : StringSplitOptions.None);
@@ -418,7 +524,7 @@ namespace ColumnCopier.Classes
             }
 
             // find out the meta data about this request...
-            if (true) ;
+
         }
 
         #endregion Private Methods

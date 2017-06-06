@@ -8,7 +8,7 @@
 // Last Modified By : Christian
 // Last Modified On : 06-05-2017
 // ***********************************************************************
-// <copyright file="Guard.cs">
+// <copyright file="Guard.cs" company="Christian Webber">
 //		Copyright ©  2016 - 2017
 // </copyright>
 // <summary>
