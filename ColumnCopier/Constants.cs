@@ -147,6 +147,63 @@ namespace ColumnCopier
         /// <value>The git hub repository.</value>
         public string GitHubRepository { get; private set; } = "ColumnCopier";
 
+        public string MessageBodyNoRequestHistory { get; private set; } = "There are currently no requests available.";
+        public string MessageTitleNoRequestHistory { get; private set; } = "No Request History";
+
+        /// <summary>
+        /// Gets the input query change history request.
+        /// </summary>
+        /// <value>The input query change history request.</value>
+        public string InputQueryChangeHistoryRequest { get; private set; } = "Please select a request to change to:";
+
+        /// <summary>
+        /// Gets the input query default column name.
+        /// </summary>
+        /// <value>The input query default column name.</value>
+        public string InputQueryDefaultColumnName { get; private set; } = "Default column name?";
+
+        /// <summary>
+        /// Gets the input query default column number.
+        /// </summary>
+        /// <value>The input query default column number.</value>
+        public string InputQueryDefaultColumnNumber { get; private set; } = "Default column number?";
+
+        /// <summary>
+        /// Gets the input query for line separators.
+        /// </summary>
+        /// <value>The input query for line separators.</value>
+        public string InputQueryLineReplacementSeparator { get; private set; } = "What should replace line seperators?";
+
+        /// <summary>
+        /// Gets the input query for line replacement pre-text.
+        /// </summary>
+        /// <value>The input query for line replacement pre-text.</value>
+        public string InputQueryLineReplacementPre { get; private set; } = "What should the pre-line text be?";
+
+        /// <summary>
+        /// Gets the input query for line replacement post-text.
+        /// </summary>
+        /// <value>The input query for line replacement post-text.</value>
+        public string InputQueryLineReplacementPost { get; private set; } = "What should the post-line text be?";
+
+        /// <summary>
+        /// Gets the input query max history.
+        /// </summary>
+        /// <value>The input query max history.</value>
+        public string InputQueryMaxHistory { get; private set; } = "How many requests should be saved?";
+
+        /// <summary>
+        /// Gets the input query name similarity value.
+        /// </summary>
+        /// <value>The input query name similarity value.</value>
+        public string InputQueryNameSimilarityValue { get; private set; } = "Default column name similarity threshold?";
+
+        /// <summary>
+        /// Gets the input query next line copy line.
+        /// </summary>
+        /// <value>The input query next line copy line.</value>
+        public string InputQueryNextLineCopyLine { get; private set; } = "What should the next line to copy be?";
+
         /// <summary>
         /// Gets the save extension.
         /// </summary>

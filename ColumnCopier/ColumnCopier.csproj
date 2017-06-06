@@ -114,6 +114,18 @@
     <Compile Include="Helpers\MathHelpers.cs" />
     <Compile Include="Helpers\XmlTextHelpers.cs" />
     <Compile Include="Enums\LineSeperatorOptions.cs" />
+    <Compile Include="InputComboDialogBox.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="InputComboDialogBox.Designer.cs">
+      <DependentUpon>InputComboDialogBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="InputTextDialogBox.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="InputTextDialogBox.Designer.cs">
+      <DependentUpon>InputTextDialogBox.cs</DependentUpon>
+    </Compile>
     <Compile Include="Main.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -132,6 +144,12 @@
     <Compile Include="Classes\Request.cs" />
     <EmbeddedResource Include="About.resx">
       <DependentUpon>About.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="InputComboDialogBox.resx">
+      <DependentUpon>InputComboDialogBox.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="InputTextDialogBox.resx">
+      <DependentUpon>InputTextDialogBox.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Main.resx">
       <DependentUpon>Main.cs</DependentUpon>

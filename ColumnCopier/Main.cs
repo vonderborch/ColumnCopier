@@ -171,6 +171,65 @@ namespace ColumnCopier
 
         public void UpdateLineSeperatorOptions(LineSeperatorOptions option)
         {
+            if (checkGuard.CheckSet)
+            {
+                var sep = string.Empty;
+                var pre = string.Empty;
+                var post = string.Empty;
+                var seperatorOption = 0;
+                switch (option)
+                {
+                    case LineSeperatorOptions.Comma:
+                        sep = ", ";
+                        pre = "";
+                        post = "";
+                        seperatorOption = 0;
+                        break;
+                    case LineSeperatorOptions.DoubleQuoteComma:
+                        sep = "\", \"";
+                        pre = "";
+                        post = "";
+                        seperatorOption = 2;
+                        break;
+                    case LineSeperatorOptions.DoubleQuoteParenthesisComma:
+                        sep = "\", \"";
+                        pre = "(\"";
+                        post = "\")";
+                        seperatorOption = 5;
+                        break;
+                    case LineSeperatorOptions.Nothing:
+                        sep = "";
+                        pre = "";
+                        post = "";
+                        seperatorOption = 1;
+                        break;
+                    case LineSeperatorOptions.ParenthesisComma:
+                        sep = ", ";
+                        pre = "(";
+                        post = ")";
+                        seperatorOption = 3;
+                        break;
+                    case LineSeperatorOptions.SemiColon:
+                        sep = ";";
+                        pre = "";
+                        post = "";
+                        seperatorOption = 6;
+                        break;
+                    case LineSeperatorOptions.SingleQuoteParenthesisComma:
+                        sep = "', '";
+                        pre = "('";
+                        post = "')";
+                        seperatorOption = 4;
+                        break;
+                }
+
+                seperatorOption_cmb.SelectedIndex = seperatorOption;
+                seperatorItem_txt.Text = sep;
+                seperatorItemPre_txt.Text = pre;
+                seperatorItemPost_txt.Text = post;
+
+                checkGuard.Reset();
+            }
         }
 
         private void UpdateRequestHistory()
@@ -403,31 +462,6 @@ namespace ColumnCopier
             ToggleRemoveBlankLines(!cleanInputText_cxb.Checked);
         }
 
-        private void inputSettingsDefaultColumnNumber_itm_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void inputSettingsDefaultColumnName_itm_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void inputSettingsDefaultPriorityNumber_itm_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void inputSettingsDefaultPriorityName_itm_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void inputSettingsDefaultPriorityNameSimilarity_itm_Click(object sender, EventArgs e)
-        {
-
-        }
-
         private void outputCopyColumn_itm_Click(object sender, EventArgs e)
         {
             CopyColumn(false);
@@ -450,57 +484,72 @@ namespace ColumnCopier
 
         private void outputSettingsCurrentCopyNextLineLine_itm_Click(object sender, EventArgs e)
         {
+            copyLineNumber_txt.Text = GetTextboxInputResults(Constants.Instance.InputQueryNextLineCopyLine, copyLineNumber_txt.Text);
+        }
 
+        private string GetTextboxInputResults(string question, string defaultText)
+        {
+            var inputBox = new InputTextDialogBox()
+            {
+                QuestionText = question,
+                InputText = defaultText,
+            };
+
+            var result = inputBox.ShowDialog();
+
+            return result == DialogResult.OK
+                ? inputBox.InputText
+                : defaultText;
         }
 
         private void outputSettingsLineReplacementSeperator_itm_Click(object sender, EventArgs e)
         {
-
+            seperatorItem_txt.Text = GetTextboxInputResults(Constants.Instance.InputQueryLineReplacementSeparator, seperatorItem_txt.Text);
         }
 
         private void outputSettingsLineReplacementPreString_itm_Click(object sender, EventArgs e)
         {
-
+            seperatorItemPre_txt.Text = GetTextboxInputResults(Constants.Instance.InputQueryLineReplacementPre, seperatorItemPre_txt.Text);
         }
 
         private void outputSettingsLineReplacementPostString_itm_Click(object sender, EventArgs e)
         {
-
+            seperatorItemPost_txt.Text = GetTextboxInputResults(Constants.Instance.InputQueryLineReplacementPost, seperatorItemPost_txt.Text);
         }
 
         private void outputSettingLineReplacementPresetBlank_itm_Click(object sender, EventArgs e)
         {
-
+            UpdateLineSeperatorOptions(LineSeperatorOptions.Nothing);
         }
 
         private void outputSettingLineReplacementPresetComma_itm_Click(object sender, EventArgs e)
         {
-
+            UpdateLineSeperatorOptions(LineSeperatorOptions.Comma);
         }
 
         private void outputSettingLineReplacementPresetDoubleQuoteComma_itm_Click(object sender, EventArgs e)
         {
-
+            UpdateLineSeperatorOptions(LineSeperatorOptions.DoubleQuoteComma);
         }
 
         private void outputSettingLineReplacementPresetSqlComma_itm_Click(object sender, EventArgs e)
         {
-
+            UpdateLineSeperatorOptions(LineSeperatorOptions.ParenthesisComma);
         }
 
         private void outputSettingLineReplacementPresetSqlText_itm_Click(object sender, EventArgs e)
         {
-
+            UpdateLineSeperatorOptions(LineSeperatorOptions.SingleQuoteParenthesisComma);
         }
 
         private void outputSettingLineReplacementPresetParenthesisQuotes_itm_Click(object sender, EventArgs e)
         {
-
+            UpdateLineSeperatorOptions(LineSeperatorOptions.DoubleQuoteParenthesisComma);
         }
 
         private void outputSettingLineReplacementPresetSemiColan_itm_Click(object sender, EventArgs e)
         {
-
+            UpdateLineSeperatorOptions(LineSeperatorOptions.SemiColon);
         }
 
         private void historyDeleteRequest_itm_Click(object sender, EventArgs e)
@@ -508,14 +557,9 @@ namespace ColumnCopier
             DeleteRequest();
         }
 
-        private void historyChangeRequest_itm_Click(object sender, EventArgs e)
-        {
-
-        }
-
         private void historySettingsMaxRequestHistory_itm_Click(object sender, EventArgs e)
         {
-
+            maxHistory_txt.Text = GetTextboxInputResults(Constants.Instance.InputQueryMaxHistory, maxHistory_txt.Text);
         }
 
         private void helpDocumentation_itm_Click(object sender, EventArgs e)
@@ -670,6 +714,132 @@ namespace ColumnCopier
         private void historyClearHistory_itm_Click(object sender, EventArgs e)
         {
             ClearHistory();
+        }
+
+        private void SetDefaultPriorityToggles(DefaultColumnPriority priority)
+        {
+            var nameChecked = false;
+            var numberChecked = false;
+            switch (priority)
+            {
+                case DefaultColumnPriority.Name:
+                    nameChecked = true;
+                    numberChecked = false;
+                    break;
+                case DefaultColumnPriority.Number:
+                    nameChecked = false;
+                    numberChecked = true;
+                    break;
+            }
+
+            defaultPriorityName_rbn.Checked = nameChecked;
+            inputSettingsDefaultPriorityName_itm.Checked = nameChecked;
+            defaultPriorityNumber_rbn.Checked = numberChecked;
+            inputSettingsDefaultPriorityNumber_itm.Checked = numberChecked;
+        }
+
+        private void defaultPriorityNumber_rbn_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkGuard.CheckSet)
+            {
+                SetDefaultPriorityToggles(DefaultColumnPriority.Number);
+                StateSave();
+                checkGuard.Reset();
+            }
+        }
+
+        private void defaultPriorityName_rbn_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkGuard.CheckSet)
+            {
+                SetDefaultPriorityToggles(DefaultColumnPriority.Name);
+                StateSave();
+                checkGuard.Reset();
+            }
+        }
+
+        private void inputSettingsDefaultColumnNumber_itm_Click(object sender, EventArgs e)
+        {
+            defaultColumnNumber_txt.Text = GetTextboxInputResults(Constants.Instance.InputQueryDefaultColumnNumber, defaultColumnNumber_txt.Text);
+        }
+
+        private void inputSettingsDefaultColumnName_itm_Click(object sender, EventArgs e)
+        {
+            defaultColumnName_txt.Text = GetTextboxInputResults(Constants.Instance.InputQueryDefaultColumnName, defaultColumnName_txt.Text);
+        }
+
+        private void inputSettingsDefaultPriorityNumber_itm_Click(object sender, EventArgs e)
+        {
+            if (checkGuard.CheckSet)
+            {
+                SetDefaultPriorityToggles(DefaultColumnPriority.Number);
+                StateSave();
+                checkGuard.Reset();
+            }
+        }
+
+        private void inputSettingsDefaultPriorityName_itm_Click(object sender, EventArgs e)
+        {
+            if (checkGuard.CheckSet)
+            {
+                SetDefaultPriorityToggles(DefaultColumnPriority.Name);
+                StateSave();
+                checkGuard.Reset();
+            }
+        }
+
+        private void inputSettingsDefaultPriorityNameSimilarity_itm_Click(object sender, EventArgs e)
+        {
+            defaultPriorityNameSimilarity_txt.Text = GetTextboxInputResults(Constants.Instance.InputQueryNameSimilarityValue, defaultPriorityNameSimilarity_txt.Text);
+        }
+
+        private int GetComboboxInputResults(string question, List<string> items, int defaultReturn)
+        {
+            var inputBox = new InputComboDialogBox()
+            {
+                QuestionText = question,
+            };
+            inputBox.SetInputListItems(items);
+            inputBox.InputSelectedItem = seperatorOption_cmb.SelectedIndex;
+
+            var result = inputBox.ShowDialog();
+
+            return result == DialogResult.OK
+                ? inputBox.InputSelectedItem
+                : defaultReturn;
+        }
+
+        private DialogResult GetMessageBox(string title, string question, MessageBoxButtons buttonsType = MessageBoxButtons.YesNo, MessageBoxIcon iconType = MessageBoxIcon.Question)
+        {
+            return MessageBox.Show(question, title, buttonsType, iconType);
+        }
+
+        private void historyChangeRequest_itm_Click(object sender, EventArgs e)
+        {
+            if (requestHistory_cmb.Items.Count > 0)
+            {
+                var inputItems = new List<string>();
+                for (var i = 0; i < requestHistory_cmb.Items.Count; i++)
+                    inputItems.Add(requestHistory_cmb.Items[i].ToString());
+
+                requestHistory_cmb.SelectedIndex = GetComboboxInputResults(Constants.Instance.InputQueryChangeHistoryRequest,
+                                                        inputItems, requestHistory_cmb.SelectedIndex);
+            }
+            else
+            {
+                GetMessageBox(Constants.Instance.MessageTitleNoRequestHistory, Constants.Instance.MessageBodyNoRequestHistory,
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private void preSetsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var inputItems = new List<string>();
+            for (var i = 0; i < seperatorOption_cmb.Items.Count; i++)
+                inputItems.Add(seperatorOption_cmb.Items[i].ToString());
+
+            seperatorOption_cmb.SelectedIndex = GetComboboxInputResults(Constants.Instance.InputQueryChangeHistoryRequest,
+                                                    inputItems, seperatorOption_cmb.SelectedIndex);
         }
     }
 }
