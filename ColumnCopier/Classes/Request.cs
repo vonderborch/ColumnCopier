@@ -80,6 +80,93 @@ namespace ColumnCopier.Classes
         /// <param name="node">The node.</param>
         public Request(XElement node)
         {
+            foreach (var mainCategory in node.Elements())
+            {
+                var mainCategoryName = mainCategory.Name.ToString();
+
+                if (mainCategoryName == "Name")
+                {
+                    Name = mainCategory.Value;
+                }
+                else if (mainCategoryName == "Id")
+                {
+                    Id = Converters.ConvertToInt(mainCategory.Value);
+                }
+                else if (mainCategoryName == "IsPreserved")
+                {
+                    IsPreserved = Converters.ConvertToBool(mainCategory.Value);
+                }
+                else if (mainCategoryName == "CurrentColumnIndex")
+                {
+                    CurrentColumnIndex = Converters.ConvertToIntWithClamp(mainCategory.Value, 0, 0);
+                }
+                else if (mainCategoryName == "ColumnKeys")
+                {
+                    foreach (var columnKeyMain in mainCategory.Elements())
+                    {
+                        if (columnKeyMain.Name.ToString() == "ColumnKey")
+                        {
+                            var key = -1;
+                            var value = string.Empty;
+
+                            foreach (var columnKeys in columnKeyMain.Elements())
+                            {
+                                switch (columnKeys.Name.ToString())
+                                {
+                                    case "Key":
+                                        key = Converters.ConvertToIntWithClamp(columnKeys.Value, 0, 0);
+                                        break;
+                                    case "Value":
+                                        value = columnKeys.Value;
+                                        break;
+                                }
+                            }
+
+                            columnKeys.Add(key, value);
+                            //columnsData.Add(value, new ColumnData());
+                        }
+                    }
+                }
+                else if (mainCategoryName == "ColumnsData")
+                {
+                    foreach (var columnDataMain in mainCategory.Elements())
+                    {
+                        if (columnDataMain.Name.ToString() == "Column")
+                        {
+                            var name = string.Empty;
+                            var data = new ColumnData();
+
+                            foreach (var cd in columnDataMain.Elements())
+                            {
+                                var cdName = cd.Name.ToString();
+
+                                if (cdName == "Name")
+                                {
+                                    name = cd.Value;
+                                }
+                                else if (cdName == "CurrentNextLine")
+                                {
+                                    data.CurrentNextLine = Converters.ConvertToIntWithClamp(cd.Value, 0, 0);
+                                }
+                                else if (cdName == "Rows")
+                                {
+                                    var rowData = new List<string>();
+                                    foreach (var cdRow in cd.Elements())
+                                    {
+                                        if (cdRow.Name.ToString() == "Row")
+                                        {
+                                            rowData.Add(cdRow.Value);
+                                        }
+                                    }
+                                    data.Rows = new List<string>(rowData);
+                                }
+                            }
+
+                            columnsData.Add(name, data);
+                        }
+                    }
+                }
+            }
         }
 
         #endregion Public Constructors

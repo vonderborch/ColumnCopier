@@ -1,4 +1,5 @@
 ﻿using ColumnCopier.Enums;
+using ColumnCopier.Helpers;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -78,7 +79,12 @@ namespace ColumnCopier.Classes
             var request = new Request(requestId++, text, DataHasHeaders, CleanInputData, RemoveEmptyLines, 
                 DefaultColumnIndex, DefaultColumnName, DefaultColumnNameMatch, DefaultColumnPriority);
             AddRequestToHistory(request);
+        }
 
+        public void AddNewRequest(XElement node)
+        {
+            var request = new Request(node);
+            AddRequestToHistory(request);
         }
 
         public List<string> GetRequestHistory()
@@ -218,7 +224,18 @@ namespace ColumnCopier.Classes
 
                 if (File.Exists(SaveFile))
                     File.Delete(SaveFile);
+                
                 doc.Save(SaveFile);
+                var file = SaveFile;
+                bool isCompressed = Path.GetExtension(file) == Constants.Instance.SaveExtensionCompressed;
+                if (isCompressed)
+                {
+                    var destinationPath = Path.Combine(Path.GetDirectoryName(file), "TEMPORARY");
+                    Directory.CreateDirectory(destinationPath);
+                    File.Move(file, Path.Combine(destinationPath, Path.GetFileName(file)));
+                    System.IO.Compression.ZipFile.CreateFromDirectory(destinationPath, file);
+                    Directory.Delete(destinationPath, true);
+                }
 
                 saveGuard.Reset();
                 return true;
@@ -231,6 +248,97 @@ namespace ColumnCopier.Classes
         {
             if (saveGuard.CheckSet)
             {
+                if (!File.Exists(SaveFile))
+                {
+                    saveGuard.Reset();
+                    return false;
+                }
+
+                var file = SaveFile;
+                bool isCompressed = Path.GetExtension(file) == Constants.Instance.SaveExtensionCompressed;
+                if (isCompressed)
+                {
+                    var destinationPath = Path.Combine(Path.GetDirectoryName(file), "TEMPORARY");
+                    System.IO.Compression.ZipFile.ExtractToDirectory(file, destinationPath);
+                    file = Path.Combine(destinationPath, Path.GetFileName(file));
+                }
+
+                var doc = XDocument.Load(file);
+
+                foreach (var mainCategory in doc.Root.Elements())
+                {
+                    var mainCategoryName = mainCategory.Name.ToString();
+
+                    if (mainCategoryName == "SaveVersion")
+                    {
+                        if (Converters.ConvertToInt(mainCategory.Value.ToString()) != Constants.SaveVersion)
+                        {
+                            saveGuard.Reset();
+                            return false;
+                        }
+                    }
+                    else if (mainCategoryName == "Settings")
+                    {
+                        foreach (var settingNode in mainCategory.Elements())
+                        {
+                            switch (settingNode.Name.ToString())
+                            {
+                                case "ShowOnTop":
+                                    ShowOnTop = Converters.ConvertToBool(settingNode.Value, false);
+                                    break;
+                                case "DataHasHeaders":
+                                    DataHasHeaders = Converters.ConvertToBool(settingNode.Value, true);
+                                    break;
+                                case "CleanInputData":
+                                    CleanInputData = Converters.ConvertToBool(settingNode.Value, true);
+                                    break;
+                                case "RemoveEmptyLines":
+                                    RemoveEmptyLines = Converters.ConvertToBool(settingNode.Value, true);
+                                    break;
+                                case "LineSeparatorOptionIndex":
+                                    LineSeparatorOptionIndex = Converters.ConvertToInt(settingNode.Value);
+                                    break;
+                                case "LineSeparatorOptionPre":
+                                    LineSeparatorOptionPre = settingNode.Value;
+                                    break;
+                                case "LineSeparatorOptionPost":
+                                    LineSeparatorOptionPost = settingNode.Value;
+                                    break;
+                                case "LineSeparatorOptionInter":
+                                    LineSeparatorOptionInter = settingNode.Value;
+                                    break;
+                                case "DefaultColumnIndex":
+                                    DefaultColumnIndex = Converters.ConvertToIntWithClamp(settingNode.Value, 0, 0);
+                                    break;
+                                case "DefaultColumnName":
+                                    DefaultColumnName = settingNode.Value;
+                                    break;
+                                case "DefaultColumnNameMatch":
+                                    DefaultColumnNameMatch = Converters.ConvertToIntWithClamp(settingNode.Value, 0, 0);
+                                    break;
+                                case "DefaultColumnPriority":
+                                    DefaultColumnPriority = (DefaultColumnPriority)Converters.ConvertToInt(settingNode.Value);
+                                    break;
+                                case "MaxHistory":
+                                    MaxHistory = Converters.ConvertToIntWithClamp(settingNode.Value, 0, 0);
+                                    break;
+                                case "CurrentRequest":
+                                    CurrentRequest = settingNode.Value;
+                                    break;
+                            }
+                        }
+                    }
+                    else if (mainCategoryName == "History")
+                    {
+                        history.Clear();
+                        foreach (var requestNode in mainCategory.Elements())
+                        {
+                            if (requestNode.Name == "Request")
+                                AddNewRequest(requestNode);
+                        }
+                    }
+                }
+
                 saveGuard.Reset();
                 return true;
             }

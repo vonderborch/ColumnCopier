@@ -155,19 +155,16 @@ namespace ColumnCopier
 
             if (replace)
             {
-                var pre = seperatorItemPre_txt.Text;
-                var post = seperatorItemPost_txt.Text;
-                var intr = seperatorItem_txt.Text;
                 var lines = ccState.History[ccState.CurrentRequest].GetColumnRawText();
 
                 var str = new StringBuilder();
-                str.Append(pre);
+                str.Append(ccState.LineSeparatorOptionPre);
 
                 var last = lines.Count - 1;
                 for (var i = 0; i < lines.Count; i++)
-                    str.AppendFormat("{0}{1}", lines[i], i == last ? "" : intr);
+                    str.AppendFormat("{0}{1}", lines[i], i == last ? "" : ccState.LineSeparatorOptionInter);
 
-                str.Append(post);
+                str.Append(ccState.LineSeparatorOptionPost);
                 text = str.ToString();
             }
             else
@@ -293,8 +290,8 @@ namespace ColumnCopier
 
         public void StateNew()
         {
-            ClearHistory();
             StateSaveAs();
+            ClearHistory();
         }
 
         public void StateOpen(bool guardAlreadySet = false)
@@ -330,6 +327,8 @@ namespace ColumnCopier
             ToggleProgressBar();
 
             ccState.Load();
+
+            // update gui here
 
             ToggleProgressBar();
             saveGuard.Reset();
