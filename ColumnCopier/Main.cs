@@ -97,6 +97,67 @@ namespace ColumnCopier
             //LoadSettings($"{ExecutableDirectory}\\{fileToLoad}");
         }
 
+        public void CheckForUpdates()
+        {
+            if (saveGuard.CheckSet)
+            {
+                ToggleProgressBar();
+
+                var updateThread = new Thread(() => CheckForUpdatesHelper());
+
+                updateThread.Start();
+            }
+            else
+            {
+
+            }
+        }
+
+        public void CheckForUpdatesHelper()
+        {
+            var latestRelease = GitHub.GitHub.GetLatestRelease();
+            ToggleProgressBar();
+
+            if (latestRelease != null)
+            {
+                var releaseVersion = ConvertReleaseTagVersionToInt(latestRelease.tag_name);
+
+                if (releaseVersion > Constants.ProgramVersion)
+                {
+                    var result = GetMessageBox(Constants.Instance.MessageTitleNewReleaseAvailable, string.Format(Constants.Instance.MessageBodyNewReleaseAvailable, latestRelease.tag_name));
+                    
+                    switch (result)
+                    {
+                        case DialogResult.Yes:
+                            Process.Start(latestRelease.html_url);
+                            break;
+                    }
+                }
+                else
+                {
+                    GetMessageBox(Constants.Instance.MessageTitleNoNewRelease, Constants.Instance.MessageBodyNoNewRelease,
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            else
+            {
+                GetMessageBox(Constants.Instance.MessageTitleLatestReleaseUnavailable, Constants.Instance.MessageBodyLatestReleaseUnavailable, 
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+
+            saveGuard.Reset();
+        }
+
+        private static int ConvertReleaseTagVersionToInt(string tag)
+        {
+            var tagBits = tag.Split('.');
+            var str = new StringBuilder();
+            foreach (var bit in tagBits)
+                str.Append(bit);
+
+            return Converters.ConvertToInt(str.ToString(), -1);
+        }
+
         private string ExecutableName
         {
             get { return System.IO.Path.GetFileNameWithoutExtension(System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase); }
@@ -952,6 +1013,11 @@ namespace ColumnCopier
         private void seperatorItemPost_txt_TextChanged(object sender, EventArgs e)
         {
             ccState.LineSeparatorOptionPost = seperatorItemPost_txt.Text;
+        }
+
+        private void helpUpdateCheck_itm_Click(object sender, EventArgs e)
+        {
+            CheckForUpdates();
         }
     }
 }

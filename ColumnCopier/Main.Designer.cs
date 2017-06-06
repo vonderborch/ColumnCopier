@@ -154,6 +154,8 @@
             this.groupBox7 = new System.Windows.Forms.GroupBox();
             this.label16 = new System.Windows.Forms.Label();
             this.flowLayoutPanel5 = new System.Windows.Forms.FlowLayoutPanel();
+            this.helpUpdateCheck_itm = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator13 = new System.Windows.Forms.ToolStripSeparator();
             this.menuStrip1.SuspendLayout();
             this.flowLayoutPanel1.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -547,7 +549,7 @@
             this.helpToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1524, 49);
+            this.menuStrip1.Size = new System.Drawing.Size(1524, 52);
             this.menuStrip1.TabIndex = 29;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -564,7 +566,7 @@
             this.toolStripSeparator4,
             this.fileExit_itm});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(75, 45);
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(75, 48);
             this.fileToolStripMenuItem.Text = "File";
             // 
             // fileNew_itm
@@ -640,7 +642,7 @@
             this.toolStripSeparator8,
             this.inputSettingsToolStripMenuItem});
             this.requestToolStripMenuItem.Name = "requestToolStripMenuItem";
-            this.requestToolStripMenuItem.Size = new System.Drawing.Size(100, 45);
+            this.requestToolStripMenuItem.Size = new System.Drawing.Size(100, 48);
             this.requestToolStripMenuItem.Text = "Input";
             // 
             // inputPaste_itm
@@ -772,7 +774,7 @@
             this.toolStripSeparator10,
             this.outputSettingsToolStripMenuItem});
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(125, 45);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(125, 48);
             this.toolStripMenuItem1.Text = "Output";
             // 
             // outputCopyColumn_itm
@@ -941,7 +943,7 @@
             this.historyClearHistory_itm,
             this.historySettingsToolStripMenuItem});
             this.historyToolStripMenuItem.Name = "historyToolStripMenuItem";
-            this.historyToolStripMenuItem.Size = new System.Drawing.Size(124, 45);
+            this.historyToolStripMenuItem.Size = new System.Drawing.Size(124, 48);
             this.historyToolStripMenuItem.Text = "History";
             // 
             // historyDeleteRequest_itm
@@ -1004,34 +1006,36 @@
             this.helpSupport_itm,
             this.helpDocumentation_itm,
             this.toolStripSeparator1,
+            this.helpUpdateCheck_itm,
+            this.toolStripSeparator13,
             this.helpAbout_itm});
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
-            this.helpToolStripMenuItem.Size = new System.Drawing.Size(92, 45);
+            this.helpToolStripMenuItem.Size = new System.Drawing.Size(92, 48);
             this.helpToolStripMenuItem.Text = "Help";
             // 
             // helpSupport_itm
             // 
             this.helpSupport_itm.Name = "helpSupport_itm";
-            this.helpSupport_itm.Size = new System.Drawing.Size(338, 46);
+            this.helpSupport_itm.Size = new System.Drawing.Size(383, 46);
             this.helpSupport_itm.Text = "Support";
             this.helpSupport_itm.Click += new System.EventHandler(this.helpSupport_itm_Click);
             // 
             // helpDocumentation_itm
             // 
             this.helpDocumentation_itm.Name = "helpDocumentation_itm";
-            this.helpDocumentation_itm.Size = new System.Drawing.Size(338, 46);
+            this.helpDocumentation_itm.Size = new System.Drawing.Size(383, 46);
             this.helpDocumentation_itm.Text = "Documentation";
             this.helpDocumentation_itm.Click += new System.EventHandler(this.helpDocumentation_itm_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(335, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(380, 6);
             // 
             // helpAbout_itm
             // 
             this.helpAbout_itm.Name = "helpAbout_itm";
-            this.helpAbout_itm.Size = new System.Drawing.Size(338, 46);
+            this.helpAbout_itm.Size = new System.Drawing.Size(383, 46);
             this.helpAbout_itm.Text = "About";
             this.helpAbout_itm.Click += new System.EventHandler(this.helpAbout_itm_Click);
             // 
@@ -1372,6 +1376,18 @@
             this.flowLayoutPanel5.Size = new System.Drawing.Size(1477, 62);
             this.flowLayoutPanel5.TabIndex = 34;
             // 
+            // helpUpdateCheck_itm
+            // 
+            this.helpUpdateCheck_itm.Name = "helpUpdateCheck_itm";
+            this.helpUpdateCheck_itm.Size = new System.Drawing.Size(383, 46);
+            this.helpUpdateCheck_itm.Text = "Check For Updates";
+            this.helpUpdateCheck_itm.Click += new System.EventHandler(this.helpUpdateCheck_itm_Click);
+            // 
+            // toolStripSeparator13
+            // 
+            this.toolStripSeparator13.Name = "toolStripSeparator13";
+            this.toolStripSeparator13.Size = new System.Drawing.Size(380, 6);
+            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(16F, 31F);
@@ -1544,6 +1560,8 @@
         private System.Windows.Forms.ToolStripMenuItem outputSettingLineReplacementPresetDoubleQuoteComma_itm;
         private System.Windows.Forms.ToolStripMenuItem helpSupport_itm;
         private System.Windows.Forms.ToolStripMenuItem historyClearHistory_itm;
+        private System.Windows.Forms.ToolStripMenuItem helpUpdateCheck_itm;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator13;
     }
 }
 

@@ -146,6 +146,16 @@ namespace ColumnCopier
         /// </summary>
         /// <value>The git hub repository.</value>
         public string GitHubRepository { get; private set; } = "ColumnCopier";
+        
+        public string MessageTitleLatestReleaseUnavailable { get; private set; } = "Unable to Find Latest Release";
+        public string MessageBodyLatestReleaseUnavailable { get; private set; } = "Unable to discover the latest release!";
+
+        public string MessageTitleNewReleaseAvailable { get; private set; } = "Update Available";
+        public string MessageBodyNewReleaseAvailable { get; private set; } = "A newly released version is available, version {0}. Would you like to download the update?";
+
+        public string MessageTitleNoNewRelease { get; private set; } = "No Updates";
+        public string MessageBodyNoNewRelease { get; private set; } = "You already have the latest version of this program!";
+
 
         public string MessageBodyNoRequestHistory { get; private set; } = "There are currently no requests available.";
         public string MessageTitleNoRequestHistory { get; private set; } = "No Request History";
