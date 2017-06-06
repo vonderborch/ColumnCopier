@@ -214,6 +214,20 @@
     <Content Include="Assets\logo.ico" />
     <Content Include="Assets\logo.png" />
   </ItemGroup>
+  <ItemGroup>
+    <FileAssociation Include=".ccs">
+      <Visible>False</Visible>
+      <Description>Column Copier Save File</Description>
+      <Progid>ccsfile</Progid>
+      <DefaultIcon>Assets\logo.ico</DefaultIcon>
+    </FileAssociation>
+    <FileAssociation Include=".ccx">
+      <Visible>False</Visible>
+      <Description>Column Copier Compressed Save File</Description>
+      <Progid>ccxfile</Progid>
+      <DefaultIcon>Assets\logo.ico</DefaultIcon>
+    </FileAssociation>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
