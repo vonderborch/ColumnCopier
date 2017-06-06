@@ -72,6 +72,7 @@
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.clearToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.fileSettingsShowOnTop_itm = new System.Windows.Forms.ToolStripMenuItem();
+            this.fileSettingsCompressSave_itm = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.fileExit_itm = new System.Windows.Forms.ToolStripMenuItem();
             this.requestToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -125,6 +126,8 @@
             this.helpSupport_itm = new System.Windows.Forms.ToolStripMenuItem();
             this.helpDocumentation_itm = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.helpUpdateCheck_itm = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator13 = new System.Windows.Forms.ToolStripSeparator();
             this.helpAbout_itm = new System.Windows.Forms.ToolStripMenuItem();
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
@@ -154,9 +157,7 @@
             this.groupBox7 = new System.Windows.Forms.GroupBox();
             this.label16 = new System.Windows.Forms.Label();
             this.flowLayoutPanel5 = new System.Windows.Forms.FlowLayoutPanel();
-            this.helpUpdateCheck_itm = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator13 = new System.Windows.Forms.ToolStripSeparator();
-            this.fileSettingsCompressSave_itm = new System.Windows.Forms.ToolStripMenuItem();
+            this.fileSettingsProgramOpacity_itm = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.flowLayoutPanel1.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -612,7 +613,8 @@
             // 
             this.clearToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileSettingsShowOnTop_itm,
-            this.fileSettingsCompressSave_itm});
+            this.fileSettingsCompressSave_itm,
+            this.fileSettingsProgramOpacity_itm});
             this.clearToolStripMenuItem.Name = "clearToolStripMenuItem";
             this.clearToolStripMenuItem.Size = new System.Drawing.Size(361, 46);
             this.clearToolStripMenuItem.Text = "Program Settings";
@@ -620,9 +622,16 @@
             // fileSettingsShowOnTop_itm
             // 
             this.fileSettingsShowOnTop_itm.Name = "fileSettingsShowOnTop_itm";
-            this.fileSettingsShowOnTop_itm.Size = new System.Drawing.Size(334, 46);
+            this.fileSettingsShowOnTop_itm.Size = new System.Drawing.Size(356, 46);
             this.fileSettingsShowOnTop_itm.Text = "Show On Top";
             this.fileSettingsShowOnTop_itm.Click += new System.EventHandler(this.fileSettingsShowOnTop_itm_Click);
+            // 
+            // fileSettingsCompressSave_itm
+            // 
+            this.fileSettingsCompressSave_itm.Name = "fileSettingsCompressSave_itm";
+            this.fileSettingsCompressSave_itm.Size = new System.Drawing.Size(356, 46);
+            this.fileSettingsCompressSave_itm.Text = "Compress Save";
+            this.fileSettingsCompressSave_itm.Click += new System.EventHandler(this.fileSettingsCompressSave_itm_Click);
             // 
             // toolStripSeparator4
             // 
@@ -1034,6 +1043,18 @@
             this.toolStripSeparator1.Name = "toolStripSeparator1";
             this.toolStripSeparator1.Size = new System.Drawing.Size(380, 6);
             // 
+            // helpUpdateCheck_itm
+            // 
+            this.helpUpdateCheck_itm.Name = "helpUpdateCheck_itm";
+            this.helpUpdateCheck_itm.Size = new System.Drawing.Size(383, 46);
+            this.helpUpdateCheck_itm.Text = "Check For Updates";
+            this.helpUpdateCheck_itm.Click += new System.EventHandler(this.helpUpdateCheck_itm_Click);
+            // 
+            // toolStripSeparator13
+            // 
+            this.toolStripSeparator13.Name = "toolStripSeparator13";
+            this.toolStripSeparator13.Size = new System.Drawing.Size(380, 6);
+            // 
             // helpAbout_itm
             // 
             this.helpAbout_itm.Name = "helpAbout_itm";
@@ -1378,24 +1399,12 @@
             this.flowLayoutPanel5.Size = new System.Drawing.Size(1477, 62);
             this.flowLayoutPanel5.TabIndex = 34;
             // 
-            // helpUpdateCheck_itm
+            // fileSettingsProgramOpacity_itm
             // 
-            this.helpUpdateCheck_itm.Name = "helpUpdateCheck_itm";
-            this.helpUpdateCheck_itm.Size = new System.Drawing.Size(383, 46);
-            this.helpUpdateCheck_itm.Text = "Check For Updates";
-            this.helpUpdateCheck_itm.Click += new System.EventHandler(this.helpUpdateCheck_itm_Click);
-            // 
-            // toolStripSeparator13
-            // 
-            this.toolStripSeparator13.Name = "toolStripSeparator13";
-            this.toolStripSeparator13.Size = new System.Drawing.Size(380, 6);
-            // 
-            // fileSettingsCompressSave_itm
-            // 
-            this.fileSettingsCompressSave_itm.Name = "fileSettingsCompressSave_itm";
-            this.fileSettingsCompressSave_itm.Size = new System.Drawing.Size(334, 46);
-            this.fileSettingsCompressSave_itm.Text = "Compress Save";
-            this.fileSettingsCompressSave_itm.Click += new System.EventHandler(this.fileSettingsCompressSave_itm_Click);
+            this.fileSettingsProgramOpacity_itm.Name = "fileSettingsProgramOpacity_itm";
+            this.fileSettingsProgramOpacity_itm.Size = new System.Drawing.Size(356, 46);
+            this.fileSettingsProgramOpacity_itm.Text = "Program Opacity";
+            this.fileSettingsProgramOpacity_itm.Click += new System.EventHandler(this.fileSettingsProgramOpacity_itm_Click);
             // 
             // Main
             // 
@@ -1572,6 +1581,7 @@
         private System.Windows.Forms.ToolStripMenuItem helpUpdateCheck_itm;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator13;
         private System.Windows.Forms.ToolStripMenuItem fileSettingsCompressSave_itm;
+        private System.Windows.Forms.ToolStripMenuItem fileSettingsProgramOpacity_itm;
     }
 }
 

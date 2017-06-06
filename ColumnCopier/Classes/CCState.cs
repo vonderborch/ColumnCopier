@@ -25,6 +25,8 @@ namespace ColumnCopier.Classes
             get { return historyLog.FindIndex(x => x == CurrentRequest); }
         }
 
+        public int ProgramOpacity { get; set; } = 100;
+
         public DefaultColumnPriority DefaultColumnPriority { get; set; }
 
         private Dictionary<string, Request> history = new Dictionary<string, Request>();
@@ -198,6 +200,7 @@ namespace ColumnCopier.Classes
                 str.AppendLine($"<DataHasHeaders>{DataHasHeaders}</DataHasHeaders>");
                 str.AppendLine($"<CleanInputData>{CleanInputData}</CleanInputData>");
                 str.AppendLine($"<RemoveEmptyLines>{RemoveEmptyLines}</RemoveEmptyLines>");
+                str.AppendLine($"<ProgramOpacity>{ProgramOpacity}</ProgramOpacity>");
 
                 str.AppendLine($"<LineSeparatorOptionIndex>{LineSeparatorOptionIndex}</LineSeparatorOptionIndex>");
                 str.AppendLine($"<LineSeparatorOptionPre>{LineSeparatorOptionPre}</LineSeparatorOptionPre>");
@@ -326,6 +329,9 @@ namespace ColumnCopier.Classes
                                     break;
                                 case "MaxHistory":
                                     MaxHistory = Converters.ConvertToIntWithClamp(settingNode.Value, 0, 0);
+                                    break;
+                                case "ProgramOpacity":
+                                    ProgramOpacity = Converters.ConvertToIntWithClamp(settingNode.Value, 100, 0, 100);
                                     break;
                                 case "CurrentRequest":
                                     CurrentRequest = settingNode.Value;

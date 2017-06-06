@@ -402,6 +402,7 @@ namespace ColumnCopier
             if (result)
             {
                 // update gui here
+                ChangeOpacity();
                 UpdateCheckBox(removeBlankLines_cxb, ccState.RemoveEmptyLines);
                 UpdateCheckBox(dataHasHeaders_cxb, ccState.DataHasHeaders);
                 UpdateCheckBox(cleanInputText_cxb, ccState.CleanInputData);
@@ -1218,6 +1219,33 @@ namespace ColumnCopier
                 if (File.Exists(file))
                     File.Delete(file);
             }
+        }
+
+        public void ChangeOpacity()
+        {
+            ChangeFormOpacity(this, ccState.ProgramOpacity);
+        }
+
+        public void ChangeFormOpacity(Form form, int value)
+        {
+            if (form.InvokeRequired)
+            {
+                var d = new ChangeFormOpacityDelegate(ChangeFormOpacity);
+                this.Invoke(d, new object[] { form, value });
+            }
+            else
+            {
+                form.Opacity = (value / 100d);
+            }
+        }
+        private delegate void ChangeFormOpacityDelegate(Form form, int value);
+
+        private void fileSettingsProgramOpacity_itm_Click(object sender, EventArgs e)
+        {
+            var opacity = GetTextboxInputResults(Constants.Instance.InputQueryProgramOpacity, ccState.ProgramOpacity.ToString());
+            ccState.ProgramOpacity = Converters.ConvertToIntWithClamp(opacity, 100, 0, 100);
+            ChangeOpacity();
+            StateSave();
         }
     }
 }

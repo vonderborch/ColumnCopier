@@ -215,6 +215,12 @@ namespace ColumnCopier
         public string InputQueryNextLineCopyLine { get; private set; } = "What should the next line to copy be?";
 
         /// <summary>
+        /// Gets the input query program opacity.
+        /// </summary>
+        /// <value>The input query program opacity.</value>
+        public string InputQueryProgramOpacity { get; private set; } = "Program opacity?";
+
+        /// <summary>
         /// Gets the save extension.
         /// </summary>
         /// <value>The save extension.</value>
