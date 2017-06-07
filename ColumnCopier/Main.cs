@@ -89,6 +89,8 @@ namespace ColumnCopier
         {
             InitializeComponent();
 
+            UpdateStatusText("Welcome!");
+
             ccState = new CCState();
             checkGuard = new Guard();
             saveGuard = new Guard();
@@ -259,6 +261,7 @@ namespace ColumnCopier
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void ChangeColumn(int columnIndex)
         {
+            UpdateStatusText("Changing column...");
             ccState.History[ccState.CurrentRequest].SetCurrentColumn(columnIndex);
             UpdateTextBox(currentColumnText_txt, ccState.History[ccState.CurrentRequest].GetCurrentColumnText());
 
@@ -270,6 +273,7 @@ namespace ColumnCopier
             UpdateLabelText(statNumberRows_txt, string.Format(Constants.Instance.FormatStatNumberRows,
                 ccState.History[ccState.CurrentRequest].GetColumnRawText().Count));
 
+            UpdateStatusText("Column changed!");
             StateSave();
         }
 
@@ -282,6 +286,7 @@ namespace ColumnCopier
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void ChangeFormOpacity(Form form, int value)
         {
+            UpdateStatusText("Changing program opacity...");
             if (form.InvokeRequired)
             {
                 var d = new ChangeFormOpacityDelegate(ChangeFormOpacity);
@@ -290,6 +295,7 @@ namespace ColumnCopier
             else
             {
                 form.Opacity = (value / 100d);
+                UpdateStatusText("Opacity changed!");
             }
         }
 
@@ -311,10 +317,12 @@ namespace ColumnCopier
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void ChangeRequest(int requestIndex)
         {
+            UpdateStatusText("Changing request...");
             ccState.CurrentRequest = ccState.HistoryLog[ccState.GetRequestHistoryPosition(requestHistory_cmb.Items[requestIndex].ToString())];
 
             UpdateComboBoxItems(currentColumn_cmb, ccState.CurrentRequestColumnNames());
             UpdateComboBoxIndex(currentColumn_cmb, ccState.History[ccState.CurrentRequest].CurrentColumnIndex);
+            UpdateStatusText("Request changed!");
         }
 
         /// <summary>
@@ -325,6 +333,7 @@ namespace ColumnCopier
         ///             - 1.3.0 (05-30-2017) - Initial version.
         public void CheckForUpdates()
         {
+            UpdateStatusText("Checking for updates...");
             if (saveGuard.CheckSet)
             {
                 ToggleProgressBar();
@@ -335,6 +344,7 @@ namespace ColumnCopier
             }
             else
             {
+                UpdateStatusText("Busy, please try again!");
             }
         }
 
@@ -347,31 +357,41 @@ namespace ColumnCopier
         {
             var latestRelease = GitHub.GitHub.GetLatestRelease();
             ToggleProgressBar();
-
-            if (latestRelease != null)
+            
+            switch (latestRelease.Status)
             {
-                var releaseVersion = ConvertReleaseTagVersionToInt(latestRelease.tag_name);
-
-                if (releaseVersion > Constants.ProgramVersion)
-                {
-                    var result = GetMessageBox(Constants.Instance.MessageTitleNewReleaseAvailable, string.Format(Constants.Instance.MessageBodyNewReleaseAvailable, latestRelease.tag_name));
-
-                    switch (result)
-                    {
-                        case DialogResult.Yes:
-                            Process.Start(latestRelease.html_url);
-                            break;
-                    }
-                }
-                else
-                {
-                    GetMessageBox(Constants.Instance.MessageTitleNoNewRelease, Constants.Instance.MessageBodyNoNewRelease,
+                case "GitHubStatusDown":
+                    GetMessageBox(Constants.Instance.MessageTitleGitHubDown, Constants.Instance.MessageBodyGitHubDown,
                         MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    UpdateStatusText(Constants.Instance.MessageTitleGitHubDown);
+                    saveGuard.Reset();
+                    return;
+                case "GitHubStatusReleaseUnavailable":
+                    GetMessageBox(Constants.Instance.MessageTitleLatestReleaseUnavailable, Constants.Instance.MessageBodyLatestReleaseUnavailable,
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    UpdateStatusText(Constants.Instance.MessageTitleLatestReleaseUnavailable);
+                    saveGuard.Reset();
+                    return;
+            }
+            
+            var releaseVersion = ConvertReleaseTagVersionToInt(latestRelease.tag_name);
+
+            if (releaseVersion > Constants.ProgramVersion)
+            {
+                UpdateStatusText(Constants.Instance.MessageTitleNewReleaseAvailable);
+                var result = GetMessageBox(Constants.Instance.MessageTitleNewReleaseAvailable, string.Format(Constants.Instance.MessageBodyNewReleaseAvailable, latestRelease.tag_name));
+
+                switch (result)
+                {
+                    case DialogResult.Yes:
+                        Process.Start(latestRelease.html_url);
+                        break;
                 }
             }
             else
             {
-                GetMessageBox(Constants.Instance.MessageTitleLatestReleaseUnavailable, Constants.Instance.MessageBodyLatestReleaseUnavailable,
+                UpdateStatusText(Constants.Instance.MessageTitleNoNewRelease);
+                GetMessageBox(Constants.Instance.MessageTitleNoNewRelease, Constants.Instance.MessageBodyNoNewRelease,
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
 
@@ -385,6 +405,7 @@ namespace ColumnCopier
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void ClearHistory()
         {
+            UpdateStatusText("Clearing history...");
             ccState.CleanHistory(ccState.HistoryLog.Count, false);
             UpdateRequestHistory();
             StateSave();
@@ -398,6 +419,7 @@ namespace ColumnCopier
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void CopyColumn(bool replace)
         {
+            UpdateStatusText("Copying column...");
             var text = string.Empty;
 
             if (replace)
@@ -420,6 +442,7 @@ namespace ColumnCopier
             ClipBoard = text;
             currentColumnText_txt.Focus();
             currentColumnText_txt.SelectAll();
+            UpdateStatusText("Column copied!");
         }
 
         /// <summary>
@@ -429,6 +452,7 @@ namespace ColumnCopier
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void CopyLine()
         {
+            UpdateStatusText("Copying next line...");
             var index = Converters.ConvertToIntWithClamp(copyLineNumber_txt.Text, ccState.History[ccState.CurrentRequest].CopyNextLineIndex, 0, ccState.History[ccState.CurrentRequest].CurrentColumnRowCount - 1);
 
             if (index != ccState.History[ccState.CurrentRequest].CopyNextLineIndex)
@@ -437,6 +461,7 @@ namespace ColumnCopier
             var text = ccState.History[ccState.CurrentRequest].GetCurrentColumnNextLineText();
             UpdateTextBox(copyLineNumber_txt, ccState.History[ccState.CurrentRequest].CopyNextLineIndex.ToString());
             ClipBoard = text;
+            UpdateStatusText($"Line {(ccState.History[ccState.CurrentRequest].CopyNextLineIndex - 1).ToString()} copied ({text})!");
         }
 
         /// <summary>
@@ -446,10 +471,12 @@ namespace ColumnCopier
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void DeleteRequest()
         {
+            UpdateStatusText("Deleting request...");
             ccState.DeleteCurrentRequest();
             UpdateRequestHistory();
             if (requestHistory_cmb.Items.Count > 0)
                 requestHistory_cmb.SelectedIndex = 0;
+            UpdateStatusText("Request deleted!");
             StateSave();
         }
 
@@ -460,7 +487,9 @@ namespace ColumnCopier
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void ExportRequest()
         {
+            UpdateStatusText("Exporting request...");
             ClipBoard = ccState.ExportCurrentRequest();
+            UpdateStatusText("Request exported!");
         }
 
         /// <summary>
@@ -470,8 +499,10 @@ namespace ColumnCopier
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void OpenAbout()
         {
+            UpdateStatusText("Opening about...");
             var about = new About();
             about.ShowDialog();
+            UpdateStatusText("About opened!");
         }
 
         /// <summary>
@@ -482,7 +513,9 @@ namespace ColumnCopier
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void OpenWebPage(string url)
         {
+            UpdateStatusText("Opening browser...");
             Process.Start(url);
+            UpdateStatusText($"Browser opened for {url}");
         }
 
         /// <summary>
@@ -492,6 +525,7 @@ namespace ColumnCopier
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void PasteInput()
         {
+            UpdateStatusText("Pasting input...");
             if (pasteGuard.CheckSet)
             {
                 var lastPreservationState = preserveCurrentRequest_cxb.Checked;
@@ -514,6 +548,11 @@ namespace ColumnCopier
                 UpdateRequestHistory();
                 UpdateComboBoxIndex(requestHistory_cmb, 0);
                 pasteGuard.Reset();
+                UpdateStatusText("Input pasted!");
+            }
+            else
+            {
+                UpdateStatusText("Busy, please try again...");
             }
         }
 
@@ -525,6 +564,7 @@ namespace ColumnCopier
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void PreserveCurrentRequest(bool? set = null)
         {
+            UpdateStatusText("Preserving current request...");
             if (checkGuard.CheckSet)
             {
                 if (set == null)
@@ -543,6 +583,11 @@ namespace ColumnCopier
                     StateSave();
 
                 checkGuard.Reset();
+                UpdateStatusText("Request preserved!");
+            }
+            else
+            {
+                UpdateStatusText("Busy, please try again!");
             }
         }
 
@@ -553,6 +598,7 @@ namespace ColumnCopier
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void StateLoad()
         {
+            UpdateStatusText("Choose file to load...");
             var fileSelector = new OpenFileDialog();
             fileSelector.DefaultExt = Constants.Instance.SaveExtension;
             fileSelector.Filter = string.Format("Column Copier Save File ({0})|*{0}|Compressed Column Copier Save File ({1})|*{1}",
@@ -563,6 +609,7 @@ namespace ColumnCopier
             var file = fileSelector.FileName;
             ccState.SaveFile = file;
 
+            UpdateStatusText("File choosen!");
             StateOpen();
         }
 
@@ -585,6 +632,7 @@ namespace ColumnCopier
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void StateOpen(bool guardAlreadySet = false)
         {
+            UpdateStatusText("Attempting to load file...");
             if (!guardAlreadySet) while (!saveGuard.CheckSet) ;
 
             var loadThread = new Thread(() => StateLoadHelper());
@@ -624,8 +672,10 @@ namespace ColumnCopier
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void StateSaveAs()
         {
+            UpdateStatusText("Attempting to save file...");
             while (!saveGuard.CheckSet) ;
 
+            UpdateStatusText("Choosing new file name...");
             SaveFileDialog fileSelector = new SaveFileDialog();
             fileSelector.DefaultExt = Constants.Instance.SaveExtension;
             fileSelector.Filter = string.Format("Column Copier Save File ({0})|*{0}|Compressed Column Copier Save File ({1})|*{1}",
@@ -635,6 +685,7 @@ namespace ColumnCopier
             fileSelector.ShowDialog();
             var file = fileSelector.FileName;
             ccState.SaveFile = file;
+            UpdateStatusText("Filename choosen!");
             StateSave(true);
         }
 
@@ -646,6 +697,7 @@ namespace ColumnCopier
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void ToggleCleanInputText(bool? set = null)
         {
+            UpdateStatusText("Toggling input cleaning...");
             if (checkGuard.CheckSet)
             {
                 if (set == null)
@@ -662,6 +714,11 @@ namespace ColumnCopier
                 ccState.RemoveEmptyLines = cleanInputText_cxb.Checked;
                 StateSave();
                 checkGuard.Reset();
+                UpdateStatusText("Input cleaning toggled!");
+            }
+            else
+            {
+                UpdateStatusText("Busy, please try again!");
             }
         }
 
@@ -673,6 +730,7 @@ namespace ColumnCopier
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void ToggleDataHasHeaders(bool? set = null)
         {
+            UpdateStatusText("Toggling data headers...");
             if (checkGuard.CheckSet)
             {
                 if (set == null)
@@ -689,6 +747,11 @@ namespace ColumnCopier
                 ccState.DataHasHeaders = dataHasHeaders_cxb.Checked;
                 StateSave();
                 checkGuard.Reset();
+                UpdateStatusText("Data headers toggled!");
+            }
+            else
+            {
+                UpdateStatusText("Busy, please try again!");
             }
         }
 
@@ -700,6 +763,7 @@ namespace ColumnCopier
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void ToggleRemoveBlankLines(bool? set = null)
         {
+            UpdateStatusText("Toggling blank line removal...");
             if (checkGuard.CheckSet)
             {
                 if (set == null)
@@ -716,6 +780,11 @@ namespace ColumnCopier
                 ccState.RemoveEmptyLines = removeBlankLines_cxb.Checked;
                 StateSave();
                 checkGuard.Reset();
+                UpdateStatusText("Blank line removal toggled!");
+            }
+            else
+            {
+                UpdateStatusText("Busy, please try again!");
             }
         }
 
@@ -726,6 +795,7 @@ namespace ColumnCopier
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void ToggleSaveCompression()
         {
+            UpdateStatusText("Toggling save compression...");
             if (saveGuard.CheckSet)
             {
                 var file = ccState.SaveFile;
@@ -748,6 +818,11 @@ namespace ColumnCopier
                 // delete the old save file...
                 if (File.Exists(file))
                     File.Delete(file);
+                UpdateStatusText("Save compression toggled!");
+            }
+            else
+            {
+                UpdateStatusText("Busy, please try again!");
             }
         }
 
@@ -759,6 +834,7 @@ namespace ColumnCopier
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void ToggleShowOnTop(bool? set = null)
         {
+            UpdateStatusText("Toggling program shown on top...");
             if (checkGuard.CheckSet)
             {
                 if (set == null)
@@ -777,6 +853,11 @@ namespace ColumnCopier
 
                 StateSave();
                 checkGuard.Reset();
+                UpdateStatusText("Program shown on top toggled!");
+            }
+            else
+            {
+                UpdateStatusText("Busy, please try again!");
             }
         }
 
@@ -788,6 +869,7 @@ namespace ColumnCopier
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void UpdateLineSeperatorOptions(LineSeparatorOptions option)
         {
+            UpdateStatusText("Updating line separator option...");
             if (checkGuard.CheckSet)
             {
                 var sep = string.Empty;
@@ -854,6 +936,11 @@ namespace ColumnCopier
                 UpdateTextBox(seperatorItemPost_txt, post);
 
                 checkGuard.Reset();
+                UpdateStatusText("Line separator option updated!");
+            }
+            else
+            {
+                UpdateStatusText("Busy, please try again!");
             }
         }
 
@@ -1805,6 +1892,7 @@ namespace ColumnCopier
         ///             - 2.0.0 (06-06-2017) - Initial version.
         private void StateLoadHelper()
         {
+            UpdateStatusText("Loading program state...");
             ToggleProgressBar();
 
             var result = ccState.Load();
@@ -1840,6 +1928,7 @@ namespace ColumnCopier
 
             ToggleProgressBar();
             saveGuard.Reset();
+            UpdateStatusText("State loaded!");
         }
 
         /// <summary>
@@ -1897,12 +1986,14 @@ namespace ColumnCopier
         ///             - 2.0.0 (06-06-2017) - Initial version.
         private void StateSaveHelper()
         {
+            UpdateStatusText("Saving program state...");
             ToggleProgressBar();
 
             ccState.Save();
 
             ToggleProgressBar();
             saveGuard.Reset();
+            UpdateStatusText("Program state saved!");
         }
 
         /// <summary>
@@ -2086,6 +2177,17 @@ namespace ColumnCopier
             UpdateLabelText(statCurrentColumn_txt, string.Format(Constants.Instance.FormatStatCurrentColumn, string.Empty, string.Empty));
             UpdateLabelText(statNumberColumns_txt, string.Format(Constants.Instance.FormatStatNumberColumns, string.Empty));
             UpdateLabelText(statNumberRows_txt, string.Format(Constants.Instance.FormatStatNumberRows, string.Empty));
+        }
+
+        /// <summary>
+        /// Updates the status text.
+        /// </summary>
+        /// <param name="text">The text.</param>
+        ///  Changelog:
+        ///             - 2.0.0 (06-06-2017) - Initial version.
+        public void UpdateStatusText(string text)
+        {
+            UpdateLabelText(status_txt, text);
         }
 
         /// <summary>

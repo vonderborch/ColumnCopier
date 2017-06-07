@@ -6,7 +6,7 @@
 //
 // Version          : 2.0.0
 // Last Modified By : Christian
-// Last Modified On : 05-31-2017
+// Last Modified On : 06-06-2017
 // ***********************************************************************
 // <copyright file="GitHub.cs" company="Christian Webber">
 //		Copyright ©  2016 - 2017
@@ -16,6 +16,7 @@
 // </summary>
 //
 // Changelog:
+//            - 2.0.0 (06-06-2017) - Added Github Status Check
 //            - 2.0.0 (05-31-2017) - Moved public fields to Constants.cs
 //            - 1.3.0 (05-30-2017) - Initial code for detecting the latest release of the app.
 // ***********************************************************************
@@ -23,6 +24,7 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Runtime.Serialization.Json;
 
 /// <summary>
 /// The GitHub namespace.
@@ -41,9 +43,53 @@ namespace ColumnCopier.GitHub
         /// </summary>
         /// <returns>Release.</returns>
         ///  Changelog:
+        ///             - 2.0.0 (06-06-2017) - Moved public fields to Constants.cs
         ///             - 2.0.0 (05-31-2017) - Moved public fields to Constants.cs
         ///             - 1.3.0 (05-30-2017) - Initial version.
         public static Release GetLatestRelease()
+        {
+            return CheckGithubStatus()
+                ? GetGithubLatestRelease()
+                : new Release() { html_url = string.Empty, tag_name = string.Empty, Status = Constants.Instance.GitHubStatusDown };
+        }
+
+        #endregion Public Methods
+
+        #region Private Methods
+
+        /// <summary>
+        /// Checks the github status.
+        /// </summary>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        ///  Changelog:
+        ///             - 2.0.0 (06-06-2017) - Initial version
+        private static bool CheckGithubStatus()
+        {
+            var uri = Constants.Instance.GitHubStatusUrl;
+            WebClient client = new WebClient();
+            client.Headers.Add("user-agent", "Mozilla/5.0 (Windows NT 6.1; rv:15.0) Gecko/20120716 Firefox/15.0a2");
+
+            Stream data = client.OpenRead(uri);
+            StreamReader reader = new StreamReader(data);
+
+            if (reader == null) return false;
+
+            var deserializer = new DataContractJsonSerializer(typeof(Status));
+            var status = (Status)deserializer.ReadObject(reader.BaseStream);
+
+            return status.status != "major"
+                ? true
+                : false;
+        }
+
+        /// <summary>
+        /// Gets the github latest release.
+        /// </summary>
+        /// <returns>Release.</returns>
+        ///  Changelog:
+        ///             - 2.0.0 (06-06-2017) - Revised to use a deserializer
+        ///             - 2.0.0 (06-06-2017) - Initial version
+        private static Release GetGithubLatestRelease()
         {
             try
             {
@@ -53,44 +99,23 @@ namespace ColumnCopier.GitHub
 
                 Stream data = client.OpenRead(uri);
                 StreamReader reader = new StreamReader(data);
+                if (reader == null) throw new Exception("No stream!");
 
-                var release = new Release();
-                var line = reader.ReadLine();
-                do
-                {
-                    var splitLine = line.ToString().Split(':');
+                var deserializer = new DataContractJsonSerializer(typeof(Release));
+                var release = (Release)deserializer.ReadObject(reader.BaseStream);
 
-                    if (splitLine.Length > 1)
-                    {
-                        var key = splitLine[0];
-                        switch (key)
-                        {
-                            case "  \"html_url\"":
-                                release.html_url = $"{splitLine[1].Replace("\"", "")}:{splitLine[2].Replace("\"", "")}";
-                                break;
+                if (release == null) new Release() { Status = Constants.Instance.GitHubStatusReleaseUnavailable };
 
-                            case "  \"tag_name\"":
-                                release.tag_name = splitLine[1].Replace("\"", "");
-                                break;
-                        }
-
-                        if (!string.IsNullOrEmpty(release.tag_name) && !string.IsNullOrEmpty(release.html_url))
-                            break;
-                    }
-                    line = reader.ReadLine();
-                } while (line != null);
-
-                release.html_url = release.html_url.Remove(release.html_url.Length - 1);
-                release.tag_name = release.tag_name.Remove(release.tag_name.Length - 1);
+                release.Status = Constants.Instance.GitHubStatusGood;
                 return release;
             }
             catch (Exception ex)
             {
                 //add_error("Can't read html page " + url + " : " + e.Message);
-                return null;
+                return new Release() { html_url = string.Empty, tag_name = string.Empty, Status = Constants.Instance.GitHubStatusReleaseUnavailable };
             }
         }
 
-        #endregion Public Methods
+        #endregion Private Methods
     }
 }

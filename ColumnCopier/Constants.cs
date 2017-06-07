@@ -152,6 +152,30 @@ namespace ColumnCopier
         public string GitHubRepository { get; private set; } = "ColumnCopier";
 
         /// <summary>
+        /// Gets the git hub status down.
+        /// </summary>
+        /// <value>The git hub status down.</value>
+        public string GitHubStatusDown { get; private set; } = "GithubDown";
+
+        /// <summary>
+        /// Gets the git hub status good.
+        /// </summary>
+        /// <value>The git hub status good.</value>
+        public string GitHubStatusGood { get; private set; } = "ReleaseFound";
+
+        /// <summary>
+        /// Gets the git hub status release unavailable.
+        /// </summary>
+        /// <value>The git hub status release unavailable.</value>
+        public string GitHubStatusReleaseUnavailable { get; private set; } = "UnableToFindRelease";
+
+        /// <summary>
+        /// Gets the git hub status URL.
+        /// </summary>
+        /// <value>The git hub status URL.</value>
+        public string GitHubStatusUrl { get; private set; } = "https://status.github.com/api/status.json";
+
+        /// <summary>
         /// Gets the input query change history request.
         /// </summary>
         /// <value>The input query change history request.</value>
@@ -212,6 +236,12 @@ namespace ColumnCopier
         public string InputQueryProgramOpacity { get; private set; } = "Program opacity?";
 
         /// <summary>
+        /// Gets the message title latest release unavailable.
+        /// </summary>
+        /// <value>The message title latest release unavailable.</value>
+        public string MessageBodyGitHubDown { get; private set; } = "GitHub is down, please try again later.";
+
+        /// <summary>
         /// Gets the message body latest release unavailable.
         /// </summary>
         /// <value>The message body latest release unavailable.</value>
@@ -240,6 +270,12 @@ namespace ColumnCopier
         /// </summary>
         /// <value>The message title latest release unavailable.</value>
         public string MessageTitleLatestReleaseUnavailable { get; private set; } = "Unable to Find Latest Release";
+
+        /// <summary>
+        /// Gets the message title latest release unavailable.
+        /// </summary>
+        /// <value>The message title latest release unavailable.</value>
+        public string MessageTitleGitHubDown { get; private set; } = "GitHub Unavailable";
 
         /// <summary>
         /// Gets the message title new release available.
