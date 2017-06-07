@@ -56,12 +56,6 @@
             this.requestHistory_cmb = new System.Windows.Forms.ComboBox();
             this.maxHistory_txt = new System.Windows.Forms.TextBox();
             this.clearHistory_btn = new System.Windows.Forms.Button();
-            this.help_btn = new System.Windows.Forms.Button();
-            this.stateSaveAs_btn = new System.Windows.Forms.Button();
-            this.stateNew_btn = new System.Windows.Forms.Button();
-            this.stateSave_btn = new System.Windows.Forms.Button();
-            this.about_btn = new System.Windows.Forms.Button();
-            this.stateOpen_btn = new System.Windows.Forms.Button();
             this.cleanInputText_cxb = new System.Windows.Forms.CheckBox();
             this.dataHasHeaders_cxb = new System.Windows.Forms.CheckBox();
             this.removeBlankLines_cxb = new System.Windows.Forms.CheckBox();
@@ -157,7 +151,6 @@
             this.flowLayoutPanel4 = new System.Windows.Forms.FlowLayoutPanel();
             this.groupBox7 = new System.Windows.Forms.GroupBox();
             this.label16 = new System.Windows.Forms.Label();
-            this.flowLayoutPanel5 = new System.Windows.Forms.FlowLayoutPanel();
             this.status_txt = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             this.flowLayoutPanel1.SuspendLayout();
@@ -172,12 +165,11 @@
             this.groupBox6.SuspendLayout();
             this.flowLayoutPanel4.SuspendLayout();
             this.groupBox7.SuspendLayout();
-            this.flowLayoutPanel5.SuspendLayout();
             this.SuspendLayout();
             // 
             // progress_bar
             // 
-            this.progress_bar.Location = new System.Drawing.Point(1112, 2);
+            this.progress_bar.Location = new System.Drawing.Point(1269, 922);
             this.progress_bar.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.progress_bar.MarqueeAnimationSpeed = 25;
             this.progress_bar.Name = "progress_bar";
@@ -491,82 +483,6 @@
             this.clearHistory_btn.UseVisualStyleBackColor = true;
             this.clearHistory_btn.Click += new System.EventHandler(this.clearHistory_btn_Click);
             // 
-            // help_btn
-            // 
-            this.help_btn.Location = new System.Drawing.Point(797, 2);
-            this.help_btn.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.help_btn.Name = "help_btn";
-            this.help_btn.Size = new System.Drawing.Size(160, 60);
-            this.help_btn.TabIndex = 33;
-            this.help_btn.Text = "Help";
-            this.toolTip.SetToolTip(this.help_btn, "Opens the help wiki.");
-            this.help_btn.UseVisualStyleBackColor = true;
-            this.help_btn.Click += new System.EventHandler(this.help_btn_Click);
-            // 
-            // stateSaveAs_btn
-            // 
-            this.stateSaveAs_btn.AutoSize = true;
-            this.stateSaveAs_btn.Location = new System.Drawing.Point(524, 2);
-            this.stateSaveAs_btn.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.stateSaveAs_btn.Name = "stateSaveAs_btn";
-            this.stateSaveAs_btn.Size = new System.Drawing.Size(267, 60);
-            this.stateSaveAs_btn.TabIndex = 32;
-            this.stateSaveAs_btn.Text = "Save As New State";
-            this.toolTip.SetToolTip(this.stateSaveAs_btn, "Save the current state of the program to a new file.");
-            this.stateSaveAs_btn.UseVisualStyleBackColor = true;
-            this.stateSaveAs_btn.Click += new System.EventHandler(this.stateSaveAs_btn_Click);
-            // 
-            // stateNew_btn
-            // 
-            this.stateNew_btn.AutoSize = true;
-            this.stateNew_btn.Location = new System.Drawing.Point(3, 2);
-            this.stateNew_btn.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.stateNew_btn.Name = "stateNew_btn";
-            this.stateNew_btn.Size = new System.Drawing.Size(176, 60);
-            this.stateNew_btn.TabIndex = 31;
-            this.stateNew_btn.Text = "New State";
-            this.toolTip.SetToolTip(this.stateNew_btn, "Create a new save state.");
-            this.stateNew_btn.UseVisualStyleBackColor = true;
-            this.stateNew_btn.Click += new System.EventHandler(this.stateNew_btn_Click);
-            // 
-            // stateSave_btn
-            // 
-            this.stateSave_btn.AutoSize = true;
-            this.stateSave_btn.Location = new System.Drawing.Point(354, 2);
-            this.stateSave_btn.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.stateSave_btn.Name = "stateSave_btn";
-            this.stateSave_btn.Size = new System.Drawing.Size(164, 60);
-            this.stateSave_btn.TabIndex = 30;
-            this.stateSave_btn.Text = "Save State";
-            this.toolTip.SetToolTip(this.stateSave_btn, "Saves the current state of the program.");
-            this.stateSave_btn.UseVisualStyleBackColor = true;
-            this.stateSave_btn.Click += new System.EventHandler(this.stateSave_btn_Click);
-            // 
-            // about_btn
-            // 
-            this.about_btn.Location = new System.Drawing.Point(963, 2);
-            this.about_btn.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.about_btn.Name = "about_btn";
-            this.about_btn.Size = new System.Drawing.Size(143, 60);
-            this.about_btn.TabIndex = 34;
-            this.about_btn.Text = "About";
-            this.toolTip.SetToolTip(this.about_btn, "Bring up the help/about window.");
-            this.about_btn.UseVisualStyleBackColor = true;
-            this.about_btn.Click += new System.EventHandler(this.about_btn_Click);
-            // 
-            // stateOpen_btn
-            // 
-            this.stateOpen_btn.AutoSize = true;
-            this.stateOpen_btn.Location = new System.Drawing.Point(185, 2);
-            this.stateOpen_btn.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.stateOpen_btn.Name = "stateOpen_btn";
-            this.stateOpen_btn.Size = new System.Drawing.Size(163, 60);
-            this.stateOpen_btn.TabIndex = 35;
-            this.stateOpen_btn.Text = "Load State";
-            this.toolTip.SetToolTip(this.stateOpen_btn, "Load a new program state from another save file.");
-            this.stateOpen_btn.UseVisualStyleBackColor = true;
-            this.stateOpen_btn.Click += new System.EventHandler(this.stateOpen_btn_Click);
-            // 
             // cleanInputText_cxb
             // 
             this.cleanInputText_cxb.AutoSize = true;
@@ -692,7 +608,7 @@
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Padding = new System.Windows.Forms.Padding(5, 2, 0, 2);
-            this.menuStrip1.Size = new System.Drawing.Size(1493, 49);
+            this.menuStrip1.Size = new System.Drawing.Size(1499, 49);
             this.menuStrip1.TabIndex = 29;
             this.menuStrip1.Text = "menuStrip";
             // 
@@ -1455,25 +1371,10 @@
             this.label16.TabIndex = 39;
             this.label16.Text = "Max History:";
             // 
-            // flowLayoutPanel5
-            // 
-            this.flowLayoutPanel5.Controls.Add(this.stateNew_btn);
-            this.flowLayoutPanel5.Controls.Add(this.stateOpen_btn);
-            this.flowLayoutPanel5.Controls.Add(this.stateSave_btn);
-            this.flowLayoutPanel5.Controls.Add(this.stateSaveAs_btn);
-            this.flowLayoutPanel5.Controls.Add(this.help_btn);
-            this.flowLayoutPanel5.Controls.Add(this.about_btn);
-            this.flowLayoutPanel5.Controls.Add(this.progress_bar);
-            this.flowLayoutPanel5.Location = new System.Drawing.Point(13, 923);
-            this.flowLayoutPanel5.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.flowLayoutPanel5.Name = "flowLayoutPanel5";
-            this.flowLayoutPanel5.Size = new System.Drawing.Size(1477, 62);
-            this.flowLayoutPanel5.TabIndex = 34;
-            // 
             // status_txt
             // 
             this.status_txt.AutoSize = true;
-            this.status_txt.Location = new System.Drawing.Point(419, 880);
+            this.status_txt.Location = new System.Drawing.Point(15, 934);
             this.status_txt.Name = "status_txt";
             this.status_txt.Size = new System.Drawing.Size(31, 32);
             this.status_txt.TabIndex = 20;
@@ -1484,9 +1385,8 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(16F, 31F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.ClientSize = new System.Drawing.Size(1493, 1028);
-            this.Controls.Add(this.flowLayoutPanel5);
+            this.ClientSize = new System.Drawing.Size(1499, 989);
+            this.Controls.Add(this.progress_bar);
             this.Controls.Add(this.flowLayoutPanel4);
             this.Controls.Add(this.flowLayoutPanel3);
             this.Controls.Add(this.flowLayoutPanel2);
@@ -1522,8 +1422,6 @@
             this.flowLayoutPanel4.ResumeLayout(false);
             this.groupBox7.ResumeLayout(false);
             this.groupBox7.PerformLayout();
-            this.flowLayoutPanel5.ResumeLayout(false);
-            this.flowLayoutPanel5.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1638,19 +1536,12 @@
         private System.Windows.Forms.ComboBox requestHistory_cmb;
         private System.Windows.Forms.Label label16;
         private System.Windows.Forms.TextBox maxHistory_txt;
-        private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel5;
-        private System.Windows.Forms.Button help_btn;
-        private System.Windows.Forms.Button stateSaveAs_btn;
-        private System.Windows.Forms.Button stateNew_btn;
-        private System.Windows.Forms.Button stateSave_btn;
         private System.Windows.Forms.CheckBox cleanInputText_cxb;
         private System.Windows.Forms.ToolStripMenuItem inputSettingsDataHasHeaders_itm;
         private System.Windows.Forms.ToolStripMenuItem inputSettingsDefaultPriorityNumber_itm;
         private System.Windows.Forms.ToolStripMenuItem inputSettingsDefaultPriorityName_itm;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
         private System.Windows.Forms.ToolStripMenuItem inputSettingsDefaultPriorityNameSimilarity_itm;
-        private System.Windows.Forms.Button stateOpen_btn;
-        private System.Windows.Forms.Button about_btn;
         private System.Windows.Forms.ToolStripMenuItem outputSettingLineReplacementPresetDoubleQuoteComma_itm;
         private System.Windows.Forms.ToolStripMenuItem helpSupport_itm;
         private System.Windows.Forms.ToolStripMenuItem historyClearHistory_itm;

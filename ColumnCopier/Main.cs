@@ -4,9 +4,9 @@
 // Author           : Christian
 // Created          : 08-15-2016
 //
-// Version          : 2.0.0
+// Version          : 2.1.0
 // Last Modified By : Christian
-// Last Modified On : 06-06-2017
+// Last Modified On : 06-07-2017
 // ***********************************************************************
 // <copyright file="Main.cs" company="Christian Webber">
 //		Copyright ©  2016 - 2017
@@ -16,6 +16,7 @@
 // </summary>
 //
 // Changelog:
+//            - 2.1.0 (06-07-2017) - New save system. Fixed auto-scaling. Fixed state loading not changing to correct request. Fixed copy next line bug. Improved error handling.
 //            - 2.0.0 (06-06-2017) - Rebuilt!
 //            - 1.3.0 (05-30-2017) - Removed dependency on Octokit. Made line copy pre-set options a combobox rather than separate buttons. Adjustments to saving and loading to handle cleaning column name and row data. CurrentColumn save field is now actually used.
 //            - 1.2.4 (01-23-2017) - Slight UI changes, added new Copy and Replace option.
@@ -89,7 +90,7 @@ namespace ColumnCopier
         {
             InitializeComponent();
 
-            UpdateStatusText("Welcome!");
+            UpdateStatusText($"Welcome!{Environment.NewLine}H");
 
             ccState = new ColumnCopierState();
             checkGuard = new Guard();
@@ -258,44 +259,38 @@ namespace ColumnCopier
         /// </summary>
         /// <param name="columnIndex">Index of the column.</param>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Improved error handling.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void ChangeColumn(int columnIndex)
         {
-            UpdateStatusText("Changing column...");
-            ccState.History[ccState.CurrentRequest].SetCurrentColumn(columnIndex);
-            UpdateTextBox(currentColumnText_txt, ccState.History[ccState.CurrentRequest].GetCurrentColumnText());
-
-            UpdateLabelText(statCurrentColumn_txt, string.Format(Constants.Instance.FormatStatCurrentColumn,
-                ccState.History[ccState.CurrentRequest].CurrentColumnIndex + 1,
-                ccState.History[ccState.CurrentRequest].CurrentColumnIndex));
-            UpdateLabelText(statNumberColumns_txt, string.Format(Constants.Instance.FormatStatNumberColumns,
-                ccState.History[ccState.CurrentRequest].NumberOfColumns));
-            UpdateLabelText(statNumberRows_txt, string.Format(Constants.Instance.FormatStatNumberRows,
-                ccState.History[ccState.CurrentRequest].GetColumnRawText().Count));
-
-            UpdateStatusText("Column changed!");
-            StateSave();
-        }
-
-        /// <summary>
-        /// Changes the form opacity.
-        /// </summary>
-        /// <param name="form">The form.</param>
-        /// <param name="value">The value.</param>
-        ///  Changelog:
-        ///             - 2.0.0 (06-06-2017) - Initial version.
-        public void ChangeFormOpacity(Form form, int value)
-        {
-            UpdateStatusText("Changing program opacity...");
-            if (form.InvokeRequired)
+            try
             {
-                var d = new ChangeFormOpacityDelegate(ChangeFormOpacity);
-                this.Invoke(d, new object[] { form, value });
+                UpdateStatusText("Changing column...");
+                ccState.History[ccState.CurrentRequest].SetCurrentColumn(columnIndex);
+                UpdateTextBox(currentColumnText_txt, ccState.History[ccState.CurrentRequest].GetCurrentColumnText());
+
+                UpdateLabelText(statCurrentColumn_txt, string.Format(Constants.Instance.FormatStatCurrentColumn,
+                    ccState.History[ccState.CurrentRequest].CurrentColumnIndex + 1,
+                    ccState.History[ccState.CurrentRequest].CurrentColumnIndex));
+                UpdateLabelText(statNumberColumns_txt, string.Format(Constants.Instance.FormatStatNumberColumns,
+                    ccState.History[ccState.CurrentRequest].NumberOfColumns));
+                UpdateLabelText(statNumberRows_txt, string.Format(Constants.Instance.FormatStatNumberRows,
+                    ccState.History[ccState.CurrentRequest].GetColumnRawText().Count));
+
+                UpdateTextBox(copyLineNumber_txt, ccState.History[ccState.CurrentRequest].CopyNextLineIndex.ToString());
+                UpdateStatusText("Column changed!");
+                StateSave();
             }
-            else
+            catch (Exception ex)
             {
-                form.Opacity = (value / 100d);
-                UpdateStatusText("Opacity changed!");
+                UpdateStatusText("Exception occurred!");
+
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
             }
         }
 
@@ -314,37 +309,67 @@ namespace ColumnCopier
         /// </summary>
         /// <param name="requestIndex">Index of the request.</param>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Improved error handling.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void ChangeRequest(int requestIndex)
         {
-            UpdateStatusText("Changing request...");
-            ccState.CurrentRequest = ccState.HistoryLog[ccState.GetRequestHistoryPosition(requestHistory_cmb.Items[requestIndex].ToString())];
+            try
+            {
+                UpdateStatusText("Changing request...");
+                ccState.CurrentRequest = ccState.HistoryLog[ccState.GetRequestHistoryPosition(requestHistory_cmb.Items[requestIndex].ToString())];
 
-            UpdateComboBoxItems(currentColumn_cmb, ccState.CurrentRequestColumnNames());
-            UpdateComboBoxIndex(currentColumn_cmb, ccState.History[ccState.CurrentRequest].CurrentColumnIndex);
-            UpdateStatusText("Request changed!");
+                UpdateComboBoxItems(currentColumn_cmb, ccState.CurrentRequestColumnNames());
+                UpdateComboBoxIndex(currentColumn_cmb, ccState.History[ccState.CurrentRequest].CurrentColumnIndex);
+                UpdateStatusText("Request changed!");
+            }
+            catch (Exception ex)
+            {
+                UpdateStatusText("Exception occurred!");
+
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
+            }
         }
 
         /// <summary>
         /// Checks for updates.
         /// </summary>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Improved error handling.
         ///             - 2.0.0 (06-06-2017) - Made multi-threaded.
         ///             - 1.3.0 (05-30-2017) - Initial version.
         public void CheckForUpdates()
         {
-            UpdateStatusText("Checking for updates...");
-            if (saveGuard.CheckSet)
+            try
             {
-                ToggleProgressBar();
+                UpdateStatusText("Checking for updates...");
+                if (saveGuard.CheckSet)
+                {
+                    ToggleProgressBar();
 
-                var updateThread = new Thread(() => CheckForUpdatesHelper());
+                    var updateThread = new Thread(() => CheckForUpdatesHelper());
 
-                updateThread.Start();
+                    updateThread.Start();
+                }
+                else
+                {
+                    UpdateStatusText("Busy, please try again!");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                UpdateStatusText("Busy, please try again!");
+                UpdateStatusText("Exception occurred!");
+
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
             }
         }
 
@@ -352,63 +377,93 @@ namespace ColumnCopier
         /// Checks for updates helper.
         /// </summary>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Improved error handling.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void CheckForUpdatesHelper()
         {
-            var latestRelease = GitHub.GitHub.GetLatestRelease();
-            ToggleProgressBar();
-            
-            switch (latestRelease.Status)
+            try
             {
-                case "GitHubStatusDown":
-                    GetMessageBox(Constants.Instance.MessageTitleGitHubDown, Constants.Instance.MessageBodyGitHubDown,
-                        MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    UpdateStatusText(Constants.Instance.MessageTitleGitHubDown);
-                    saveGuard.Reset();
-                    return;
-                case "GitHubStatusReleaseUnavailable":
-                    GetMessageBox(Constants.Instance.MessageTitleLatestReleaseUnavailable, Constants.Instance.MessageBodyLatestReleaseUnavailable,
-                        MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    UpdateStatusText(Constants.Instance.MessageTitleLatestReleaseUnavailable);
-                    saveGuard.Reset();
-                    return;
-            }
+                var latestRelease = GitHub.GitHub.GetLatestRelease();
+                ToggleProgressBar();
             
-            var releaseVersion = ConvertReleaseTagVersionToInt(latestRelease.tag_name);
-
-            if (releaseVersion > Constants.ProgramVersion)
-            {
-                UpdateStatusText(Constants.Instance.MessageTitleNewReleaseAvailable);
-                var result = GetMessageBox(Constants.Instance.MessageTitleNewReleaseAvailable, string.Format(Constants.Instance.MessageBodyNewReleaseAvailable, latestRelease.tag_name));
-
-                switch (result)
+                switch (latestRelease.Status)
                 {
-                    case DialogResult.Yes:
-                        Process.Start(latestRelease.html_url);
-                        break;
+                    case "GitHubStatusDown":
+                        GetMessageBox(Constants.Instance.MessageTitleGitHubDown, Constants.Instance.MessageBodyGitHubDown,
+                            MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        UpdateStatusText(Constants.Instance.MessageTitleGitHubDown);
+                        saveGuard.Reset();
+                        return;
+                    case "GitHubStatusReleaseUnavailable":
+                        GetMessageBox(Constants.Instance.MessageTitleLatestReleaseUnavailable, Constants.Instance.MessageBodyLatestReleaseUnavailable,
+                            MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        UpdateStatusText(Constants.Instance.MessageTitleLatestReleaseUnavailable);
+                        saveGuard.Reset();
+                        return;
                 }
-            }
-            else
-            {
-                UpdateStatusText(Constants.Instance.MessageTitleNoNewRelease);
-                GetMessageBox(Constants.Instance.MessageTitleNoNewRelease, Constants.Instance.MessageBodyNoNewRelease,
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
+            
+                var releaseVersion = ConvertReleaseTagVersionToInt(latestRelease.tag_name);
 
-            saveGuard.Reset();
+                if (releaseVersion > Constants.ProgramVersion)
+                {
+                    UpdateStatusText(Constants.Instance.MessageTitleNewReleaseAvailable);
+                    var result = GetMessageBox(Constants.Instance.MessageTitleNewReleaseAvailable, string.Format(Constants.Instance.MessageBodyNewReleaseAvailable, latestRelease.tag_name));
+
+                    switch (result)
+                    {
+                        case DialogResult.Yes:
+                            Process.Start(latestRelease.html_url);
+                            break;
+                    }
+                }
+                else
+                {
+                    UpdateStatusText(Constants.Instance.MessageTitleNoNewRelease);
+                    GetMessageBox(Constants.Instance.MessageTitleNoNewRelease, Constants.Instance.MessageBodyNoNewRelease,
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+
+                saveGuard.Reset();
+            }
+            catch (Exception ex)
+            {
+                UpdateStatusText("Exception occurred!");
+
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
+            }
         }
 
         /// <summary>
         /// Clears the history.
         /// </summary>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Improved error handling.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void ClearHistory()
         {
-            UpdateStatusText("Clearing history...");
-            ccState.CleanHistory(ccState.HistoryLog.Count, false);
-            UpdateRequestHistory();
-            StateSave();
+            try
+            {
+                UpdateStatusText("Clearing history...");
+                ccState.CleanHistory(ccState.HistoryLog.Count, false);
+                UpdateRequestHistory();
+                StateSave();
+            }
+            catch (Exception ex)
+            {
+                UpdateStatusText("Exception occurred!");
+
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
+            }
         }
 
         /// <summary>
@@ -416,93 +471,169 @@ namespace ColumnCopier
         /// </summary>
         /// <param name="replace">if set to <c>true</c> [replace].</param>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Improved error handling.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void CopyColumn(bool replace)
         {
-            UpdateStatusText("Copying column...");
-            var text = string.Empty;
-
-            if (replace)
+            try
             {
-                var lines = ccState.History[ccState.CurrentRequest].GetColumnRawText();
+                UpdateStatusText("Copying column...");
+                var text = string.Empty;
 
-                var str = new StringBuilder();
-                str.Append(ccState.LineSeparatorOptionPre);
+                if (replace)
+                {
+                    var lines = ccState.History[ccState.CurrentRequest].GetColumnRawText();
 
-                var last = lines.Count - 1;
-                for (var i = 0; i < lines.Count; i++)
-                    str.AppendFormat("{0}{1}", lines[i], i == last ? "" : ccState.LineSeparatorOptionInter);
+                    var str = new StringBuilder();
+                    str.Append(ccState.LineSeparatorOptionPre);
 
-                str.Append(ccState.LineSeparatorOptionPost);
-                text = str.ToString();
+                    var last = lines.Count - 1;
+                    for (var i = 0; i < lines.Count; i++)
+                        str.AppendFormat("{0}{1}", lines[i], i == last ? "" : ccState.LineSeparatorOptionInter);
+
+                    str.Append(ccState.LineSeparatorOptionPost);
+                    text = str.ToString();
+                }
+                else
+                    text = currentColumnText_txt.Text;
+
+                ClipBoard = text;
+                currentColumnText_txt.Focus();
+                currentColumnText_txt.SelectAll();
+                UpdateStatusText("Column copied!");
             }
-            else
-                text = currentColumnText_txt.Text;
+            catch (Exception ex)
+            {
+                UpdateStatusText("Exception occurred!");
 
-            ClipBoard = text;
-            currentColumnText_txt.Focus();
-            currentColumnText_txt.SelectAll();
-            UpdateStatusText("Column copied!");
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
+            }
         }
 
         /// <summary>
         /// Copies the line.
         /// </summary>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Fixed line copying incorrect line and displaying invalid lines being copied. Improved error handling.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void CopyLine()
         {
-            UpdateStatusText("Copying next line...");
-            var index = Converters.ConvertToIntWithClamp(copyLineNumber_txt.Text, ccState.History[ccState.CurrentRequest].CopyNextLineIndex, 0, ccState.History[ccState.CurrentRequest].CurrentColumnRowCount - 1);
+            try
+            {
+                UpdateStatusText("Copying next line...");
+                var index = Converters.ConvertToIntWithClamp(copyLineNumber_txt.Text, ccState.History[ccState.CurrentRequest].CopyNextLineIndex, 0, ccState.History[ccState.CurrentRequest].CurrentColumnRowCount - 1);
 
-            if (index != ccState.History[ccState.CurrentRequest].CopyNextLineIndex)
-                ccState.History[ccState.CurrentRequest].CopyNextLineIndex = index;
+                if (index != ccState.History[ccState.CurrentRequest].CopyNextLineIndex)
+                    ccState.History[ccState.CurrentRequest].CopyNextLineIndex = index;
 
-            var text = ccState.History[ccState.CurrentRequest].GetCurrentColumnNextLineText();
-            UpdateTextBox(copyLineNumber_txt, ccState.History[ccState.CurrentRequest].CopyNextLineIndex.ToString());
-            ClipBoard = text;
-            UpdateStatusText($"Line {(ccState.History[ccState.CurrentRequest].CopyNextLineIndex - 1).ToString()} copied ({text})!");
+                var line = ccState.History[ccState.CurrentRequest].CopyNextLineIndex;
+                var text = ccState.History[ccState.CurrentRequest].GetCurrentColumnNextLineText();
+                UpdateTextBox(copyLineNumber_txt, ccState.History[ccState.CurrentRequest].CopyNextLineIndex.ToString());
+                ClipBoard = text;
+                UpdateStatusText($"Line {line} copied [{text}]!");
+            }
+            catch (Exception ex)
+            {
+                UpdateStatusText("Exception occurred!");
+
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
+            }
         }
 
         /// <summary>
         /// Deletes the request.
         /// </summary>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Improved error handling.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void DeleteRequest()
         {
-            UpdateStatusText("Deleting request...");
-            ccState.DeleteCurrentRequest();
-            UpdateRequestHistory();
-            if (requestHistory_cmb.Items.Count > 0)
-                requestHistory_cmb.SelectedIndex = 0;
-            UpdateStatusText("Request deleted!");
-            StateSave();
+            try
+            {
+                UpdateStatusText("Deleting request...");
+                ccState.DeleteCurrentRequest();
+                UpdateRequestHistory();
+                if (requestHistory_cmb.Items.Count > 0)
+                    requestHistory_cmb.SelectedIndex = 0;
+                UpdateStatusText("Request deleted!");
+                StateSave();
+            }
+            catch (Exception ex)
+            {
+                UpdateStatusText("Exception occurred!");
+
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
+            }
         }
 
         /// <summary>
         /// Exports the request.
         /// </summary>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Improved error handling.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void ExportRequest()
         {
-            UpdateStatusText("Exporting request...");
-            ClipBoard = ccState.ExportCurrentRequest();
-            UpdateStatusText("Request exported!");
+            try
+            {
+                UpdateStatusText("Exporting request...");
+                ClipBoard = ccState.ExportCurrentRequest();
+                UpdateStatusText("Request exported!");
+            }
+            catch (Exception ex)
+            {
+                UpdateStatusText("Exception occurred!");
+
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
+            }
         }
 
         /// <summary>
         /// Opens the about.
         /// </summary>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Improved error handling.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void OpenAbout()
         {
-            UpdateStatusText("Opening about...");
-            var about = new About();
-            about.ShowDialog();
-            UpdateStatusText("About opened!");
+            try
+            {
+                UpdateStatusText("Opening about...");
+                var about = new About();
+                about.ShowDialog();
+                UpdateStatusText("About opened!");
+            }
+            catch (Exception ex)
+            {
+                UpdateStatusText("Exception occurred!");
+
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
+            }
         }
 
         /// <summary>
@@ -510,49 +641,79 @@ namespace ColumnCopier
         /// </summary>
         /// <param name="url">The URL.</param>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Improved error handling.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void OpenWebPage(string url)
         {
-            UpdateStatusText("Opening browser...");
-            Process.Start(url);
-            UpdateStatusText($"Browser opened for {url}");
+            try
+            {
+                UpdateStatusText("Opening browser...");
+                Process.Start(url);
+                UpdateStatusText($"Browser opened for {url}");
+            }
+            catch (Exception ex)
+            {
+                UpdateStatusText("Exception occurred!");
+
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
+            }
         }
 
         /// <summary>
         /// Pastes the input.
         /// </summary>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Improved error handling.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void PasteInput()
         {
-            UpdateStatusText("Pasting input...");
-            if (pasteGuard.CheckSet)
+            try
             {
-                var lastPreservationState = preserveCurrentRequest_cxb.Checked;
+                UpdateStatusText("Pasting input...");
+                if (pasteGuard.CheckSet)
+                {
+                    var lastPreservationState = preserveCurrentRequest_cxb.Checked;
 
-                UpdateCheckBox(preserveCurrentRequest_cxb, false);
-                UpdateMenuItemChecked(historySettingsPreserveCurrentRequest_itm, false);
-                ccState.SetCurrentRequestPreservationToggle(lastPreservationState);
+                    UpdateCheckBox(preserveCurrentRequest_cxb, false);
+                    UpdateMenuItemChecked(historySettingsPreserveCurrentRequest_itm, false);
+                    ccState.SetCurrentRequestPreservationToggle(lastPreservationState);
 
-                ccState.MaxHistory = Converters.ConvertToIntWithClamp(maxHistory_txt.Text, 0, 0);
-                ccState.DefaultColumnIndex = Converters.ConvertToInt(defaultColumnNumber_txt.Text, 0);
-                ccState.DefaultColumnName = defaultColumnName_txt.Text;
-                ccState.DefaultColumnNameMatch = Converters.ConvertToIntWithClamp(defaultPriorityNameSimilarity_txt.Text, 0, 0);
-                if (defaultPriorityName_rbn.Checked)
-                    ccState.DefaultColumnPriority = DefaultColumnPriority.Name;
+                    ccState.MaxHistory = Converters.ConvertToIntWithClamp(maxHistory_txt.Text, 0, 0);
+                    ccState.DefaultColumnIndex = Converters.ConvertToInt(defaultColumnNumber_txt.Text, 0);
+                    ccState.DefaultColumnName = defaultColumnName_txt.Text;
+                    ccState.DefaultColumnNameMatch = Converters.ConvertToIntWithClamp(defaultPriorityNameSimilarity_txt.Text, 0, 0);
+                    if (defaultPriorityName_rbn.Checked)
+                        ccState.DefaultColumnPriority = DefaultColumnPriority.Name;
+                    else
+                        ccState.DefaultColumnPriority = DefaultColumnPriority.Number;
+
+                    ccState.AddNewRequest(ClipBoard);
+
+                    UpdateRequestHistory();
+                    UpdateComboBoxIndex(requestHistory_cmb, 0);
+                    pasteGuard.Reset();
+                    UpdateStatusText("Input pasted!");
+                }
                 else
-                    ccState.DefaultColumnPriority = DefaultColumnPriority.Number;
-
-                ccState.AddNewRequest(ClipBoard);
-
-                UpdateRequestHistory();
-                UpdateComboBoxIndex(requestHistory_cmb, 0);
-                pasteGuard.Reset();
-                UpdateStatusText("Input pasted!");
+                {
+                    UpdateStatusText("Busy, please try again...");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                UpdateStatusText("Busy, please try again...");
+                UpdateStatusText("Exception occurred!");
+
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
             }
         }
 
@@ -561,33 +722,48 @@ namespace ColumnCopier
         /// </summary>
         /// <param name="set">if set to <c>true</c> [set].</param>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Improved error handling.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void PreserveCurrentRequest(bool? set = null)
         {
-            UpdateStatusText("Preserving current request...");
-            if (checkGuard.CheckSet)
+            try
             {
-                if (set == null)
+                UpdateStatusText("Preserving current request...");
+                if (checkGuard.CheckSet)
                 {
-                    UpdateCheckBox(preserveCurrentRequest_cxb, !preserveCurrentRequest_cxb.Checked);
-                    UpdateMenuItemChecked(historySettingsPreserveCurrentRequest_itm, !historySettingsPreserveCurrentRequest_itm.Checked);
+                    if (set == null)
+                    {
+                        UpdateCheckBox(preserveCurrentRequest_cxb, !preserveCurrentRequest_cxb.Checked);
+                        UpdateMenuItemChecked(historySettingsPreserveCurrentRequest_itm, !historySettingsPreserveCurrentRequest_itm.Checked);
+                    }
+                    else
+                    {
+                        UpdateCheckBox(preserveCurrentRequest_cxb, (bool)set);
+                        UpdateMenuItemChecked(historySettingsPreserveCurrentRequest_itm, (bool)set);
+                    }
+
+                    ccState.SetCurrentRequestPreservationToggle(preserveCurrentRequest_cxb.Checked);
+                    if (!pasteGuard.Check)
+                        StateSave();
+
+                    checkGuard.Reset();
+                    UpdateStatusText("Request preserved!");
                 }
                 else
                 {
-                    UpdateCheckBox(preserveCurrentRequest_cxb, (bool)set);
-                    UpdateMenuItemChecked(historySettingsPreserveCurrentRequest_itm, (bool)set);
+                    UpdateStatusText("Busy, please try again!");
                 }
-
-                ccState.SetCurrentRequestPreservationToggle(preserveCurrentRequest_cxb.Checked);
-                if (!pasteGuard.Check)
-                    StateSave();
-
-                checkGuard.Reset();
-                UpdateStatusText("Request preserved!");
             }
-            else
+            catch (Exception ex)
             {
-                UpdateStatusText("Busy, please try again!");
+                UpdateStatusText("Exception occurred!");
+
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
             }
         }
 
@@ -595,33 +771,63 @@ namespace ColumnCopier
         /// States the load.
         /// </summary>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Improved error handling.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void StateLoad()
         {
-            UpdateStatusText("Choose file to load...");
-            var fileSelector = new OpenFileDialog();
-            fileSelector.DefaultExt = Constants.Instance.SaveExtension;
-            fileSelector.Filter = string.Format("Column Copier Save File ({0})|*{0}|Compressed Column Copier Save File ({1})|*{1}",
-                                                Constants.Instance.SaveExtension, Constants.Instance.SaveExtensionCompressed);
-            fileSelector.InitialDirectory = ExecutableDirectory;
+            try
+            {
+                UpdateStatusText("Choose file to load...");
+                var fileSelector = new OpenFileDialog();
+                fileSelector.DefaultExt = Constants.Instance.SaveExtension;
+                fileSelector.Filter = string.Format("Column Copier Save File ({0})|*{0}|Compressed Column Copier Save File ({1})|*{1}",
+                                                    Constants.Instance.SaveExtension, Constants.Instance.SaveExtensionCompressed);
+                fileSelector.InitialDirectory = ExecutableDirectory;
 
-            fileSelector.ShowDialog();
-            var file = fileSelector.FileName;
-            ccState.SaveFile = file;
+                fileSelector.ShowDialog();
+                var file = fileSelector.FileName;
+                ccState.SaveFile = file;
 
-            UpdateStatusText("File choosen!");
-            StateOpen();
+                UpdateStatusText("File choosen!");
+                StateOpen();
+            }
+            catch (Exception ex)
+            {
+                UpdateStatusText("Exception occurred!");
+
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
+            }
         }
 
         /// <summary>
         /// States the new.
         /// </summary>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Improved error handling.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void StateNew()
         {
-            StateSaveAs();
-            ClearHistory();
+            try
+            {
+                StateSaveAs();
+                ClearHistory();
+            }
+            catch (Exception ex)
+            {
+                UpdateStatusText("Exception occurred!");
+
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
+            }
         }
 
         /// <summary>
@@ -629,15 +835,30 @@ namespace ColumnCopier
         /// </summary>
         /// <param name="guardAlreadySet">if set to <c>true</c> [guard already set].</param>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Improved error handling.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void StateOpen(bool guardAlreadySet = false)
         {
-            UpdateStatusText("Attempting to load file...");
-            if (!guardAlreadySet) while (!saveGuard.CheckSet) ;
+            try
+            {
+                UpdateStatusText("Attempting to load file...");
+                if (!guardAlreadySet) while (!saveGuard.CheckSet) ;
 
-            var loadThread = new Thread(() => StateLoadHelper());
+                var loadThread = new Thread(() => StateLoadHelper());
 
-            loadThread.Start();
+                loadThread.Start();
+            }
+            catch (Exception ex)
+            {
+                UpdateStatusText("Exception occurred!");
+
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
+            }
         }
 
         /// <summary>
@@ -645,23 +866,38 @@ namespace ColumnCopier
         /// </summary>
         /// <param name="guardAlreadySet">if set to <c>true</c> [guard already set].</param>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Improved error handling.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void StateSave(bool guardAlreadySet = false)
         {
-            if (!guardAlreadySet)
+            try
             {
-                if (saveGuard.CheckSet)
+                if (!guardAlreadySet)
+                {
+                    if (saveGuard.CheckSet)
+                    {
+                        var saveThread = new Thread(() => StateSaveHelper());
+
+                        saveThread.Start();
+                    }
+                }
+                else
                 {
                     var saveThread = new Thread(() => StateSaveHelper());
 
                     saveThread.Start();
                 }
             }
-            else
+            catch (Exception ex)
             {
-                var saveThread = new Thread(() => StateSaveHelper());
+                UpdateStatusText("Exception occurred!");
 
-                saveThread.Start();
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
             }
         }
 
@@ -669,24 +905,39 @@ namespace ColumnCopier
         /// States the save as.
         /// </summary>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Improved error handling.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void StateSaveAs()
         {
-            UpdateStatusText("Attempting to save file...");
-            while (!saveGuard.CheckSet) ;
+            try
+            {
+                UpdateStatusText("Attempting to save file...");
+                while (!saveGuard.CheckSet) ;
 
-            UpdateStatusText("Choosing new file name...");
-            SaveFileDialog fileSelector = new SaveFileDialog();
-            fileSelector.DefaultExt = Constants.Instance.SaveExtension;
-            fileSelector.Filter = string.Format("Column Copier Save File ({0})|*{0}|Compressed Column Copier Save File ({1})|*{1}",
-                                                Constants.Instance.SaveExtension, Constants.Instance.SaveExtensionCompressed);
-            fileSelector.InitialDirectory = ExecutableDirectory;
+                UpdateStatusText("Choosing new file name...");
+                SaveFileDialog fileSelector = new SaveFileDialog();
+                fileSelector.DefaultExt = Constants.Instance.SaveExtension;
+                fileSelector.Filter = string.Format("Column Copier Save File ({0})|*{0}|Compressed Column Copier Save File ({1})|*{1}",
+                                                    Constants.Instance.SaveExtension, Constants.Instance.SaveExtensionCompressed);
+                fileSelector.InitialDirectory = ExecutableDirectory;
 
-            fileSelector.ShowDialog();
-            var file = fileSelector.FileName;
-            ccState.SaveFile = file;
-            UpdateStatusText("Filename choosen!");
-            StateSave(true);
+                fileSelector.ShowDialog();
+                var file = fileSelector.FileName;
+                ccState.SaveFile = file;
+                UpdateStatusText("Filename choosen!");
+                StateSave(true);
+            }
+            catch (Exception ex)
+            {
+                UpdateStatusText("Exception occurred!");
+
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
+            }
         }
 
         /// <summary>
@@ -694,31 +945,46 @@ namespace ColumnCopier
         /// </summary>
         /// <param name="set">if set to <c>true</c> [set].</param>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Improved error handling.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void ToggleCleanInputText(bool? set = null)
         {
-            UpdateStatusText("Toggling input cleaning...");
-            if (checkGuard.CheckSet)
+            try
             {
-                if (set == null)
+                UpdateStatusText("Toggling input cleaning...");
+                if (checkGuard.CheckSet)
                 {
-                    UpdateCheckBox(cleanInputText_cxb, !cleanInputText_cxb.Checked);
-                    UpdateMenuItemChecked(inputSettingsCleanInputText_itm, !inputSettingsCleanInputText_itm.Checked);
+                    if (set == null)
+                    {
+                        UpdateCheckBox(cleanInputText_cxb, !cleanInputText_cxb.Checked);
+                        UpdateMenuItemChecked(inputSettingsCleanInputText_itm, !inputSettingsCleanInputText_itm.Checked);
+                    }
+                    else
+                    {
+                        UpdateCheckBox(cleanInputText_cxb, (bool)set);
+                        UpdateMenuItemChecked(inputSettingsCleanInputText_itm, (bool)set);
+                    }
+
+                    ccState.RemoveEmptyLines = cleanInputText_cxb.Checked;
+                    StateSave();
+                    checkGuard.Reset();
+                    UpdateStatusText("Input cleaning toggled!");
                 }
                 else
                 {
-                    UpdateCheckBox(cleanInputText_cxb, (bool)set);
-                    UpdateMenuItemChecked(inputSettingsCleanInputText_itm, (bool)set);
+                    UpdateStatusText("Busy, please try again!");
                 }
-
-                ccState.RemoveEmptyLines = cleanInputText_cxb.Checked;
-                StateSave();
-                checkGuard.Reset();
-                UpdateStatusText("Input cleaning toggled!");
             }
-            else
+            catch (Exception ex)
             {
-                UpdateStatusText("Busy, please try again!");
+                UpdateStatusText("Exception occurred!");
+
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
             }
         }
 
@@ -727,31 +993,46 @@ namespace ColumnCopier
         /// </summary>
         /// <param name="set">if set to <c>true</c> [set].</param>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Improved error handling.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void ToggleDataHasHeaders(bool? set = null)
         {
-            UpdateStatusText("Toggling data headers...");
-            if (checkGuard.CheckSet)
+            try
             {
-                if (set == null)
+                UpdateStatusText("Toggling data headers...");
+                if (checkGuard.CheckSet)
                 {
-                    UpdateCheckBox(dataHasHeaders_cxb, !dataHasHeaders_cxb.Checked);
-                    UpdateMenuItemChecked(inputSettingsDataHasHeaders_itm, !inputSettingsDataHasHeaders_itm.Checked);
+                    if (set == null)
+                    {
+                        UpdateCheckBox(dataHasHeaders_cxb, !dataHasHeaders_cxb.Checked);
+                        UpdateMenuItemChecked(inputSettingsDataHasHeaders_itm, !inputSettingsDataHasHeaders_itm.Checked);
+                    }
+                    else
+                    {
+                        UpdateCheckBox(dataHasHeaders_cxb, (bool)set);
+                        UpdateMenuItemChecked(inputSettingsDataHasHeaders_itm, (bool)set);
+                    }
+
+                    ccState.DataHasHeaders = dataHasHeaders_cxb.Checked;
+                    StateSave();
+                    checkGuard.Reset();
+                    UpdateStatusText("Data headers toggled!");
                 }
                 else
                 {
-                    UpdateCheckBox(dataHasHeaders_cxb, (bool)set);
-                    UpdateMenuItemChecked(inputSettingsDataHasHeaders_itm, (bool)set);
+                    UpdateStatusText("Busy, please try again!");
                 }
-
-                ccState.DataHasHeaders = dataHasHeaders_cxb.Checked;
-                StateSave();
-                checkGuard.Reset();
-                UpdateStatusText("Data headers toggled!");
             }
-            else
+            catch (Exception ex)
             {
-                UpdateStatusText("Busy, please try again!");
+                UpdateStatusText("Exception occurred!");
+
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
             }
         }
 
@@ -760,31 +1041,46 @@ namespace ColumnCopier
         /// </summary>
         /// <param name="set">if set to <c>true</c> [set].</param>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Improved error handling.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void ToggleRemoveBlankLines(bool? set = null)
         {
-            UpdateStatusText("Toggling blank line removal...");
-            if (checkGuard.CheckSet)
+            try
             {
-                if (set == null)
+                UpdateStatusText("Toggling blank line removal...");
+                if (checkGuard.CheckSet)
                 {
-                    UpdateCheckBox(removeBlankLines_cxb, !removeBlankLines_cxb.Checked);
-                    UpdateMenuItemChecked(inputSettingsRemoveBlanks_itm, !inputSettingsRemoveBlanks_itm.Checked);
+                    if (set == null)
+                    {
+                        UpdateCheckBox(removeBlankLines_cxb, !removeBlankLines_cxb.Checked);
+                        UpdateMenuItemChecked(inputSettingsRemoveBlanks_itm, !inputSettingsRemoveBlanks_itm.Checked);
+                    }
+                    else
+                    {
+                        UpdateCheckBox(removeBlankLines_cxb, (bool)set);
+                        UpdateMenuItemChecked(inputSettingsRemoveBlanks_itm, (bool)set);
+                    }
+
+                    ccState.RemoveEmptyLines = removeBlankLines_cxb.Checked;
+                    StateSave();
+                    checkGuard.Reset();
+                    UpdateStatusText("Blank line removal toggled!");
                 }
                 else
                 {
-                    UpdateCheckBox(removeBlankLines_cxb, (bool)set);
-                    UpdateMenuItemChecked(inputSettingsRemoveBlanks_itm, (bool)set);
+                    UpdateStatusText("Busy, please try again!");
                 }
-
-                ccState.RemoveEmptyLines = removeBlankLines_cxb.Checked;
-                StateSave();
-                checkGuard.Reset();
-                UpdateStatusText("Blank line removal toggled!");
             }
-            else
+            catch (Exception ex)
             {
-                UpdateStatusText("Busy, please try again!");
+                UpdateStatusText("Exception occurred!");
+
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
             }
         }
 
@@ -792,37 +1088,52 @@ namespace ColumnCopier
         /// Toggles the save compression.
         /// </summary>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Improved error handling.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void ToggleSaveCompression()
         {
-            UpdateStatusText("Toggling save compression...");
-            if (saveGuard.CheckSet)
+            try
             {
-                var file = ccState.SaveFile;
+                UpdateStatusText("Toggling save compression...");
+                if (saveGuard.CheckSet)
+                {
+                    var file = ccState.SaveFile;
 
-                var extension = Path.GetExtension(file);
-                var fileName = Path.GetFileNameWithoutExtension(file);
-                var directory = Path.GetDirectoryName(file);
+                    var extension = Path.GetExtension(file);
+                    var fileName = Path.GetFileNameWithoutExtension(file);
+                    var directory = Path.GetDirectoryName(file);
 
-                if (extension == Constants.Instance.SaveExtensionCompressed)
-                    fileSettingsCompressSave_itm.Checked = false;
-                else if (extension == Constants.Instance.SaveExtension)
-                    fileSettingsCompressSave_itm.Checked = true;
+                    if (extension == Constants.Instance.SaveExtensionCompressed)
+                        fileSettingsCompressSave_itm.Checked = false;
+                    else if (extension == Constants.Instance.SaveExtension)
+                        fileSettingsCompressSave_itm.Checked = true;
 
-                var newFile = Path.Combine(directory,
-                                    string.Format("{0}{1}", fileName, fileSettingsCompressSave_itm.Checked
-                                        ? Constants.Instance.SaveExtensionCompressed : Constants.Instance.SaveExtension));
+                    var newFile = Path.Combine(directory,
+                                        string.Format("{0}{1}", fileName, fileSettingsCompressSave_itm.Checked
+                                            ? Constants.Instance.SaveExtensionCompressed : Constants.Instance.SaveExtension));
 
-                ccState.SaveFile = newFile;
-                StateSave(true);
-                // delete the old save file...
-                if (File.Exists(file))
-                    File.Delete(file);
-                UpdateStatusText("Save compression toggled!");
+                    ccState.SaveFile = newFile;
+                    StateSave(true);
+                    // delete the old save file...
+                    if (File.Exists(file))
+                        File.Delete(file);
+                    UpdateStatusText("Save compression toggled!");
+                }
+                else
+                {
+                    UpdateStatusText("Busy, please try again!");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                UpdateStatusText("Busy, please try again!");
+                UpdateStatusText("Exception occurred!");
+
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
             }
         }
 
@@ -831,33 +1142,48 @@ namespace ColumnCopier
         /// </summary>
         /// <param name="set">if set to <c>true</c> [set].</param>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Improved error handling.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void ToggleShowOnTop(bool? set = null)
         {
-            UpdateStatusText("Toggling program shown on top...");
-            if (checkGuard.CheckSet)
+            try
             {
-                if (set == null)
+                UpdateStatusText("Toggling program shown on top...");
+                if (checkGuard.CheckSet)
                 {
-                    UpdateCheckBox(showOnTop_cxb, !showOnTop_cxb.Checked);
-                    UpdateMenuItemChecked(fileSettingsShowOnTop_itm, !fileSettingsShowOnTop_itm.Checked);
+                    if (set == null)
+                    {
+                        UpdateCheckBox(showOnTop_cxb, !showOnTop_cxb.Checked);
+                        UpdateMenuItemChecked(fileSettingsShowOnTop_itm, !fileSettingsShowOnTop_itm.Checked);
+                    }
+                    else
+                    {
+                        UpdateCheckBox(showOnTop_cxb, (bool)set);
+                        UpdateMenuItemChecked(fileSettingsShowOnTop_itm, (bool)set);
+                    }
+
+                    ccState.ShowOnTop = showOnTop_cxb.Checked;
+                    this.TopMost = ccState.ShowOnTop;
+
+                    StateSave();
+                    checkGuard.Reset();
+                    UpdateStatusText("Program shown on top toggled!");
                 }
                 else
                 {
-                    UpdateCheckBox(showOnTop_cxb, (bool)set);
-                    UpdateMenuItemChecked(fileSettingsShowOnTop_itm, (bool)set);
+                    UpdateStatusText("Busy, please try again!");
                 }
-
-                ccState.ShowOnTop = showOnTop_cxb.Checked;
-                this.TopMost = ccState.ShowOnTop;
-
-                StateSave();
-                checkGuard.Reset();
-                UpdateStatusText("Program shown on top toggled!");
             }
-            else
+            catch (Exception ex)
             {
-                UpdateStatusText("Busy, please try again!");
+                UpdateStatusText("Exception occurred!");
+
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
             }
         }
 
@@ -866,87 +1192,139 @@ namespace ColumnCopier
         /// </summary>
         /// <param name="option">The option.</param>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Improved error handling.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void UpdateLineSeperatorOptions(LineSeparatorOptions option)
         {
-            UpdateStatusText("Updating line separator option...");
-            if (checkGuard.CheckSet)
+            try
             {
-                var sep = string.Empty;
-                var pre = string.Empty;
-                var post = string.Empty;
-                var seperatorOption = 0;
-                switch (option)
+                UpdateStatusText("Updating line separator option...");
+                if (checkGuard.CheckSet)
                 {
-                    case LineSeparatorOptions.Comma:
-                        sep = ", ";
-                        pre = "";
-                        post = "";
-                        seperatorOption = 0;
-                        break;
+                    var sep = string.Empty;
+                    var pre = string.Empty;
+                    var post = string.Empty;
+                    var seperatorOption = 0;
+                    switch (option)
+                    {
+                        case LineSeparatorOptions.Comma:
+                            sep = ", ";
+                            pre = "";
+                            post = "";
+                            seperatorOption = 0;
+                            break;
 
-                    case LineSeparatorOptions.DoubleQuoteComma:
-                        sep = "\", \"";
-                        pre = "";
-                        post = "";
-                        seperatorOption = 2;
-                        break;
+                        case LineSeparatorOptions.DoubleQuoteComma:
+                            sep = "\", \"";
+                            pre = "";
+                            post = "";
+                            seperatorOption = 2;
+                            break;
 
-                    case LineSeparatorOptions.DoubleQuoteParenthesisComma:
-                        sep = "\", \"";
-                        pre = "(\"";
-                        post = "\")";
-                        seperatorOption = 5;
-                        break;
+                        case LineSeparatorOptions.DoubleQuoteParenthesisComma:
+                            sep = "\", \"";
+                            pre = "(\"";
+                            post = "\")";
+                            seperatorOption = 5;
+                            break;
 
-                    case LineSeparatorOptions.Nothing:
-                        sep = "";
-                        pre = "";
-                        post = "";
-                        seperatorOption = 1;
-                        break;
+                        case LineSeparatorOptions.Nothing:
+                            sep = "";
+                            pre = "";
+                            post = "";
+                            seperatorOption = 1;
+                            break;
 
-                    case LineSeparatorOptions.ParenthesisComma:
-                        sep = ", ";
-                        pre = "(";
-                        post = ")";
-                        seperatorOption = 3;
-                        break;
+                        case LineSeparatorOptions.ParenthesisComma:
+                            sep = ", ";
+                            pre = "(";
+                            post = ")";
+                            seperatorOption = 3;
+                            break;
 
-                    case LineSeparatorOptions.SemiColon:
-                        sep = ";";
-                        pre = "";
-                        post = "";
-                        seperatorOption = 6;
-                        break;
+                        case LineSeparatorOptions.SemiColon:
+                            sep = ";";
+                            pre = "";
+                            post = "";
+                            seperatorOption = 6;
+                            break;
 
-                    case LineSeparatorOptions.SingleQuoteParenthesisComma:
-                        sep = "', '";
-                        pre = "('";
-                        post = "')";
-                        seperatorOption = 4;
-                        break;
+                        case LineSeparatorOptions.SingleQuoteParenthesisComma:
+                            sep = "', '";
+                            pre = "('";
+                            post = "')";
+                            seperatorOption = 4;
+                            break;
+                    }
+
+                    ccState.LineSeparatorOptionIndex = seperatorOption;
+
+                    UpdateComboBoxIndex(seperatorOption_cmb, seperatorOption);
+                    UpdateTextBox(seperatorItem_txt, sep);
+                    UpdateTextBox(seperatorItemPre_txt, pre);
+                    UpdateTextBox(seperatorItemPost_txt, post);
+
+                    checkGuard.Reset();
+                    UpdateStatusText("Line separator option updated!");
                 }
-
-                ccState.LineSeparatorOptionIndex = seperatorOption;
-
-                UpdateComboBoxIndex(seperatorOption_cmb, seperatorOption);
-                UpdateTextBox(seperatorItem_txt, sep);
-                UpdateTextBox(seperatorItemPre_txt, pre);
-                UpdateTextBox(seperatorItemPost_txt, post);
-
-                checkGuard.Reset();
-                UpdateStatusText("Line separator option updated!");
+                else
+                {
+                    UpdateStatusText("Busy, please try again!");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                UpdateStatusText("Busy, please try again!");
+                UpdateStatusText("Exception occurred!");
+
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
             }
         }
 
         #endregion Public Methods
 
         #region Private Methods
+
+        /// <summary>
+        /// Changes the form opacity.
+        /// </summary>
+        /// <param name="form">The form.</param>
+        /// <param name="value">The value.</param>
+        ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Improved error handling.
+        ///             - 2.0.0 (06-06-2017) - Initial version.
+        private void ChangeFormOpacity(Form form, int value)
+        {
+            try
+            {
+                UpdateStatusText("Changing program opacity...");
+                if (form.InvokeRequired)
+                {
+                    var d = new ChangeFormOpacityDelegate(ChangeFormOpacity);
+                    this.Invoke(d, new object[] { form, value });
+                }
+                else
+                {
+                    form.Opacity = (value / 100d);
+                    UpdateStatusText("Opacity changed!");
+                }
+            }
+            catch (Exception ex)
+            {
+                UpdateStatusText("Exception occurred!");
+
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
+            }
+        }
 
         /// <summary>
         /// Converts the release tag version to int.
@@ -1216,6 +1594,18 @@ namespace ColumnCopier
         private void fileSettingsShowOnTop_itm_Click(object sender, EventArgs e)
         {
             ToggleShowOnTop(!showOnTop_cxb.Checked);
+        }
+
+        /// <summary>
+        /// Forms the exception issue URL.
+        /// </summary>
+        /// <param name="ex">The ex.</param>
+        /// <returns>System.String.</returns>
+        ///  Changelog:
+        ///             - 2.1.0 (06-06-2017) - Initial version.
+        private string FormExceptionIssueUrl(Exception ex)
+        {
+            return string.Format("{0}/new?title={1}&body={2)", Constants.Instance.UrlSupport, ex.Message.ToString(), ex.InnerException.ToString());
         }
 
         /// <summary>
@@ -1889,7 +2279,7 @@ namespace ColumnCopier
         /// States the load helper.
         /// </summary>
         ///  Changelog:
-        ///             - 2.1.0 (06-07-2017) - Support for the new save system.
+        ///             - 2.1.0 (06-07-2017) - Support for the new save system, fixed default request selection being incorrect.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         private void StateLoadHelper()
         {
@@ -2010,17 +2400,32 @@ namespace ColumnCopier
         /// Toggles the progress bar.
         /// </summary>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Improved error handling.
         ///             - 1.2.0 (09-30-2017) - Initial version.
         private void ToggleProgressBar()
         {
-            if (progress_bar.InvokeRequired)
+            try
             {
-                var d = new UpdateProgressBar(ToggleProgressBar);
-                this.Invoke(d);
+                if (progress_bar.InvokeRequired)
+                {
+                    var d = new UpdateProgressBar(ToggleProgressBar);
+                    this.Invoke(d);
+                }
+                else
+                {
+                    progress_bar.Visible = !progress_bar.Visible;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                progress_bar.Visible = !progress_bar.Visible;
+                UpdateStatusText("Exception occurred!");
+
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
             }
         }
 
@@ -2030,17 +2435,32 @@ namespace ColumnCopier
         /// <param name="checkbox">The checkbox.</param>
         /// <param name="value">if set to <c>true</c> [value].</param>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Improved error handling.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         private void UpdateCheckBox(CheckBox checkbox, bool value)
         {
-            if (checkbox.InvokeRequired)
+            try
             {
-                var d = new UpdateCheckBoxDelegate(UpdateCheckBox);
-                this.Invoke(d, new object[] { checkbox, value });
+                if (checkbox.InvokeRequired)
+                {
+                    var d = new UpdateCheckBoxDelegate(UpdateCheckBox);
+                    this.Invoke(d, new object[] { checkbox, value });
+                }
+                else
+                {
+                    checkbox.Checked = value;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                checkbox.Checked = value;
+                UpdateStatusText("Exception occurred!");
+
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
             }
         }
 
@@ -2050,17 +2470,32 @@ namespace ColumnCopier
         /// <param name="comboBox">The combo box.</param>
         /// <param name="index">The index.</param>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Improved error handling.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         private void UpdateComboBoxIndex(ComboBox comboBox, int index)
         {
-            if (comboBox.InvokeRequired)
+            try
             {
-                var d = new UpdateComboBoxIndexDelegate(UpdateComboBoxIndex);
-                this.Invoke(d, new object[] { comboBox, index });
+                if (comboBox.InvokeRequired)
+                {
+                    var d = new UpdateComboBoxIndexDelegate(UpdateComboBoxIndex);
+                    this.Invoke(d, new object[] { comboBox, index });
+                }
+                else
+                {
+                    comboBox.SelectedIndex = index;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                comboBox.SelectedIndex = index;
+                UpdateStatusText("Exception occurred!");
+
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
             }
         }
 
@@ -2070,19 +2505,34 @@ namespace ColumnCopier
         /// <param name="comboBox">The combo box.</param>
         /// <param name="values">The values.</param>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Improved error handling.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         private void UpdateComboBoxItems(ComboBox comboBox, List<string> values)
         {
-            if (comboBox.InvokeRequired)
+            try
             {
-                var d = new UpdateComboBoxItemsDelegate(UpdateComboBoxItems);
-                this.Invoke(d, new object[] { comboBox, values });
+                if (comboBox.InvokeRequired)
+                {
+                    var d = new UpdateComboBoxItemsDelegate(UpdateComboBoxItems);
+                    this.Invoke(d, new object[] { comboBox, values });
+                }
+                else
+                {
+                    comboBox.Items.Clear();
+                    for (var i = 0; i < values.Count; i++)
+                        comboBox.Items.Add(values[i]);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                comboBox.Items.Clear();
-                for (var i = 0; i < values.Count; i++)
-                    comboBox.Items.Add(values[i]);
+                UpdateStatusText("Exception occurred!");
+
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
             }
         }
 
@@ -2092,17 +2542,32 @@ namespace ColumnCopier
         /// <param name="combobox">The combobox.</param>
         /// <param name="text">The text.</param>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Improved error handling.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         private void UpdateComboBoxText(ComboBox combobox, string text)
         {
-            if (combobox.InvokeRequired)
+            try
             {
-                var d = new UpdateComboBoxTextDelegate(UpdateComboBoxText);
-                this.Invoke(d, new object[] { combobox, text });
+                if (combobox.InvokeRequired)
+                {
+                    var d = new UpdateComboBoxTextDelegate(UpdateComboBoxText);
+                    this.Invoke(d, new object[] { combobox, text });
+                }
+                else
+                {
+                    combobox.Text = text;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                combobox.Text = text;
+                UpdateStatusText("Exception occurred!");
+
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
             }
         }
 
@@ -2112,17 +2577,40 @@ namespace ColumnCopier
         /// <param name="label">The label.</param>
         /// <param name="text">The text.</param>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Improved error handling.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         private void UpdateLabelText(Label label, string text)
         {
-            if (label.InvokeRequired)
+            try
             {
-                var d = new UpdateLabelDelegate(UpdateLabelText);
-                this.Invoke(d, new object[] { label, text });
+                if (label.InvokeRequired)
+                {
+                    var d = new UpdateLabelDelegate(UpdateLabelText);
+                    this.Invoke(d, new object[] { label, text });
+                }
+                else
+                {
+                    try
+                    {
+                        label.Text = text;
+                    }
+                    catch
+                    {
+                        var d = new UpdateLabelDelegate(UpdateLabelText);
+                        this.Invoke(d, new object[] { label, text });
+                    }
+                }
             }
-            else
+            catch (Exception ex)
             {
-                label.Text = text;
+                UpdateStatusText("Exception occurred!");
+
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
             }
         }
 
@@ -2132,21 +2620,36 @@ namespace ColumnCopier
         /// <param name="menuitem">The menuitem.</param>
         /// <param name="value">if set to <c>true</c> [value].</param>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Improved error handling.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         private void UpdateMenuItemChecked(ToolStripMenuItem menuitem, bool value)
         {
-            menuitem.Checked = value;
-
-            /*
-            if (menuitem.InvokeRequired)
-            {
-                var d = new UpdateMenuItemCheckedDelegate(UpdateMenuItemChecked);
-                this.Invoke(d, new object[] { menuitem, value });
-            }
-            else
+            try
             {
                 menuitem.Checked = value;
-            }*/
+
+                /*
+                if (menuitem.InvokeRequired)
+                {
+                    var d = new UpdateMenuItemCheckedDelegate(UpdateMenuItemChecked);
+                    this.Invoke(d, new object[] { menuitem, value });
+                }
+                else
+                {
+                    menuitem.Checked = value;
+                }*/
+            }
+            catch (Exception ex)
+            {
+                UpdateStatusText("Exception occurred!");
+
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
+            }
         }
 
         /// <summary>
@@ -2155,17 +2658,32 @@ namespace ColumnCopier
         /// <param name="radiobutton">The radiobutton.</param>
         /// <param name="value">if set to <c>true</c> [value].</param>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Improved error handling.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         private void UpdateRadioButton(RadioButton radiobutton, bool value)
         {
-            if (radiobutton.InvokeRequired)
+            try
             {
-                var d = new UpdateRadioButtonDelegate(UpdateRadioButton);
-                this.Invoke(d, new object[] { radiobutton, value });
+                if (radiobutton.InvokeRequired)
+                {
+                    var d = new UpdateRadioButtonDelegate(UpdateRadioButton);
+                    this.Invoke(d, new object[] { radiobutton, value });
+                }
+                else
+                {
+                    radiobutton.Checked = value;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                radiobutton.Checked = value;
+                UpdateStatusText("Exception occurred!");
+
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
             }
         }
 
@@ -2206,17 +2724,32 @@ namespace ColumnCopier
         /// <param name="textbox">The textbox.</param>
         /// <param name="text">The text.</param>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Improved error handling.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         private void UpdateTextBox(TextBox textbox, string text)
         {
-            if (textbox.InvokeRequired)
+            try
             {
-                var d = new UpdateTextBoxDelegate(UpdateTextBox);
-                this.Invoke(d, new object[] { textbox, text });
+                if (textbox.InvokeRequired)
+                {
+                    var d = new UpdateTextBoxDelegate(UpdateTextBox);
+                    this.Invoke(d, new object[] { textbox, text });
+                }
+                else
+                {
+                    textbox.Text = text;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                textbox.Text = text;
+                UpdateStatusText("Exception occurred!");
+
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
             }
         }
 

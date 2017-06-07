@@ -4,9 +4,9 @@
 // Author           : Christian
 // Created          : 05-30-2017
 //
-// Version          : 2.0.0
+// Version          : 2.1.0
 // Last Modified By : Christian
-// Last Modified On : 06-06-2017
+// Last Modified On : 06-07-2017
 // ***********************************************************************
 // <copyright file="Constants.cs" company="Christian Webber">
 //		Copyright ©  2016 - 2017
@@ -16,6 +16,7 @@
 // </summary>
 //
 // Changelog:
+//            - 2.1.0 (06-07-2017) - Exception message constants and bumped save version and program version.
 //            - 2.0.0 (06-06-2017) - New constants + comments.
 //            - 2.0.0 (05-31-2017) - Moved more constants over here.
 //            - 1.3.0 (05-30-2017) - Initial code.
@@ -234,6 +235,12 @@ namespace ColumnCopier
         /// </summary>
         /// <value>The input query program opacity.</value>
         public string InputQueryProgramOpacity { get; private set; } = "Program opacity?";
+        
+        /// <summary>
+        /// Gets the message body exception.
+        /// </summary>
+        /// <value>The message body exception.</value>
+        public string MessageBodyException { get; private set; } = "Do you want to file an issue report for this exception ({0})?";
 
         /// <summary>
         /// Gets the message title latest release unavailable.
@@ -266,16 +273,22 @@ namespace ColumnCopier
         public string MessageBodyNoRequestHistory { get; private set; } = "There are currently no requests available.";
 
         /// <summary>
-        /// Gets the message title latest release unavailable.
+        /// Gets the message title exception.
         /// </summary>
-        /// <value>The message title latest release unavailable.</value>
-        public string MessageTitleLatestReleaseUnavailable { get; private set; } = "Unable to Find Latest Release";
+        /// <value>The message title exception.</value>
+        public string MessageTitleException { get; private set; } = "An Exception Has Occured!";
 
         /// <summary>
         /// Gets the message title latest release unavailable.
         /// </summary>
         /// <value>The message title latest release unavailable.</value>
         public string MessageTitleGitHubDown { get; private set; } = "GitHub Unavailable";
+
+        /// <summary>
+        /// Gets the message title latest release unavailable.
+        /// </summary>
+        /// <value>The message title latest release unavailable.</value>
+        public string MessageTitleLatestReleaseUnavailable { get; private set; } = "Unable to Find Latest Release";
 
         /// <summary>
         /// Gets the message title new release available.

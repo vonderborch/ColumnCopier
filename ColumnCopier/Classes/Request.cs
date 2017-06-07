@@ -4,9 +4,9 @@
 // Author           : Christian
 // Created          : 08-18-2016
 //
-// Version          : 2.0.0
+// Version          : 2.1.0
 // Last Modified By : Christian
-// Last Modified On : 06-06-2017
+// Last Modified On : 06-07-2017
 // ***********************************************************************
 // <copyright file="Request.cs" company="Christian Webber">
 //		Copyright ©  2016 - 2017
@@ -16,6 +16,7 @@
 // </summary>
 //
 // Changelog:
+//            - 2.1.0 (06-07-2017) - Moved most fields/properties to the RequestData class. Revised saving/loading system to use JSON data serialization.
 //            - 2.0.0 (06-06-2017) - Rebuilt!
 //            - 1.3.0 (05-30-2017) - More extensive text cleaning.
 //            - 1.2.0 (09-30-2016) - Added preserve request toggle support.

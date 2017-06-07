@@ -4,9 +4,9 @@
 // Author           : Christian
 // Created          : 06-06-2017
 // 
-// Version          : 2.0.0
+// Version          : 2.1.0
 // Last Modified By : Christian
-// Last Modified On : 06-06-2017
+// Last Modified On : 06-07-2017
 // ***********************************************************************
 // <copyright file="ColumnCopierState.cs" company="Christian Webber">
 //		Copyright ©  2016 - 2017
@@ -20,12 +20,10 @@
 //            - 2.0.0 (06-06-2017) - Initial version created.
 // ***********************************************************************
 using ColumnCopier.Enums;
-using ColumnCopier.Helpers;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Json;
 using System.Text;
-using System.Xml.Linq;
 
 namespace ColumnCopier.Classes
 {
@@ -93,7 +91,7 @@ namespace ColumnCopier.Classes
         /// <value>The index of the current request.</value>
         public int CurrentRequestIndex
         {
-            get { return state.History.FindIndex(x => x == CurrentRequest); }
+            get { return GetRequestHistory().FindIndex(x => x == CurrentRequest); }
         }
 
         /// <summary>

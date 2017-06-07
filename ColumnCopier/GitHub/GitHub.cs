@@ -109,7 +109,7 @@ namespace ColumnCopier.GitHub
                 release.Status = Constants.Instance.GitHubStatusGood;
                 return release;
             }
-            catch (Exception ex)
+            catch
             {
                 //add_error("Can't read html page " + url + " : " + e.Message);
                 return new Release() { html_url = string.Empty, tag_name = string.Empty, Status = Constants.Instance.GitHubStatusReleaseUnavailable };
