@@ -448,7 +448,8 @@ namespace ColumnCopier.Classes
                 var newState = (State)deserializer.ReadObject(reader.BaseStream);
                 reader.Close();
 
-                if (newState.SaveVersion != Constants.SaveVersion)
+                // is this a readable save version for us?
+                if (newState.SaveVersion != Constants.SaveVersion && newState.SaveVersion < Constants.SaveVersionMinimum)
                 {
                     saveGuard.Reset();
                     return Ternary.Neutral;

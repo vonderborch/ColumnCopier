@@ -16,7 +16,7 @@
 // </summary>
 //
 // Changelog:
-//            - 2.1.0 (06-07-2017) - Exception message constants and bumped save version and program version.
+//            - 2.1.0 (06-07-2017) - Exception message constants and bumped save version and program version. Also added a minimum save version constant to indicate the minimum readable save version of this program.
 //            - 2.0.0 (06-06-2017) - New constants + comments.
 //            - 2.0.0 (05-31-2017) - Moved more constants over here.
 //            - 1.3.0 (05-30-2017) - Initial code.
@@ -88,6 +88,12 @@ namespace ColumnCopier
         /// </summary>
         /// <value>The save version.</value>
         public static int SaveVersion { get; private set; } = 21;
+
+        /// <summary>
+        /// Gets the minimum readable save version.
+        /// </summary>
+        /// <value>The minimum readable save version.</value>
+        public static int SaveVersionMinimum { get; private set; } = 21;
 
         /// <summary>
         /// Gets the character replacements.
