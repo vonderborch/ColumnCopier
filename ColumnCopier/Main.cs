@@ -61,7 +61,7 @@ namespace ColumnCopier
         /// <summary>
         /// The cc state
         /// </summary>
-        private CCState ccState;
+        private ColumnCopierState ccState;
 
         /// <summary>
         /// The check guard
@@ -91,7 +91,7 @@ namespace ColumnCopier
 
             UpdateStatusText("Welcome!");
 
-            ccState = new CCState();
+            ccState = new ColumnCopierState();
             checkGuard = new Guard();
             saveGuard = new Guard();
             pasteGuard = new Guard();
@@ -1889,6 +1889,7 @@ namespace ColumnCopier
         /// States the load helper.
         /// </summary>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Support for the new save system.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         private void StateLoadHelper()
         {
@@ -1896,7 +1897,7 @@ namespace ColumnCopier
             ToggleProgressBar();
 
             var result = ccState.Load();
-            if (result)
+            if (result == Ternary.True)
             {
                 // update gui here
                 ChangeOpacity();
@@ -1924,11 +1925,20 @@ namespace ColumnCopier
                 UpdateRequestHistory();
 
                 UpdateComboBoxIndex(requestHistory_cmb, ccState.CurrentRequestIndex);
+
+                UpdateStatusText("State loaded!");
+            }
+            else if (result == Ternary.Neutral)
+            {
+                UpdateStatusText("State not loaded, old save version!");
+            }
+            else
+            {
+                UpdateStatusText("State could not be loaded!");
             }
 
             ToggleProgressBar();
             saveGuard.Reset();
-            UpdateStatusText("State loaded!");
         }
 
         /// <summary>

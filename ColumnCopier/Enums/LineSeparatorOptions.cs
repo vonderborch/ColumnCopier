@@ -4,9 +4,9 @@
 // Author           : Christian
 // Created          : 06-06-2017
 // 
-// Version          : 2.0.0
+// Version          : 2.1.0
 // Last Modified By : Christian
-// Last Modified On : 06-06-2017
+// Last Modified On : 06-07-2017
 // ***********************************************************************
 // <copyright file="LineSeparatorOptions.cs" company="Christian Webber">
 //		Copyright ©  2016 - 2017
@@ -16,10 +16,18 @@
 // </summary>
 //
 // Changelog: 
+//            - 2.1.0 (06-07-2017) - More comments.
 //            - 2.0.0 (06-06-2017) - Initial version created.
 // ***********************************************************************
+
+/// <summary>
+/// The Enums namespace.
+/// </summary>
 namespace ColumnCopier.Enums
 {
+    /// <summary>
+    /// Enum LineSeparatorOptions
+    /// </summary>
     public enum LineSeparatorOptions
     {
         /// <summary>

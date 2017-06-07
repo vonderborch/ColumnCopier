@@ -99,11 +99,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Classes\CCState.cs" />
+    <Compile Include="Classes\ColumnCopierState.cs" />
     <Compile Include="Classes\ColumnData.cs" />
+    <Compile Include="Classes\RequestData.cs" />
+    <Compile Include="Classes\State.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Enums\DefaultColumnPriority.cs" />
     <Compile Include="Enums\LineSeparatorOptions.cs" />
+    <Compile Include="Enums\Ternary.cs" />
     <Compile Include="Forms\About.cs">
       <SubType>Form</SubType>
     </Compile>

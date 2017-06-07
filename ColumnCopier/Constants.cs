@@ -80,13 +80,13 @@ namespace ColumnCopier
         /// Gets the program version.
         /// </summary>
         /// <value>The program version.</value>
-        public static int ProgramVersion { get; private set; } = 200;
+        public static int ProgramVersion { get; private set; } = 210;
 
         /// <summary>
         /// Gets the save version.
         /// </summary>
         /// <value>The save version.</value>
-        public static int SaveVersion { get; private set; } = 20;
+        public static int SaveVersion { get; private set; } = 21;
 
         /// <summary>
         /// Gets the character replacements.

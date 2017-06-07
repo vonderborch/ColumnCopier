@@ -1,23 +1,22 @@
 ﻿// ***********************************************************************
 // Assembly         : ColumnCopier
-// Component        : DefaultColumnPriority.cs
+// Component        : Ternary.cs
 // Author           : Christian
-// Created          : 06-06-2017
+// Created          : 06-07-2017
 // 
 // Version          : 2.1.0
 // Last Modified By : Christian
 // Last Modified On : 06-07-2017
 // ***********************************************************************
-// <copyright file="DefaultColumnPriority.cs" company="Christian Webber">
+// <copyright file="Ternary.cs" company="Christian Webber">
 //		Copyright ©  2016 - 2017
 // </copyright>
 // <summary>
-//      Defines the DefaultColumnPriority enum.
+//      Defines the Ternary enum.
 // </summary>
 //
 // Changelog: 
-//            - 2.1.0 (06-07-2017) - Added explicit integer conversions. More comments.
-//            - 2.0.0 (06-06-2017) - Initial version created.
+//            - 2.1.0 (06-07-2017) - Initial version created.
 // ***********************************************************************
 
 /// <summary>
@@ -26,17 +25,23 @@
 namespace ColumnCopier.Enums
 {
     /// <summary>
-    /// Enum DefaultColumnPriority
+    /// Enum Ternary
     /// </summary>
-    public enum DefaultColumnPriority
+    public enum Ternary
     {
         /// <summary>
-        /// Column name should have priority
+        /// The false
         /// </summary>
-        Name = 0,
+        False = -1,
+
         /// <summary>
-        /// Column number should have priority
+        /// The neutral
         /// </summary>
-        Number = 1
+        Neutral = 0,
+
+        /// <summary>
+        /// The true
+        /// </summary>
+        True = 1,
     }
 }

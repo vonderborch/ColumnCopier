@@ -30,36 +30,38 @@ using ColumnCopier.Enums;
 using ColumnCopier.Helpers;
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
-using System.Xml.Linq;
 
 namespace ColumnCopier.Classes
 {
     /// <summary>
     /// Request class.
     /// </summary>
+    [DataContract]
+    [KnownType(typeof(RequestData))]
     public class Request
     {
         #region Private Fields
 
-        /// <summary>
-        /// The column keys
-        /// </summary>
-        private Dictionary<int, string> columnKeys = new Dictionary<int, string>();
-
-        /// <summary>
-        /// The columns data
-        /// </summary>
-        private Dictionary<string, ColumnData> columnsData = new Dictionary<string, ColumnData>();
-
-        /// <summary>
-        /// The current column
-        /// </summary>
-        private int currentColumn = 0;
+        [DataMember]
+        private RequestData request;
 
         #endregion Private Fields
 
         #region Public Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Request"/> class.
+        /// </summary>
+        public Request()
+        {
+            request = new RequestData()
+            {
+                ColumnData = new Dictionary<string, Classes.ColumnData>(),
+                ColumnKeys = new Dictionary<int, string>(),
+            };
+        }
 
         /// <summary>
         /// Used when importing data.
@@ -77,107 +79,16 @@ namespace ColumnCopier.Classes
         public Request(int id, string rawText, bool hasHeaders, bool cleanText, bool removeEmptyLines, 
             int defaultColumnIndex, string defaultColumnName, int columnNameMatch, DefaultColumnPriority defaultColumnPriority)
         {
+            request = new RequestData()
+            {
+                ColumnData = new Dictionary<string, Classes.ColumnData>(),
+                ColumnKeys = new Dictionary<int, string>(),
+            };
             Id = id;
             Name = string.Format(Constants.Instance.FormatRequestName, id);
 
             ParseText(rawText, hasHeaders, cleanText, removeEmptyLines);
             CalculateDefaultColumn(defaultColumnIndex, defaultColumnName, columnNameMatch, defaultColumnPriority);
-        }
-
-        /// <summary>
-        /// Used when loading a Request from a save file.
-        /// Initializes a new instance of the <see cref="Request"/> class.
-        /// </summary>
-        /// <param name="node">The node.</param>
-        public Request(XElement node)
-        {
-            foreach (var mainCategory in node.Elements())
-            {
-                var mainCategoryName = mainCategory.Name.ToString();
-
-                if (mainCategoryName == "Name")
-                {
-                    Name = mainCategory.Value;
-                }
-                else if (mainCategoryName == "Id")
-                {
-                    Id = Converters.ConvertToInt(mainCategory.Value);
-                }
-                else if (mainCategoryName == "IsPreserved")
-                {
-                    IsPreserved = Converters.ConvertToBool(mainCategory.Value);
-                }
-                else if (mainCategoryName == "CurrentColumnIndex")
-                {
-                    CurrentColumnIndex = Converters.ConvertToIntWithClamp(mainCategory.Value, 0, 0);
-                }
-                else if (mainCategoryName == "ColumnKeys")
-                {
-                    foreach (var columnKeyMain in mainCategory.Elements())
-                    {
-                        if (columnKeyMain.Name.ToString() == "ColumnKey")
-                        {
-                            var key = -1;
-                            var value = string.Empty;
-
-                            foreach (var columnKeys in columnKeyMain.Elements())
-                            {
-                                switch (columnKeys.Name.ToString())
-                                {
-                                    case "Key":
-                                        key = Converters.ConvertToIntWithClamp(columnKeys.Value, 0, 0);
-                                        break;
-                                    case "Value":
-                                        value = columnKeys.Value;
-                                        break;
-                                }
-                            }
-
-                            columnKeys.Add(key, value);
-                            //columnsData.Add(value, new ColumnData());
-                        }
-                    }
-                }
-                else if (mainCategoryName == "ColumnsData")
-                {
-                    foreach (var columnDataMain in mainCategory.Elements())
-                    {
-                        if (columnDataMain.Name.ToString() == "Column")
-                        {
-                            var name = string.Empty;
-                            var data = new ColumnData();
-
-                            foreach (var cd in columnDataMain.Elements())
-                            {
-                                var cdName = cd.Name.ToString();
-
-                                if (cdName == "Name")
-                                {
-                                    name = cd.Value;
-                                }
-                                else if (cdName == "CurrentNextLine")
-                                {
-                                    data.CurrentNextLine = Converters.ConvertToIntWithClamp(cd.Value, 0, 0);
-                                }
-                                else if (cdName == "Rows")
-                                {
-                                    var rowData = new List<string>();
-                                    foreach (var cdRow in cd.Elements())
-                                    {
-                                        if (cdRow.Name.ToString() == "Row")
-                                        {
-                                            rowData.Add(cdRow.Value);
-                                        }
-                                    }
-                                    data.Rows = new List<string>(rowData);
-                                }
-                            }
-
-                            columnsData.Add(name, data);
-                        }
-                    }
-                }
-            }
         }
 
         #endregion Public Constructors
@@ -190,8 +101,8 @@ namespace ColumnCopier.Classes
         /// <value>The index of the current column.</value>
         public int CurrentColumnIndex
         {
-            get { return currentColumn; }
-            private set { currentColumn = value; }
+            get { return request.CurrentColumnIndex; }
+            private set { request.CurrentColumnIndex = value; }
         }
 
         /// <summary>
@@ -200,26 +111,38 @@ namespace ColumnCopier.Classes
         /// <value>The name of the current column.</value>
         public string CurrentColumnName
         {
-            get { return columnKeys[currentColumn]; }
+            get { return request.ColumnKeys[CurrentColumnIndex]; }
         }
 
         /// <summary>
         /// Gets the identifier.
         /// </summary>
         /// <value>The identifier.</value>
-        public int Id { get; private set; }
+        public int Id
+        {
+            get { return request.Id; }
+            private set { request.Id = value; }
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is preserved.
         /// </summary>
         /// <value><c>true</c> if this instance is preserved; otherwise, <c>false</c>.</value>
-        public bool IsPreserved { get; set; }
+        public bool IsPreserved
+        {
+            get { return request.IsPreserved; }
+            set { request.IsPreserved = value; }
+        }
 
         /// <summary>
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string Name { get; private set; }
+        public string Name
+        {
+            get { return request.Name; }
+            private set { request.Name = value; }
+        }
 
         /// <summary>
         /// Gets the number of columns.
@@ -227,7 +150,7 @@ namespace ColumnCopier.Classes
         /// <value>The number of columns.</value>
         public int NumberOfColumns
         {
-            get { return columnKeys.Count; }
+            get { return request.ColumnKeys.Count; }
         }
 
         /// <summary>
@@ -236,8 +159,8 @@ namespace ColumnCopier.Classes
         /// <value>The index of the copy next line.</value>
         public int CopyNextLineIndex
         {
-            get { return columnsData[CurrentColumnName].CurrentNextLine; }
-            set { columnsData[CurrentColumnName].CurrentNextLine = value; }
+            get { return request.ColumnData[CurrentColumnName].CurrentNextLine; }
+            set { request.ColumnData[CurrentColumnName].CurrentNextLine = value; }
         }
 
         /// <summary>
@@ -246,7 +169,7 @@ namespace ColumnCopier.Classes
         /// <value>The current column row count.</value>
         public int CurrentColumnRowCount
         {
-            get { return columnsData[CurrentColumnName].Rows.Count; }
+            get { return request.ColumnData[CurrentColumnName].Rows.Count; }
         }
 
         #endregion Public Properties
@@ -262,6 +185,7 @@ namespace ColumnCopier.Classes
         public string ConvertRequestToXml()
         {
             var str = new StringBuilder();
+            /*
 
             str.AppendLine("<Request>");
 
@@ -297,6 +221,7 @@ namespace ColumnCopier.Classes
             str.AppendLine("</ColumnsData>");
 
             str.AppendLine("</Request>");
+            */
             return str.ToString();
         }
 
@@ -312,14 +237,14 @@ namespace ColumnCopier.Classes
 
             // export headers
             var rawHeader = new StringBuilder();
-            foreach (var item in columnKeys)
+            foreach (var item in request.ColumnKeys)
                 rawHeader.AppendFormat("{0}\t", item.Value);
             var header = rawHeader.ToString();
             str.AppendFormat("{0}{1}", header.Remove(header.Length - 1), Environment.NewLine);
 
             // export rows
             var maxColumn = int.MinValue;
-            foreach (var column in columnsData)
+            foreach (var column in request.ColumnData)
             {
                 if (column.Value.Rows.Count > maxColumn)
                     maxColumn = column.Value.Rows.Count;
@@ -328,7 +253,7 @@ namespace ColumnCopier.Classes
             for (var i = 0; i < maxColumn; i++)
             {
                 var rawRow = new StringBuilder();
-                foreach (var column in columnsData)
+                foreach (var column in request.ColumnData)
                 {
                     if (i < column.Value.Rows.Count)
                         rawRow.AppendFormat("{0}\t", column.Value.Rows[i]);
@@ -349,10 +274,10 @@ namespace ColumnCopier.Classes
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public string GetCurrentColumnNextLineText()
         {
-            var text = XmlTextHelpers.ConvertFromXml(columnsData[CurrentColumnName].Rows[columnsData[CurrentColumnName].CurrentNextLine++]);
+            var text = XmlTextHelpers.ConvertFromXml(request.ColumnData[CurrentColumnName].Rows[request.ColumnData[CurrentColumnName].CurrentNextLine++]);
 
-            if (columnsData[CurrentColumnName].CurrentNextLine >= CurrentColumnRowCount)
-                columnsData[CurrentColumnName].CurrentNextLine = 0;
+            if (request.ColumnData[CurrentColumnName].CurrentNextLine >= CurrentColumnRowCount)
+                request.ColumnData[CurrentColumnName].CurrentNextLine = 0;
 
             return text;
         }
@@ -366,7 +291,7 @@ namespace ColumnCopier.Classes
         public List<string> GetColumnNames()
         {
             var result = new List<string>();
-            foreach (var key in columnKeys.Values)
+            foreach (var key in request.ColumnKeys.Values)
                 result.Add(XmlTextHelpers.ConvertFromXml(key));
 
             return result;
@@ -381,7 +306,7 @@ namespace ColumnCopier.Classes
         public string GetCurrentColumnText()
         {
             var str = new StringBuilder();
-            foreach (var line in columnsData[CurrentColumnName].Rows)
+            foreach (var line in request.ColumnData[CurrentColumnName].Rows)
                 str.AppendLine(XmlTextHelpers.ConvertFromXml(line));
 
             return str.ToString();
@@ -396,7 +321,7 @@ namespace ColumnCopier.Classes
         public List<string> GetColumnRawText()
         {
             var result = new List<string>();
-            foreach (var line in columnsData[CurrentColumnName].Rows)
+            foreach (var line in request.ColumnData[CurrentColumnName].Rows)
                 result.Add(XmlTextHelpers.ConvertFromXml(line));
 
             return result;
@@ -411,10 +336,10 @@ namespace ColumnCopier.Classes
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public bool SetCurrentColumn(int i)
         {
-            if (!columnKeys.ContainsKey(i))
+            if (!request.ColumnKeys.ContainsKey(i))
                 return false;
 
-            currentColumn = i;
+            CurrentColumnIndex = i;
             return true;
         }
 
@@ -444,7 +369,7 @@ namespace ColumnCopier.Classes
                 case DefaultColumnPriority.Name:
                     var currentClosestDistance = int.MaxValue;
                     var currentClosestId = int.MinValue;
-                    foreach (var pair in columnKeys)
+                    foreach (var pair in request.ColumnKeys)
                     {
                         var distance = MathHelpers.ComputeDifference(pair.Value, defaultColumnName);
                         if (distance < currentClosestDistance)
@@ -459,7 +384,7 @@ namespace ColumnCopier.Classes
                     break;
             }
 
-            currentColumn = MathHelpers.ClampInt(index, 0, columnKeys.Count - 1);
+            CurrentColumnIndex = MathHelpers.ClampInt(index, 0, request.ColumnKeys.Count - 1);
         }
 
         /// <summary>
@@ -490,8 +415,8 @@ namespace ColumnCopier.Classes
                         for (var j = 0; j < columns.Length; j++)
                         {
                             var name = string.Format(Constants.Instance.FormatColumnName, j);
-                            columnKeys.Add(j, name);
-                            columnsData.Add(name, new ColumnData()
+                            request.ColumnKeys.Add(j, name);
+                            request.ColumnData.Add(name, new ColumnData()
                                 {
                                     CurrentNextLine = 0,
                                     Rows = new List<string>()
@@ -504,8 +429,8 @@ namespace ColumnCopier.Classes
                         for (var j = 0; j < columns.Length; j++)
                         {
                             var name = columns[j];
-                            columnKeys.Add(j, name);
-                            columnsData.Add(name, new ColumnData()
+                            request.ColumnKeys.Add(j, name);
+                            request.ColumnData.Add(name, new ColumnData()
                                 {
                                     CurrentNextLine = 0,
                                     Rows = new List<string>()
@@ -519,7 +444,7 @@ namespace ColumnCopier.Classes
                 // now add the columns to their appropriate column...
                 for (var j = 0; j < columns.Length; j++)
                 {
-                    columnsData[columnKeys[j]].Rows.Add(columns[j] == null ? string.Empty : columns[j]);
+                    request.ColumnData[request.ColumnKeys[j]].Rows.Add(columns[j] == null ? string.Empty : columns[j]);
                 }
             }
 

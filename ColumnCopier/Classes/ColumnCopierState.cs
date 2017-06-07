@@ -1,6 +1,6 @@
 ﻿// ***********************************************************************
 // Assembly         : ColumnCopier
-// Component        : CCState.cs
+// Component        : ColumnCopierState.cs
 // Author           : Christian
 // Created          : 06-06-2017
 // 
@@ -8,20 +8,22 @@
 // Last Modified By : Christian
 // Last Modified On : 06-06-2017
 // ***********************************************************************
-// <copyright file="CCState.cs" company="Christian Webber">
+// <copyright file="ColumnCopierState.cs" company="Christian Webber">
 //		Copyright ©  2016 - 2017
 // </copyright>
 // <summary>
-//      Defines the CCState class.
+//      Defines the ColumnCopierState class.
 // </summary>
 //
 // Changelog: 
+//            - 2.1.0 (06-07-2017) - Renamed and moved most fields/properties to the State class. Revised saving/loading system to use JSON data serialization.
 //            - 2.0.0 (06-06-2017) - Initial version created.
 // ***********************************************************************
 using ColumnCopier.Enums;
 using ColumnCopier.Helpers;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Xml.Linq;
 
@@ -30,34 +32,14 @@ namespace ColumnCopier.Classes
     /// <summary>
     /// Class CCState.
     /// </summary>
-    public class CCState
+    public class ColumnCopierState
     {
         #region Private Fields
 
         /// <summary>
-        /// The current request
+        /// The state
         /// </summary>
-        private string currentRequest = "";
-
-        /// <summary>
-        /// The history
-        /// </summary>
-        private Dictionary<string, Request> history = new Dictionary<string, Request>();
-
-        /// <summary>
-        /// The history log
-        /// </summary>
-        private List<string> historyLog = new List<string>();
-
-        /// <summary>
-        /// The preserved requests
-        /// </summary>
-        private List<string> preservedRequests = new List<string>();
-
-        /// <summary>
-        /// The request identifier
-        /// </summary>
-        private int requestId = 0;
+        private State state;
 
         /// <summary>
         /// The save guard
@@ -69,10 +51,16 @@ namespace ColumnCopier.Classes
         #region Public Constructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CCState"/> class.
+        /// Initializes a new instance of the <see cref="ColumnCopierState"/> class.
         /// </summary>
-        public CCState()
+        public ColumnCopierState()
         {
+            state = new State()
+            {
+                History = new List<string>(),
+                PreservedRequests = new List<string>(),
+                RequestHistory = new Dictionary<string, Classes.Request>(),
+            };
         }
 
         #endregion Public Constructors
@@ -83,7 +71,11 @@ namespace ColumnCopier.Classes
         /// Gets or sets a value indicating whether [clean input data].
         /// </summary>
         /// <value><c>true</c> if [clean input data]; otherwise, <c>false</c>.</value>
-        public bool CleanInputData { get; set; } = true;
+        public bool CleanInputData
+        {
+            get { return state.CleanInputData; }
+            set { state.CleanInputData = value; }
+        }
 
         /// <summary>
         /// Gets or sets the current request.
@@ -91,8 +83,8 @@ namespace ColumnCopier.Classes
         /// <value>The current request.</value>
         public string CurrentRequest
         {
-            get { return currentRequest; }
-            set { currentRequest = value; }
+            get { return state.CurrentRequest; }
+            set { state.CurrentRequest = value; }
         }
 
         /// <summary>
@@ -101,34 +93,58 @@ namespace ColumnCopier.Classes
         /// <value>The index of the current request.</value>
         public int CurrentRequestIndex
         {
-            get { return historyLog.FindIndex(x => x == CurrentRequest); }
+            get { return state.History.FindIndex(x => x == CurrentRequest); }
         }
 
         /// <summary>
         /// Gets or sets a value indicating whether [data has headers].
         /// </summary>
         /// <value><c>true</c> if [data has headers]; otherwise, <c>false</c>.</value>
-        public bool DataHasHeaders { get; set; } = true;
+        public bool DataHasHeaders
+        {
+            get { return state.DataHasHeaders; }
+            set { state.DataHasHeaders = value; }
+        }
+
         /// <summary>
         /// Gets or sets the default index of the column.
         /// </summary>
         /// <value>The default index of the column.</value>
-        public int DefaultColumnIndex { get; set; } = 0;
+        public int DefaultColumnIndex
+        {
+            get { return state.DefaultColumnIndex; }
+            set { state.DefaultColumnIndex = value; }
+        }
+
         /// <summary>
         /// Gets or sets the default name of the column.
         /// </summary>
         /// <value>The default name of the column.</value>
-        public string DefaultColumnName { get; set; } = string.Empty;
+        public string DefaultColumnName
+        {
+            get { return state.DefaultColumnName; }
+            set { state.DefaultColumnName = value; }
+        }
+
         /// <summary>
         /// Gets or sets the default column name match.
         /// </summary>
         /// <value>The default column name match.</value>
-        public int DefaultColumnNameMatch { get; set; } = 5;
+        public int DefaultColumnNameMatch
+        {
+            get { return state.DefaultColumnNameMatchThreshold; }
+            set { state.DefaultColumnNameMatchThreshold = value; }
+        }
+
         /// <summary>
         /// Gets or sets the default column priority.
         /// </summary>
         /// <value>The default column priority.</value>
-        public DefaultColumnPriority DefaultColumnPriority { get; set; }
+        public DefaultColumnPriority DefaultColumnPriority
+        {
+            get { return (DefaultColumnPriority)state.DefaultColumnPriorityOption; }
+            set { state.DefaultColumnPriorityOption = (int)value; }
+        }
 
         /// <summary>
         /// Gets the history.
@@ -136,7 +152,7 @@ namespace ColumnCopier.Classes
         /// <value>The history.</value>
         public Dictionary<string, Request> History
         {
-            get { return history; }
+            get { return state.RequestHistory; }
         }
 
         /// <summary>
@@ -145,34 +161,59 @@ namespace ColumnCopier.Classes
         /// <value>The history log.</value>
         public List<string> HistoryLog
         {
-            get { return historyLog; }
+            get { return state.History; }
         }
 
         /// <summary>
         /// Gets or sets the index of the line separator option.
         /// </summary>
         /// <value>The index of the line separator option.</value>
-        public int LineSeparatorOptionIndex { get; set; }
+        public int LineSeparatorOptionIndex
+        {
+            get { return state.LineSeparatorOptionIndex; }
+            set { state.LineSeparatorOptionIndex = value; }
+        }
+
         /// <summary>
         /// Gets or sets the line separator option inter.
         /// </summary>
         /// <value>The line separator option inter.</value>
-        public string LineSeparatorOptionInter { get; set; }
+        public string LineSeparatorOptionInter
+        {
+            get { return state.LineSeparatorOptionInter; }
+            set { state.LineSeparatorOptionInter = value; }
+        }
+
         /// <summary>
         /// Gets or sets the line separator option post.
         /// </summary>
         /// <value>The line separator option post.</value>
-        public string LineSeparatorOptionPost { get; set; }
+        public string LineSeparatorOptionPost
+        {
+            get { return state.LineSeparatorOptionPost; }
+            set { state.LineSeparatorOptionPost = value; }
+        }
+
         /// <summary>
         /// Gets or sets the line separator option pre.
         /// </summary>
         /// <value>The line separator option pre.</value>
-        public string LineSeparatorOptionPre { get; set; }
+        public string LineSeparatorOptionPre
+        {
+            get { return state.LineSeparatorOptionPre; }
+            set { state.LineSeparatorOptionPre = value; }
+        }
+
         /// <summary>
         /// Gets or sets the maximum history.
         /// </summary>
         /// <value>The maximum history.</value>
-        public int MaxHistory { get; set; } = 10;
+        public int MaxHistory
+        {
+            get { return state.MaxHistory; }
+            set { state.MaxHistory = value; }
+        }
+
 
         /// <summary>
         /// Gets the preserved request count.
@@ -180,19 +221,29 @@ namespace ColumnCopier.Classes
         /// <value>The preserved request count.</value>
         public int PreservedRequestCount
         {
-            get { return preservedRequests.Count; }
+            get { return state.PreservedRequests.Count; }
         }
 
         /// <summary>
         /// Gets or sets the program opacity.
         /// </summary>
         /// <value>The program opacity.</value>
-        public int ProgramOpacity { get; set; } = 100;
+        public int ProgramOpacity
+        {
+            get { return state.ProgramOpacity; }
+            set { state.ProgramOpacity = value; }
+        }
+
         /// <summary>
         /// Gets or sets a value indicating whether [remove empty lines].
         /// </summary>
         /// <value><c>true</c> if [remove empty lines]; otherwise, <c>false</c>.</value>
-        public bool RemoveEmptyLines { get; set; } = true;
+        public bool RemoveEmptyLines
+        {
+            get { return state.RemoveEmptyLines; }
+            set { state.RemoveEmptyLines = value; }
+        }
+
         /// <summary>
         /// Gets or sets the save file.
         /// </summary>
@@ -203,7 +254,12 @@ namespace ColumnCopier.Classes
         /// Gets or sets a value indicating whether [show on top].
         /// </summary>
         /// <value><c>true</c> if [show on top]; otherwise, <c>false</c>.</value>
-        public bool ShowOnTop { get; set; }
+        public bool ShowOnTop
+        {
+            get { return state.ShowOnTop; }
+            set { state.ShowOnTop = value; }
+        }
+
 
         #endregion Public Properties
 
@@ -214,23 +270,12 @@ namespace ColumnCopier.Classes
         /// </summary>
         /// <param name="text">The text.</param>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Support for the new State class.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void AddNewRequest(string text)
         {
-            var request = new Request(requestId++, text, DataHasHeaders, CleanInputData, RemoveEmptyLines,
+            var request = new Request(state.RequestId++, text, DataHasHeaders, CleanInputData, RemoveEmptyLines,
                 DefaultColumnIndex, DefaultColumnName, DefaultColumnNameMatch, DefaultColumnPriority);
-            AddRequestToHistory(request);
-        }
-
-        /// <summary>
-        /// Adds the new request.
-        /// </summary>
-        /// <param name="node">The node.</param>
-        ///  Changelog:
-        ///             - 2.0.0 (06-06-2017) - Initial version.
-        public void AddNewRequest(XElement node)
-        {
-            var request = new Request(node);
             AddRequestToHistory(request);
         }
 
@@ -239,15 +284,16 @@ namespace ColumnCopier.Classes
         /// </summary>
         /// <param name="request">The request.</param>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Support for the new State class.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void AddRequestToHistory(Request request)
         {
-            history.Add(request.Name, request);
-            historyLog.Add(request.Name);
+            state.RequestHistory.Add(request.Name, request);
+            state.History.Add(request.Name);
 
             // do we need to clean any of the history?
-            if (historyLog.Count > MaxHistory)
-                CleanHistory(historyLog.Count - MaxHistory);
+            if (state.History.Count > MaxHistory)
+                CleanHistory(state.History.Count - MaxHistory);
         }
 
         /// <summary>
@@ -256,6 +302,7 @@ namespace ColumnCopier.Classes
         /// <param name="number">The number.</param>
         /// <param name="respectPreservedRequests">if set to <c>true</c> [respect preserved requests].</param>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Support for the new State class.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void CleanHistory(int number, bool respectPreservedRequests = true)
         {
@@ -266,16 +313,16 @@ namespace ColumnCopier.Classes
             if (number > 0)
             {
                 var i = 0;
-                for (var j = 0; j < number && i < historyLog.Count; j++)
+                for (var j = 0; j < number && i < state.History.Count; j++)
                 {
-                    if (respectPreservedRequests && history[historyLog[i]].IsPreserved)
+                    if (respectPreservedRequests && state.RequestHistory[state.History[i]].IsPreserved)
                     {
                         j--;
                     }
                     else
                     {
-                        history.Remove(historyLog[i]);
-                        historyLog.RemoveAt(i);
+                        state.RequestHistory.Remove(state.History[i]);
+                        state.History.RemoveAt(i);
                         i--;
                     }
                     i++;
@@ -288,11 +335,12 @@ namespace ColumnCopier.Classes
         /// </summary>
         /// <returns>List&lt;System.String&gt;.</returns>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Support for the new State class.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public List<string> CurrentRequestColumnNames()
         {
             return !string.IsNullOrWhiteSpace(CurrentRequest)
-                ? new List<string>(history[CurrentRequest].GetColumnNames())
+                ? new List<string>(state.RequestHistory[CurrentRequest].GetColumnNames())
                 : new List<string>();
         }
 
@@ -301,11 +349,12 @@ namespace ColumnCopier.Classes
         /// </summary>
         /// <returns>System.String.</returns>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Support for the new State class.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public string CurrentRequestCurrentColumnText()
         {
             return !string.IsNullOrWhiteSpace(CurrentRequest)
-                ? history[CurrentRequest].GetCurrentColumnText()
+                ? state.RequestHistory[CurrentRequest].GetCurrentColumnText()
                 : string.Empty;
         }
 
@@ -313,11 +362,12 @@ namespace ColumnCopier.Classes
         /// Deletes the current request.
         /// </summary>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Support for the new State class.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void DeleteCurrentRequest()
         {
-            history.Remove(CurrentRequest);
-            historyLog.Remove(CurrentRequest);
+            state.RequestHistory.Remove(CurrentRequest);
+            state.History.Remove(CurrentRequest);
         }
 
         /// <summary>
@@ -325,11 +375,12 @@ namespace ColumnCopier.Classes
         /// </summary>
         /// <returns>System.String.</returns>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Support for the new State class.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public string ExportCurrentRequest()
         {
             return !string.IsNullOrWhiteSpace(CurrentRequest)
-                ? history[CurrentRequest].ExportRequest()
+                ? state.RequestHistory[CurrentRequest].ExportRequest()
                 : string.Empty;
         }
 
@@ -338,12 +389,13 @@ namespace ColumnCopier.Classes
         /// </summary>
         /// <returns>List&lt;System.String&gt;.</returns>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Support for the new State class.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public List<string> GetRequestHistory()
         {
             var result = new List<string>();
-            for (var i = historyLog.Count - 1; i >= 0; i--)
-                result.Add(historyLog[i]);
+            for (var i = state.History.Count - 1; i >= 0; i--)
+                result.Add(state.History[i]);
 
             return result;
         }
@@ -354,10 +406,11 @@ namespace ColumnCopier.Classes
         /// <param name="name">The name.</param>
         /// <returns>System.Int32.</returns>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Support for the new State class.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public int GetRequestHistoryPosition(string name)
         {
-            return historyLog.FindIndex(x => x == name);
+            return state.History.FindIndex(x => x == name);
         }
 
         /// <summary>
@@ -365,19 +418,20 @@ namespace ColumnCopier.Classes
         /// </summary>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Support for the new State class. Revised save system to use JSON serialization.
         ///             - 2.0.0 (06-06-2017) - Initial version.
-        public bool Load()
+        public Ternary Load()
         {
             if (saveGuard.CheckSet)
             {
                 if (!File.Exists(SaveFile))
                 {
                     saveGuard.Reset();
-                    return false;
+                    return Ternary.False;
                 }
 
                 var file = SaveFile;
-                bool isCompressed = Path.GetExtension(file) == Constants.Instance.SaveExtensionCompressed;
+                var isCompressed = Path.GetExtension(file) == Constants.Instance.SaveExtensionCompressed;
                 if (isCompressed)
                 {
                     var destinationPath = Path.Combine(Path.GetDirectoryName(file), "TEMPORARY");
@@ -385,104 +439,28 @@ namespace ColumnCopier.Classes
                     file = Path.Combine(destinationPath, Path.GetFileName(file));
                 }
 
-                var doc = XDocument.Load(file);
-
-                foreach (var mainCategory in doc.Root.Elements())
+                var reader = new StreamReader(file);
+                if (reader == null)
                 {
-                    var mainCategoryName = mainCategory.Name.ToString();
-
-                    if (mainCategoryName == "SaveVersion")
-                    {
-                        if (Converters.ConvertToInt(mainCategory.Value.ToString()) != Constants.SaveVersion)
-                        {
-                            saveGuard.Reset();
-                            return false;
-                        }
-                    }
-                    else if (mainCategoryName == "Settings")
-                    {
-                        foreach (var settingNode in mainCategory.Elements())
-                        {
-                            switch (settingNode.Name.ToString())
-                            {
-                                case "ShowOnTop":
-                                    ShowOnTop = Converters.ConvertToBool(settingNode.Value, false);
-                                    break;
-
-                                case "DataHasHeaders":
-                                    DataHasHeaders = Converters.ConvertToBool(settingNode.Value, true);
-                                    break;
-
-                                case "CleanInputData":
-                                    CleanInputData = Converters.ConvertToBool(settingNode.Value, true);
-                                    break;
-
-                                case "RemoveEmptyLines":
-                                    RemoveEmptyLines = Converters.ConvertToBool(settingNode.Value, true);
-                                    break;
-
-                                case "LineSeparatorOptionIndex":
-                                    LineSeparatorOptionIndex = Converters.ConvertToInt(settingNode.Value);
-                                    break;
-
-                                case "LineSeparatorOptionPre":
-                                    LineSeparatorOptionPre = settingNode.Value;
-                                    break;
-
-                                case "LineSeparatorOptionPost":
-                                    LineSeparatorOptionPost = settingNode.Value;
-                                    break;
-
-                                case "LineSeparatorOptionInter":
-                                    LineSeparatorOptionInter = settingNode.Value;
-                                    break;
-
-                                case "DefaultColumnIndex":
-                                    DefaultColumnIndex = Converters.ConvertToIntWithClamp(settingNode.Value, 0, 0);
-                                    break;
-
-                                case "DefaultColumnName":
-                                    DefaultColumnName = settingNode.Value;
-                                    break;
-
-                                case "DefaultColumnNameMatch":
-                                    DefaultColumnNameMatch = Converters.ConvertToIntWithClamp(settingNode.Value, 0, 0);
-                                    break;
-
-                                case "DefaultColumnPriority":
-                                    DefaultColumnPriority = (DefaultColumnPriority)Converters.ConvertToInt(settingNode.Value);
-                                    break;
-
-                                case "MaxHistory":
-                                    MaxHistory = Converters.ConvertToIntWithClamp(settingNode.Value, 0, 0);
-                                    break;
-
-                                case "ProgramOpacity":
-                                    ProgramOpacity = Converters.ConvertToIntWithClamp(settingNode.Value, 100, 0, 100);
-                                    break;
-
-                                case "CurrentRequest":
-                                    CurrentRequest = settingNode.Value;
-                                    break;
-                            }
-                        }
-                    }
-                    else if (mainCategoryName == "History")
-                    {
-                        history.Clear();
-                        foreach (var requestNode in mainCategory.Elements())
-                        {
-                            if (requestNode.Name == "Request")
-                                AddNewRequest(requestNode);
-                        }
-                    }
+                    saveGuard.Reset();
+                    return Ternary.False;
                 }
 
-                saveGuard.Reset();
-                return true;
-            }
+                var deserializer = new DataContractJsonSerializer(typeof(State));
+                var newState = (State)deserializer.ReadObject(reader.BaseStream);
+                reader.Close();
 
-            return false;
+                if (newState.SaveVersion != Constants.SaveVersion)
+                {
+                    saveGuard.Reset();
+                    return Ternary.Neutral;
+                }
+
+                state = newState;
+                saveGuard.Reset();
+                return Ternary.True;
+            }
+            return Ternary.False;
         }
 
         /// <summary>
@@ -490,57 +468,25 @@ namespace ColumnCopier.Classes
         /// </summary>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Support for the new State class. Revised save system to use JSON serialization.
         ///             - 2.0.0 (06-06-2017) - Initial version.
-        public bool Save()
+        public Ternary Save()
         {
             if (saveGuard.CheckSet)
             {
-                var str = new StringBuilder();
+                // serialize the save data...
+                var serializer = new DataContractJsonSerializer(typeof(Request));
+                var stream = new MemoryStream();
+                serializer.WriteObject(stream, state);
+                var saveString = Encoding.Default.GetString(stream.ToArray());
+                stream.Close();
+                
+                // save the file...
+                File.WriteAllText(SaveFile, saveString);
 
-                str.AppendLine("<ColumnCopier>");
-
-                str.AppendLine($"<SaveVersion>{Constants.SaveVersion}</SaveVersion>");
-                str.AppendLine("<Settings>");
-                str.AppendLine($"<ShowOnTop>{ShowOnTop}</ShowOnTop>");
-                str.AppendLine($"<DataHasHeaders>{DataHasHeaders}</DataHasHeaders>");
-                str.AppendLine($"<CleanInputData>{CleanInputData}</CleanInputData>");
-                str.AppendLine($"<RemoveEmptyLines>{RemoveEmptyLines}</RemoveEmptyLines>");
-                str.AppendLine($"<ProgramOpacity>{ProgramOpacity}</ProgramOpacity>");
-
-                str.AppendLine($"<LineSeparatorOptionIndex>{LineSeparatorOptionIndex}</LineSeparatorOptionIndex>");
-                str.AppendLine($"<LineSeparatorOptionPre>{LineSeparatorOptionPre}</LineSeparatorOptionPre>");
-                str.AppendLine($"<LineSeparatorOptionPost>{LineSeparatorOptionPost}</LineSeparatorOptionPost>");
-                str.AppendLine($"<LineSeparatorOptionInter>{LineSeparatorOptionInter}</LineSeparatorOptionInter>");
-
-                str.AppendLine($"<DefaultColumnIndex>{DefaultColumnIndex}</DefaultColumnIndex>");
-                str.AppendLine($"<DefaultColumnName>{DefaultColumnName}</DefaultColumnName>");
-                str.AppendLine($"<DefaultColumnNameMatch>{DefaultColumnNameMatch}</DefaultColumnNameMatch>");
-                str.AppendLine($"<DefaultColumnPriority>{(int)DefaultColumnPriority}</DefaultColumnPriority>");
-
-                str.AppendLine($"<MaxHistory>{MaxHistory}</MaxHistory>");
-
-                str.AppendLine($"<CurrentRequest>{currentRequest}</CurrentRequest>");
-                str.AppendLine("</Settings>");
-
-                str.AppendLine("<History>");
-                if (!string.IsNullOrEmpty(currentRequest))
-                {
-                    foreach (var request in history)
-                        str.AppendLine(request.Value.ConvertRequestToXml());
-                }
-                str.AppendLine("</History>");
-
-                str.AppendLine("</ColumnCopier>");
-
-                var result = str.ToString();
-                var doc = XDocument.Parse(result);
-
-                if (File.Exists(SaveFile))
-                    File.Delete(SaveFile);
-
-                doc.Save(SaveFile);
+                // compress?
                 var file = SaveFile;
-                bool isCompressed = Path.GetExtension(file) == Constants.Instance.SaveExtensionCompressed;
+                var isCompressed = Path.GetExtension(file) == Constants.Instance.SaveExtensionCompressed;
                 if (isCompressed)
                 {
                     var destinationPath = Path.Combine(Path.GetDirectoryName(file), "TEMPORARY");
@@ -550,11 +496,11 @@ namespace ColumnCopier.Classes
                     Directory.Delete(destinationPath, true);
                 }
 
+                // return that we succeeded!
                 saveGuard.Reset();
-                return true;
+                return Ternary.True;
             }
-
-            return false;
+            return Ternary.False;
         }
 
         /// <summary>
@@ -562,22 +508,23 @@ namespace ColumnCopier.Classes
         /// </summary>
         /// <param name="state">if set to <c>true</c> [state].</param>
         ///  Changelog:
+        ///             - 2.1.0 (06-07-2017) - Support for the new State class.
         ///             - 2.0.0 (06-06-2017) - Initial version.
-        public void SetCurrentRequestPreservationToggle(bool state)
+        public void SetCurrentRequestPreservationToggle(bool newState)
         {
             if (!string.IsNullOrWhiteSpace(CurrentRequest))
             {
-                history[CurrentRequest].IsPreserved = state;
+                state.RequestHistory[CurrentRequest].IsPreserved = newState;
 
-                if (state)
+                if (newState)
                 {
-                    if (!preservedRequests.Contains(CurrentRequest))
-                        preservedRequests.Add(CurrentRequest);
+                    if (!state.PreservedRequests.Contains(CurrentRequest))
+                        state.PreservedRequests.Add(CurrentRequest);
                 }
                 else
                 {
-                    if (preservedRequests.Contains(CurrentRequest))
-                        preservedRequests.Remove(CurrentRequest);
+                    if (state.PreservedRequests.Contains(CurrentRequest))
+                        state.PreservedRequests.Remove(CurrentRequest);
                 }
             }
         }
