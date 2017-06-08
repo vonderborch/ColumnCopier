@@ -2,4 +2,8 @@
 Simple tool to parse spreadsheet data and seperate it into columns.
 
 # Current Release Version
-2.0.0
+2.1.0
+
+# Documentation
+
+# Tutorial
