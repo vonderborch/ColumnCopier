@@ -4,9 +4,9 @@
 // Author           : Christian
 // Created          : 05-30-2017
 //
-// Version          : 2.1.0
+// Version          : 2.2.0
 // Last Modified By : Christian
-// Last Modified On : 06-07-2017
+// Last Modified On : 07-14-2017
 // ***********************************************************************
 // <copyright file="Constants.cs" company="Christian Webber">
 //		Copyright ©  2016 - 2017
@@ -16,11 +16,15 @@
 // </summary>
 //
 // Changelog:
+//            - 2.2.0 (07-14-2017) - Multiple column copying support.
+//            - 2.2.0 (07-13-2017) - Sql input support.
 //            - 2.1.0 (06-07-2017) - Exception message constants and bumped save version and program version. Also added a minimum save version constant to indicate the minimum readable save version of this program.
 //            - 2.0.0 (06-06-2017) - New constants + comments.
 //            - 2.0.0 (05-31-2017) - Moved more constants over here.
 //            - 1.3.0 (05-30-2017) - Initial code.
 // ***********************************************************************
+using ColumnCopier.Classes.SqlSupport;
+using ColumnCopier.Enums;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -81,13 +85,13 @@ namespace ColumnCopier
         /// Gets the program version.
         /// </summary>
         /// <value>The program version.</value>
-        public static int ProgramVersion { get; private set; } = 210;
+        public static int ProgramVersion { get; private set; } = 220;
 
         /// <summary>
         /// Gets the save version.
         /// </summary>
         /// <value>The save version.</value>
-        public static int SaveVersion { get; private set; } = 21;
+        public static int SaveVersion { get; private set; } = 22;
 
         /// <summary>
         /// Gets the minimum readable save version.
@@ -103,6 +107,28 @@ namespace ColumnCopier
         {
             get { return characterReplacements; }
         }
+
+        /// <summary>
+        /// Gets the character new line.
+        /// </summary>
+        /// <value>The character new line.</value>
+        public string CharNewLine { get; private set; } = Environment.NewLine;
+
+        /// <summary>
+        /// Gets the character tab.
+        /// </summary>
+        /// <value>The character tab.</value>
+        public string CharTab { get; private set; } = "\t";
+
+        /// <summary>
+        /// Gets the column line seperators.
+        /// </summary>
+        /// <value>The column line seperators.</value>
+        public Dictionary<ColumnLineSeparatorOptions, Tuple<string, int>> ColumnLineSeperators { get; private set; } = new Dictionary<ColumnLineSeparatorOptions, Tuple<string, int>>()
+        {
+            { ColumnLineSeparatorOptions.Nothing, new Tuple<string, int>("", 1) },
+            { ColumnLineSeparatorOptions.NewLine, new Tuple<string, int>("\\n", 0) },
+        };
 
         /// <summary>
         /// Gets the name of the format column.
@@ -241,7 +267,34 @@ namespace ColumnCopier
         /// </summary>
         /// <value>The input query program opacity.</value>
         public string InputQueryProgramOpacity { get; private set; } = "Program opacity?";
-        
+
+        /// <summary>
+        /// Gets the input query SQL connection string.
+        /// </summary>
+        /// <value>The input query SQL connection string.</value>
+        public string InputQuerySqlConnectionString { get; private set; } = "SQL Connection String?";
+
+        /// <summary>
+        /// Gets the input query SQL select query.
+        /// </summary>
+        /// <value>The input query SQL select query.</value>
+        public string InputQuerySqlSelectQuery { get; private set; } = "SQL Select Query?";
+
+        /// <summary>
+        /// Gets the line seperators.
+        /// </summary>
+        /// <value>The line seperators.</value>
+        public Dictionary<LineSeparatorOptions, Tuple<string, string, string, int>> LineSeperators { get; private set; } = new Dictionary<LineSeparatorOptions, Tuple<string, string, string, int>>()
+        {
+            { LineSeparatorOptions.Nothing, new Tuple<string, string, string, int>("", "", "", 1) },
+            { LineSeparatorOptions.Comma, new Tuple<string, string, string, int>(", ", "", "", 0) },
+            { LineSeparatorOptions.DoubleQuoteComma, new Tuple<string, string, string, int>("\", \"", "", "", 2) },
+            { LineSeparatorOptions.DoubleQuoteParenthesisComma, new Tuple<string, string, string, int>("\", \"", "(\"", "\")", 5) },
+            { LineSeparatorOptions.ParenthesisComma, new Tuple<string, string, string, int>(", ", "(", ")", 3) },
+            { LineSeparatorOptions.SemiColon, new Tuple<string, string, string, int>("; ", "", "", 6) },
+            { LineSeparatorOptions.SingleQuoteParenthesisComma, new Tuple<string, string, string, int>("', '", "('", "')", 4) },
+        };
+
         /// <summary>
         /// Gets the message body exception.
         /// </summary>
@@ -279,6 +332,12 @@ namespace ColumnCopier
         public string MessageBodyNoRequestHistory { get; private set; } = "There are currently no requests available.";
 
         /// <summary>
+        /// Gets the message body no SQL provider.
+        /// </summary>
+        /// <value>The message body no SQL provider.</value>
+        public string MessageBodyNoSqlProvider { get; private set; } = "The selected provider, {0}, is unavailable (DLL(s) not found). {2}{2} Mssing DLL's: {1}.";
+
+        /// <summary>
         /// Gets the message title exception.
         /// </summary>
         /// <value>The message title exception.</value>
@@ -313,6 +372,36 @@ namespace ColumnCopier
         /// </summary>
         /// <value>The message title no request history.</value>
         public string MessageTitleNoRequestHistory { get; private set; } = "No Request History";
+
+        /// <summary>
+        /// Gets the message title no SQL provider.
+        /// </summary>
+        /// <value>The message title no SQL provider.</value>
+        public string MessageTitleNoSqlProvider { get; private set; } = "SQL Provider Unavailable";
+
+        /// <summary>
+        /// Gets the needed files my SQL connection.
+        /// </summary>
+        /// <value>The needed files my SQL connection.</value>
+        public List<string> NeededFilesMySqlConnection { get; private set; } = new List<string>() { "MySql.Data.dll" };
+
+        /// <summary>
+        /// Gets the needed files none connection.
+        /// </summary>
+        /// <value>The needed files none connection.</value>
+        public List<string> NeededFilesNoneConnection { get; private set; } = new List<string>() { };
+
+        /// <summary>
+        /// Gets the needed files postgre SQL connection.
+        /// </summary>
+        /// <value>The needed files postgre SQL connection.</value>
+        public List<string> NeededFilesPostgreSqlConnection { get; private set; } = new List<string>() { "Npgsql.dll", "System.Threading.Tasks.Extensions.dll" };
+
+        /// <summary>
+        /// Gets the needed files SQL server connection.
+        /// </summary>
+        /// <value>The needed files SQL server connection.</value>
+        public List<string> NeededFilesSqlServerConnection { get; private set; } = new List<string>() { };
 
         /// <summary>
         /// Gets the save extension.

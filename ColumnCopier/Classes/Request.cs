@@ -4,9 +4,9 @@
 // Author           : Christian
 // Created          : 08-18-2016
 //
-// Version          : 2.1.0
+// Version          : 2.2.0
 // Last Modified By : Christian
-// Last Modified On : 06-07-2017
+// Last Modified On : 07-14-2017
 // ***********************************************************************
 // <copyright file="Request.cs" company="Christian Webber">
 //		Copyright ©  2016 - 2017
@@ -16,6 +16,7 @@
 // </summary>
 //
 // Changelog:
+//            - 2.2.0 (07-14-2017) - Added method to get the text of any column and any row of any column.
 //            - 2.1.0 (06-07-2017) - Moved most fields/properties to the RequestData class. Revised saving/loading system to use JSON data serialization.
 //            - 2.0.0 (06-06-2017) - Rebuilt!
 //            - 1.3.0 (05-30-2017) - More extensive text cleaning.
@@ -173,6 +174,15 @@ namespace ColumnCopier.Classes
             get { return request.ColumnData[CurrentColumnName].Rows.Count; }
         }
 
+        /// <summary>
+        /// Gets the request data.
+        /// </summary>
+        /// <value>The request data.</value>
+        public RequestData RequestData
+        {
+            get { return request; }
+        }
+
         #endregion Public Properties
 
         #region Public Methods
@@ -268,6 +278,50 @@ namespace ColumnCopier.Classes
         }
 
         /// <summary>
+        /// Gets the column names.
+        /// </summary>
+        /// <returns>List&lt;System.String&gt;.</returns>
+        ///  Changelog:
+        ///             - 2.0.0 (06-06-2017) - Initial version.
+        public List<string> GetColumnNames()
+        {
+            var result = new List<string>();
+            foreach (var key in request.ColumnKeys.Values)
+                result.Add(XmlTextHelpers.ConvertFromXml(key));
+
+            return result;
+        }
+
+        /// <summary>
+        /// Gets the column row text.
+        /// </summary>
+        /// <param name="columnName">Name of the column.</param>
+        /// <param name="rowId">The row identifier.</param>
+        /// <returns>System.String.</returns>
+        ///  Changelog:
+        ///             - 2.2.0 (07-14-2017) - Initial version.
+        public string GetColumnRowText(string columnName, int rowId)
+        {
+            return request.ColumnData[columnName].Rows[rowId];
+        }
+
+        /// <summary>
+        /// Gets the column text.
+        /// </summary>
+        /// <param name="columnName">Name of the column.</param>
+        /// <returns>System.String.</returns>
+        ///  Changelog:
+        ///             - 2.2.0 (07-14-2017) - Initial version.
+        public string GetColumnText(string columnName)
+        {
+            var str = new StringBuilder();
+            foreach (var line in request.ColumnData[columnName].Rows)
+                str.AppendLine(XmlTextHelpers.ConvertFromXml(line));
+
+            return str.ToString();
+        }
+
+        /// <summary>
         /// Gets the current column next line text.
         /// </summary>
         /// <returns>System.String.</returns>
@@ -281,21 +335,6 @@ namespace ColumnCopier.Classes
                 request.ColumnData[CurrentColumnName].CurrentNextLine = 0;
 
             return text;
-        }
-
-        /// <summary>
-        /// Gets the column names.
-        /// </summary>
-        /// <returns>List&lt;System.String&gt;.</returns>
-        ///  Changelog:
-        ///             - 2.0.0 (06-06-2017) - Initial version.
-        public List<string> GetColumnNames()
-        {
-            var result = new List<string>();
-            foreach (var key in request.ColumnKeys.Values)
-                result.Add(XmlTextHelpers.ConvertFromXml(key));
-
-            return result;
         }
 
         /// <summary>

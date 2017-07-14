@@ -179,6 +179,27 @@ namespace ColumnCopier.Classes
         [DataMember]
         public bool ShowOnTop { get; set; } = false;
 
+        /// <summary>
+        /// Gets or sets the SQL connection provider.
+        /// </summary>
+        /// <value>The SQL connection provider.</value>
+        [DataMember]
+        public int SqlConnectionProvider { get; set; } = 0;
+
+        /// <summary>
+        /// Gets or sets the SQL connection string.
+        /// </summary>
+        /// <value>The SQL connection string.</value>
+        [DataMember]
+        public string SqlConnectionString { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the SQL select query.
+        /// </summary>
+        /// <value>The SQL select query.</value>
+        [DataMember]
+        public string SqlSelectQuery { get; set; } = string.Empty;
+
         #endregion Public Properties
     }
 }

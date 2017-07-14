@@ -29,7 +29,7 @@
     <SuiteName>ColumnCopier</SuiteName>
     <OpenBrowserOnPublish>false</OpenBrowserOnPublish>
     <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>2.1.0.0</ApplicationVersion>
+    <ApplicationVersion>2.2.0.0</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
@@ -82,11 +82,23 @@
     <ApplicationIcon>Assets\logo.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="MySql.Data, Version=6.9.9.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
+      <HintPath>..\packages\MySql.Data.6.9.9\lib\net45\MySql.Data.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Npgsql, Version=3.2.4.1, Culture=neutral, PublicKeyToken=5d8b90d52f46fda7, processorArchitecture=MSIL">
+      <HintPath>..\packages\Npgsql.3.2.4.1\lib\net45\Npgsql.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Threading.Tasks.Extensions, Version=4.1.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Threading.Tasks.Extensions.4.3.0\lib\portable-net45+win8+wp8+wpa81\System.Threading.Tasks.Extensions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -102,10 +114,16 @@
     <Compile Include="Classes\ColumnCopierState.cs" />
     <Compile Include="Classes\ColumnData.cs" />
     <Compile Include="Classes\RequestData.cs" />
+    <Compile Include="Classes\SqlSupport\ASqlProvider.cs" />
+    <Compile Include="Classes\SqlSupport\MySqlProvider.cs" />
+    <Compile Include="Classes\SqlSupport\PostgreSqlProvider.cs" />
+    <Compile Include="Classes\SqlSupport\SqlServerProvider.cs" />
     <Compile Include="Classes\State.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Enums\DefaultColumnPriority.cs" />
+    <Compile Include="Enums\ColumnLineSeparatorOptions.cs" />
     <Compile Include="Enums\LineSeparatorOptions.cs" />
+    <Compile Include="Enums\SqlConnectionProviders.cs" />
     <Compile Include="Enums\Ternary.cs" />
     <Compile Include="Forms\About.cs">
       <SubType>Form</SubType>
@@ -118,6 +136,24 @@
     </Compile>
     <Compile Include="Forms\InputComboDialogBox.Designer.cs">
       <DependentUpon>InputComboDialogBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\OutputMultiColumnCopyWizard.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\OutputMultiColumnCopyWizard.Designer.cs">
+      <DependentUpon>OutputMultiColumnCopyWizard.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\InputSqlWizard.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\InputSqlWizard.Designer.cs">
+      <DependentUpon>InputSqlWizard.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\InputMultilineTextDialogBox.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\InputMultilineTextDialogBox.Designer.cs">
+      <DependentUpon>InputMultilineTextDialogBox.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\InputTextDialogBox.cs">
       <SubType>Form</SubType>
@@ -147,6 +183,15 @@
     <EmbeddedResource Include="Forms\InputComboDialogBox.resx">
       <DependentUpon>InputComboDialogBox.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Forms\OutputMultiColumnCopyWizard.resx">
+      <DependentUpon>OutputMultiColumnCopyWizard.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\InputSqlWizard.resx">
+      <DependentUpon>InputSqlWizard.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\InputMultilineTextDialogBox.resx">
+      <DependentUpon>InputMultilineTextDialogBox.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\InputTextDialogBox.resx">
       <DependentUpon>InputTextDialogBox.cs</DependentUpon>
     </EmbeddedResource>
@@ -166,6 +211,7 @@
       <Link>README.md</Link>
     </None>
     <None Include="Assets\testInput.xlsx" />
+    <None Include="packages.config" />
     <None Include="Properties\app.manifest" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

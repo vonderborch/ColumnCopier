@@ -16,9 +16,11 @@
 // </summary>
 //
 // Changelog: 
+//            - 2.2.0 (07-14-2017) - Added support for SQL providers and added functionality for returning the current request.
 //            - 2.1.0 (06-07-2017) - Renamed and moved most fields/properties to the State class. Revised saving/loading system to use JSON data serialization.
 //            - 2.0.0 (06-06-2017) - Initial version created.
 // ***********************************************************************
+using ColumnCopier.Classes.SqlSupport;
 using ColumnCopier.Enums;
 using System.Collections.Generic;
 using System.IO;
@@ -258,6 +260,41 @@ namespace ColumnCopier.Classes
             set { state.ShowOnTop = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the SQL connection provider.
+        /// </summary>
+        /// <value>The SQL connection provider.</value>
+        public SqlConnectionProviders SqlConnectionProvider
+        {
+            get { return (SqlConnectionProviders)state.SqlConnectionProvider; }
+            set { state.SqlConnectionProvider = (int)value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the SQL connection string.
+        /// </summary>
+        /// <value>The SQL connection string.</value>
+        public string SqlConnectionString
+        {
+            get { return state.SqlConnectionString; }
+            set { state.SqlConnectionString = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the SQL provider.
+        /// </summary>
+        /// <value>The SQL provider.</value>
+        public ASqlProvider SqlProvider { get; set; }
+
+        /// <summary>
+        /// Gets or sets the SQL select query.
+        /// </summary>
+        /// <value>The SQL select query.</value>
+        public string SqlSelectQuery
+        {
+            get { return state.SqlSelectQuery; }
+            set { state.SqlSelectQuery = value; }
+        }
 
         #endregion Public Properties
 
@@ -383,6 +420,19 @@ namespace ColumnCopier.Classes
         }
 
         /// <summary>
+        /// Gets the current request.
+        /// </summary>
+        /// <returns>ColumnData.</returns>
+        ///  Changelog:
+        ///             - 2.2.0 (07-14-2017) - Initial version.
+        public Request GetCurrentRequest()
+        {
+            return !string.IsNullOrWhiteSpace(CurrentRequest)
+                ? state.RequestHistory[CurrentRequest]
+                : null;
+        }
+
+        /// <summary>
         /// Gets the request history.
         /// </summary>
         /// <returns>List&lt;System.String&gt;.</returns>
@@ -416,6 +466,7 @@ namespace ColumnCopier.Classes
         /// </summary>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         ///  Changelog:
+        ///             - 2.2.0 (07-14-2017) - Added support for loading SQL connection providers.
         ///             - 2.1.0 (06-07-2017) - Support for the new State class. Revised save system to use JSON serialization.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public Ternary Load()
@@ -456,6 +507,23 @@ namespace ColumnCopier.Classes
                 }
 
                 state = newState;
+
+                switch ((SqlConnectionProviders)state.SqlConnectionProvider)
+                {
+                    case SqlConnectionProviders.MySql:
+                        SqlProvider = new SqlSupport.MySqlProvider();
+                        break;
+                    case SqlConnectionProviders.PostgreSQL:
+                        SqlProvider = new SqlSupport.PostgreSqlProvider();
+                        break;
+                    case SqlConnectionProviders.SqlServer:
+                        SqlProvider = new SqlSupport.SqlServerProvider();
+                        break;
+                    case SqlConnectionProviders.None:
+                        SqlProvider = null;
+                        break;
+                }
+
                 saveGuard.Reset();
                 return Ternary.True;
             }

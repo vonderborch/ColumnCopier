@@ -4,9 +4,9 @@
 // Author           : Christian
 // Created          : 08-15-2016
 //
-// Version          : 2.1.0
+// Version          : 2.2.0
 // Last Modified By : Christian
-// Last Modified On : 06-07-2017
+// Last Modified On : 07-14-2017
 // ***********************************************************************
 // <copyright file="Main.cs" company="Christian Webber">
 //		Copyright ©  2016 - 2017
@@ -16,6 +16,8 @@
 // </summary>
 //
 // Changelog:
+//            - 2.2.0 (07-14-2017) - SQL Input Wizard and multiple column copying.
+//            - 2.2.0 (07-13-2017) - SQL input support.
 //            - 2.1.0 (06-07-2017) - New save system. Fixed auto-scaling. Fixed state loading not changing to correct request. Fixed copy next line bug. Improved error handling.
 //            - 2.0.0 (06-06-2017) - Rebuilt!
 //            - 1.3.0 (05-30-2017) - Removed dependency on Octokit. Made line copy pre-set options a combobox rather than separate buttons. Adjustments to saving and loading to handle cleaning column name and row data. CurrentColumn save field is now actually used.
@@ -90,7 +92,7 @@ namespace ColumnCopier
         {
             InitializeComponent();
 
-            UpdateStatusText($"Welcome!{Environment.NewLine}H");
+            UpdateStatusText($"Welcome!{Environment.NewLine}");
 
             ccState = new ColumnCopierState();
             checkGuard = new Guard();
@@ -255,6 +257,59 @@ namespace ColumnCopier
         #region Public Methods
 
         /// <summary>
+        /// Adds the input.
+        /// </summary>
+        /// <param name="newInput">The new input.</param>
+        ///  Changelog:
+        ///             - 2.2.0 (07-13-2017) - Initial version.
+        public void AddInput(string newInput)
+        {
+            try
+            {
+                UpdateStatusText("Adding input...");
+                if (pasteGuard.CheckSet)
+                {
+                    var lastPreservationState = preserveCurrentRequest_cxb.Checked;
+
+                    UpdateCheckBox(preserveCurrentRequest_cxb, false);
+                    UpdateMenuItemChecked(historySettingsPreserveCurrentRequest_itm, false);
+                    ccState.SetCurrentRequestPreservationToggle(lastPreservationState);
+
+                    ccState.MaxHistory = Converters.ConvertToIntWithClamp(maxHistory_txt.Text, 0, 0);
+                    ccState.DefaultColumnIndex = Converters.ConvertToInt(defaultColumnNumber_txt.Text, 0);
+                    ccState.DefaultColumnName = defaultColumnName_txt.Text;
+                    ccState.DefaultColumnNameMatch = Converters.ConvertToIntWithClamp(defaultPriorityNameSimilarity_txt.Text, 0, 0);
+                    if (defaultPriorityName_rbn.Checked)
+                        ccState.DefaultColumnPriority = DefaultColumnPriority.Name;
+                    else
+                        ccState.DefaultColumnPriority = DefaultColumnPriority.Number;
+
+                    ccState.AddNewRequest(newInput);
+
+                    UpdateRequestHistory();
+                    UpdateComboBoxIndex(requestHistory_cmb, 0);
+                    pasteGuard.Reset();
+                    UpdateStatusText("Input added!");
+                }
+                else
+                {
+                    UpdateStatusText("Busy, please try again...");
+                }
+            }
+            catch (Exception ex)
+            {
+                UpdateStatusText("Exception occurred!");
+
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
+            }
+        }
+
+        /// <summary>
         /// Changes the column.
         /// </summary>
         /// <param name="columnIndex">Index of the column.</param>
@@ -321,6 +376,95 @@ namespace ColumnCopier
                 UpdateComboBoxItems(currentColumn_cmb, ccState.CurrentRequestColumnNames());
                 UpdateComboBoxIndex(currentColumn_cmb, ccState.History[ccState.CurrentRequest].CurrentColumnIndex);
                 UpdateStatusText("Request changed!");
+            }
+            catch (Exception ex)
+            {
+                UpdateStatusText("Exception occurred!");
+
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
+            }
+        }
+
+        /// <summary>
+        /// Changes the SQL connection type and sets the connection string.
+        /// </summary>
+        /// <param name="set">if set to <c>true</c> [set].</param>
+        ///  Changelog:
+        ///             - 2.2.0 (07-13-2017) - Initial version.
+        public void ChangeSqlConnectionStringType(SqlConnectionProviders set)
+        {
+            try
+            {
+                UpdateStatusText("Toggling connection string type...");
+                if (checkGuard.CheckSet)
+                {
+                    UpdateMenuItemChecked(inputSqlConnectionStringNone_itm, set == SqlConnectionProviders.None);
+                    UpdateMenuItemChecked(inputSqlConnectionStringPostgreSql_itm, set == SqlConnectionProviders.PostgreSQL);
+                    UpdateMenuItemChecked(inputSqlConnectionStringSqlServer_itm, set == SqlConnectionProviders.SqlServer);
+                    UpdateMenuItemChecked(inputSqlConnectionMySql_itm, set == SqlConnectionProviders.MySql);
+
+                    ccState.SqlConnectionProvider = set;
+                    switch (set)
+                    {
+                        case SqlConnectionProviders.MySql:
+                            ccState.SqlProvider = new Classes.SqlSupport.MySqlProvider();
+                            break;
+                        case SqlConnectionProviders.PostgreSQL:
+                            ccState.SqlProvider = new Classes.SqlSupport.PostgreSqlProvider();
+                            break;
+                        case SqlConnectionProviders.SqlServer:
+                            ccState.SqlProvider = new Classes.SqlSupport.SqlServerProvider();
+                            break;
+                        case SqlConnectionProviders.None:
+                            ccState.SqlProvider = null;
+                            break;
+                    }
+                    if (ccState.SqlProvider != null)
+                    {
+                        ccState.SqlProvider.SqlConnectionString = ccState.SqlConnectionString;
+                        ccState.SqlProvider.SqlQuery = ccState.SqlSelectQuery;
+                    }
+
+                    StateSave();
+                    checkGuard.Reset();
+                    UpdateStatusText("SQL provider changed!");
+
+                    if (!CanSupportSqlConnectionProvider(set))
+                    {
+                        UpdateStatusText("No support for the Sql Connection provider!");
+
+                        var files = ccState.SqlConnectionProvider == SqlConnectionProviders.None
+                                        ? Constants.Instance.NeededFilesNoneConnection
+                                        : ccState.SqlConnectionProvider == SqlConnectionProviders.MySql
+                                            ? Constants.Instance.NeededFilesMySqlConnection
+                                            : ccState.SqlConnectionProvider == SqlConnectionProviders.PostgreSQL
+                                                ? Constants.Instance.NeededFilesPostgreSqlConnection
+                                                : Constants.Instance.NeededFilesSqlServerConnection;
+
+                        var str = new StringBuilder();
+                        for (var i = 0; i < files.Count; i++)
+                        {
+                            if (!File.Exists(Path.Combine(Environment.CurrentDirectory, files[i])))
+                                str.Append($"{files[i]}, ");
+                        }
+                        str.Remove(str.Length - 2, 2);
+
+                        var res = GetMessageBox(Constants.Instance.MessageTitleNoSqlProvider,
+                            string.Format(Constants.Instance.MessageBodyNoSqlProvider, 
+                                ccState.SqlConnectionProvider.ToString(), str.ToString(),
+                                Environment.NewLine),
+                            MessageBoxButtons.OK);
+                    }
+                }
+                else
+                {
+                    UpdateStatusText("Busy, please try again!");
+                }
             }
             catch (Exception ex)
             {
@@ -551,6 +695,50 @@ namespace ColumnCopier
         }
 
         /// <summary>
+        /// Copies multiple column.
+        /// </summary>
+        /// <param name="replace">if set to <c>true</c> [replace].</param>
+        ///  Changelog:
+        ///             - 2.2.0 (07-14-2017) - Initial version.
+        public void CopyMultipleColumns(bool replace = false)
+        {
+            try
+            {
+                UpdateStatusText("Opening multiple column copy wizard...");
+
+                var wiz = new OutputMultiColumnCopyWizard()
+                {
+                    AvailableColumns = ccState.CurrentRequestColumnNames(),
+                    RequestData = ccState.GetCurrentRequest(),
+                };
+
+                var result = wiz.ShowDialog();
+                if (result == DialogResult.OK)
+                {
+                    var text = wiz.ResultText;
+
+                    ClipBoard = text;
+                    UpdateStatusText("Results copied!");
+                }
+                else
+                {
+                    UpdateStatusText("Wizard cancelled!");
+                }
+            }
+            catch (Exception ex)
+            {
+                UpdateStatusText("Exception occurred!");
+
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
+            }
+        }
+
+        /// <summary>
         /// Deletes the request.
         /// </summary>
         ///  Changelog:
@@ -582,6 +770,62 @@ namespace ColumnCopier
         }
 
         /// <summary>
+        /// Executes the SQL query.
+        /// </summary>
+        /// <exception cref="Exception">
+        /// DLL(s) not found for the SQL connection provider!
+        /// or
+        /// No connection string provided!
+        /// or
+        /// No select query provided!
+        /// or
+        /// SQL select query provided is invalid!
+        /// or
+        /// Could not connect to the database!
+        /// </exception>
+        ///  Changelog:
+        ///             - 2.2.0 (07-14-2017) - Initial version.
+        public void ExecuteSqlQuery()
+        {
+            try
+            {
+                if (ccState.SqlConnectionProvider == SqlConnectionProviders.None) return;
+
+                if (!CanSupportSqlConnectionProvider(ccState.SqlConnectionProvider))
+                    throw new Exception("DLL(s) not found for the SQL connection provider!");
+
+                if (string.IsNullOrWhiteSpace(ccState.SqlConnectionString))
+                    throw new Exception("No connection string provided!");
+
+                if (string.IsNullOrWhiteSpace(ccState.SqlSelectQuery))
+                    throw new Exception("No select query provided!");
+
+                if (!ccState.SqlProvider.SqlSelectQueryIsValid())
+                    throw new Exception("SQL select query provided is invalid!");
+
+                if (!ccState.SqlProvider.CanConnectToServer())
+                    throw new Exception("Could not connect to the database!");
+
+                var result = ccState.SqlProvider.ExecuteSqlQuery();
+                if (string.IsNullOrWhiteSpace(result))
+                    UpdateStatusText("SQL query returned no results!");
+                else
+                    AddInput(result);
+            }
+            catch (Exception ex)
+            {
+                UpdateStatusText("Exception occurred!");
+
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
+            }
+        }
+
+        /// <summary>
         /// Exports the request.
         /// </summary>
         ///  Changelog:
@@ -594,6 +838,94 @@ namespace ColumnCopier
                 UpdateStatusText("Exporting request...");
                 ClipBoard = ccState.ExportCurrentRequest();
                 UpdateStatusText("Request exported!");
+            }
+            catch (Exception ex)
+            {
+                UpdateStatusText("Exception occurred!");
+
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
+            }
+        }
+
+        /// <summary>
+        /// Inputs the SQL wizard.
+        /// </summary>
+        ///  Changelog:
+        ///             - 2.2.0 (07-14-2017) - Initial version.
+        public void InputSqlWizard()
+        {
+            try
+            {
+                UpdateStatusText("SQL input wizard...");
+                if (checkGuard.CheckSet)
+                {
+                    var wiz = new InputSqlWizard()
+                    {
+                        SqlProvider = ccState.SqlConnectionProvider,
+                        QueryText = ccState.SqlSelectQuery,
+                        ConnectionText = ccState.SqlConnectionString,
+                    };
+                    var result = wiz.ShowDialog();
+
+                    if (result == DialogResult.OK)
+                    {
+                        UpdateMenuItemChecked(inputSqlConnectionStringNone_itm, wiz.SqlProvider == SqlConnectionProviders.None);
+                        UpdateMenuItemChecked(inputSqlConnectionStringPostgreSql_itm, wiz.SqlProvider == SqlConnectionProviders.PostgreSQL);
+                        UpdateMenuItemChecked(inputSqlConnectionStringSqlServer_itm, wiz.SqlProvider == SqlConnectionProviders.SqlServer);
+                        UpdateMenuItemChecked(inputSqlConnectionMySql_itm, wiz.SqlProvider == SqlConnectionProviders.MySql);
+
+                        ccState.SqlConnectionProvider = wiz.SqlProvider;
+                        ccState.SqlConnectionString = wiz.ConnectionText;
+                        ccState.SqlSelectQuery = wiz.QueryText;
+
+                        switch (ccState.SqlConnectionProvider)
+                        {
+                            case SqlConnectionProviders.MySql:
+                                ccState.SqlProvider = new Classes.SqlSupport.MySqlProvider();
+                                break;
+                            case SqlConnectionProviders.PostgreSQL:
+                                ccState.SqlProvider = new Classes.SqlSupport.PostgreSqlProvider();
+                                break;
+                            case SqlConnectionProviders.SqlServer:
+                                ccState.SqlProvider = new Classes.SqlSupport.SqlServerProvider();
+                                break;
+                            case SqlConnectionProviders.None:
+                                ccState.SqlProvider = null;
+                                break;
+                        }
+
+                        if (ccState.SqlProvider != null)
+                        {
+                            ccState.SqlProvider.SqlConnectionString = ccState.SqlConnectionString;
+                            ccState.SqlProvider.SqlQuery = ccState.SqlSelectQuery;
+                        }
+
+                        StateSave();
+                        checkGuard.Reset();
+                        UpdateStatusText("SQL wizard completed, executing query...");
+
+                        if (!CanSupportSqlConnectionProvider(ccState.SqlConnectionProvider))
+                        {
+                            UpdateStatusText("No support for the Sql Connection provider!");
+                            return;
+                        }
+
+                        ExecuteSqlQuery();
+                    }
+                    else
+                    {
+                        UpdateStatusText("Wizard cancelled!");
+                    }
+                }
+                else
+                {
+                    UpdateStatusText("Busy, please try again!");
+                }
             }
             catch (Exception ex)
             {
@@ -668,6 +1000,7 @@ namespace ColumnCopier
         /// Pastes the input.
         /// </summary>
         ///  Changelog:
+        ///             - 2.2.0 (07-13-2017) - Moved most code to a new common input adding method.
         ///             - 2.1.0 (06-07-2017) - Improved error handling.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void PasteInput()
@@ -675,34 +1008,7 @@ namespace ColumnCopier
             try
             {
                 UpdateStatusText("Pasting input...");
-                if (pasteGuard.CheckSet)
-                {
-                    var lastPreservationState = preserveCurrentRequest_cxb.Checked;
-
-                    UpdateCheckBox(preserveCurrentRequest_cxb, false);
-                    UpdateMenuItemChecked(historySettingsPreserveCurrentRequest_itm, false);
-                    ccState.SetCurrentRequestPreservationToggle(lastPreservationState);
-
-                    ccState.MaxHistory = Converters.ConvertToIntWithClamp(maxHistory_txt.Text, 0, 0);
-                    ccState.DefaultColumnIndex = Converters.ConvertToInt(defaultColumnNumber_txt.Text, 0);
-                    ccState.DefaultColumnName = defaultColumnName_txt.Text;
-                    ccState.DefaultColumnNameMatch = Converters.ConvertToIntWithClamp(defaultPriorityNameSimilarity_txt.Text, 0, 0);
-                    if (defaultPriorityName_rbn.Checked)
-                        ccState.DefaultColumnPriority = DefaultColumnPriority.Name;
-                    else
-                        ccState.DefaultColumnPriority = DefaultColumnPriority.Number;
-
-                    ccState.AddNewRequest(ClipBoard);
-
-                    UpdateRequestHistory();
-                    UpdateComboBoxIndex(requestHistory_cmb, 0);
-                    pasteGuard.Reset();
-                    UpdateStatusText("Input pasted!");
-                }
-                else
-                {
-                    UpdateStatusText("Busy, please try again...");
-                }
+                AddInput(ClipBoard);
             }
             catch (Exception ex)
             {
@@ -748,6 +1054,84 @@ namespace ColumnCopier
 
                     checkGuard.Reset();
                     UpdateStatusText("Request preserved!");
+                }
+                else
+                {
+                    UpdateStatusText("Busy, please try again!");
+                }
+            }
+            catch (Exception ex)
+            {
+                UpdateStatusText("Exception occurred!");
+
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
+            }
+        }
+
+        /// <summary>
+        /// Sets the SQL connection string.
+        /// </summary>
+        ///  Changelog:
+        ///             - 2.2.0 (07-14-2017) - Initial version.
+        public void SetSqlConnectionString()
+        {
+            try
+            {
+                UpdateStatusText("Setting new connection string...");
+                if (checkGuard.CheckSet)
+                {
+                    ccState.SqlConnectionString = GetTextboxInputResults(Constants.Instance.InputQuerySqlConnectionString, ccState.SqlConnectionString);
+                    if (ccState.SqlProvider != null) ccState.SqlProvider.SqlConnectionString = ccState.SqlConnectionString;
+
+                    StateSave();
+                    checkGuard.Reset();
+                    UpdateStatusText("New connection string set!");
+                }
+                else
+                {
+                    UpdateStatusText("Busy, please try again!");
+                }
+            }
+            catch (Exception ex)
+            {
+                UpdateStatusText("Exception occurred!");
+
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
+            }
+        }
+
+        /// <summary>
+        /// Sets the SQL select query.
+        /// </summary>
+        /// <param name="set">if set to <c>true</c> [set].</param>
+        ///  Changelog:
+        ///             - 2.2.0 (07-13-2017) - Initial version.
+        public void SqlSelectionQuery()
+        {
+            try
+            {
+                UpdateStatusText("Asking for the SQL select query...");
+                if (checkGuard.CheckSet)
+                {
+                    var query = GetMultilineTextboxInputResults(Constants.Instance.InputQuerySqlSelectQuery, ccState.SqlSelectQuery);
+
+
+                    ccState.SqlSelectQuery = query;
+                    if (ccState.SqlProvider != null) ccState.SqlProvider.SqlQuery = ccState.SqlSelectQuery;
+
+                    StateSave();
+                    checkGuard.Reset();
+                    UpdateStatusText("New select query set!");
                 }
                 else
                 {
@@ -1192,6 +1576,7 @@ namespace ColumnCopier
         /// </summary>
         /// <param name="option">The option.</param>
         ///  Changelog:
+        ///             - 2.2.0 (07-14-2017) - Moved line seperator options to the Constants class.
         ///             - 2.1.0 (06-07-2017) - Improved error handling.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         public void UpdateLineSeperatorOptions(LineSeparatorOptions option)
@@ -1201,68 +1586,14 @@ namespace ColumnCopier
                 UpdateStatusText("Updating line separator option...");
                 if (checkGuard.CheckSet)
                 {
-                    var sep = string.Empty;
-                    var pre = string.Empty;
-                    var post = string.Empty;
-                    var seperatorOption = 0;
-                    switch (option)
-                    {
-                        case LineSeparatorOptions.Comma:
-                            sep = ", ";
-                            pre = "";
-                            post = "";
-                            seperatorOption = 0;
-                            break;
+                    var choice = Constants.Instance.LineSeperators[option];
 
-                        case LineSeparatorOptions.DoubleQuoteComma:
-                            sep = "\", \"";
-                            pre = "";
-                            post = "";
-                            seperatorOption = 2;
-                            break;
+                    ccState.LineSeparatorOptionIndex = choice.Item4;
 
-                        case LineSeparatorOptions.DoubleQuoteParenthesisComma:
-                            sep = "\", \"";
-                            pre = "(\"";
-                            post = "\")";
-                            seperatorOption = 5;
-                            break;
-
-                        case LineSeparatorOptions.Nothing:
-                            sep = "";
-                            pre = "";
-                            post = "";
-                            seperatorOption = 1;
-                            break;
-
-                        case LineSeparatorOptions.ParenthesisComma:
-                            sep = ", ";
-                            pre = "(";
-                            post = ")";
-                            seperatorOption = 3;
-                            break;
-
-                        case LineSeparatorOptions.SemiColon:
-                            sep = ";";
-                            pre = "";
-                            post = "";
-                            seperatorOption = 6;
-                            break;
-
-                        case LineSeparatorOptions.SingleQuoteParenthesisComma:
-                            sep = "', '";
-                            pre = "('";
-                            post = "')";
-                            seperatorOption = 4;
-                            break;
-                    }
-
-                    ccState.LineSeparatorOptionIndex = seperatorOption;
-
-                    UpdateComboBoxIndex(seperatorOption_cmb, seperatorOption);
-                    UpdateTextBox(seperatorItem_txt, sep);
-                    UpdateTextBox(seperatorItemPre_txt, pre);
-                    UpdateTextBox(seperatorItemPost_txt, post);
+                    UpdateComboBoxIndex(seperatorOption_cmb, choice.Item4);
+                    UpdateTextBox(seperatorItem_txt, choice.Item1);
+                    UpdateTextBox(seperatorItemPre_txt, choice.Item2);
+                    UpdateTextBox(seperatorItemPost_txt, choice.Item3);
 
                     checkGuard.Reset();
                     UpdateStatusText("Line separator option updated!");
@@ -1288,6 +1619,32 @@ namespace ColumnCopier
         #endregion Public Methods
 
         #region Private Methods
+
+        /// <summary>
+        /// Determines whether this instance [can support SQL connection provider] the specified connection.
+        /// </summary>
+        /// <param name="conn">The connection.</param>
+        /// <returns><c>true</c> if this instance [can support SQL connection provider] the specified connection; otherwise, <c>false</c>.</returns>
+        ///  Changelog:
+        ///             - 2.2.0 (07-14-2017) - Initial version.
+        private bool CanSupportSqlConnectionProvider(SqlConnectionProviders conn)
+        {
+            var files = conn == SqlConnectionProviders.None
+                            ? Constants.Instance.NeededFilesNoneConnection
+                            : conn == SqlConnectionProviders.MySql
+                                ? Constants.Instance.NeededFilesMySqlConnection
+                                : conn == SqlConnectionProviders.PostgreSQL
+                                    ? Constants.Instance.NeededFilesPostgreSqlConnection
+                                    : Constants.Instance.NeededFilesSqlServerConnection;
+
+            for (var i = 0; i < files.Count; i++)
+            {
+                if (!File.Exists(Path.Combine(Environment.CurrentDirectory, files[i])))
+                    return false;
+            }
+
+            return true;
+        }
 
         /// <summary>
         /// Changes the form opacity.
@@ -1649,6 +2006,29 @@ namespace ColumnCopier
         }
 
         /// <summary>
+        /// Gets the multiline textbox input results.
+        /// </summary>
+        /// <param name="question">The question.</param>
+        /// <param name="defaultText">The default text.</param>
+        /// <returns>System.String.</returns>
+        ///  Changelog:
+        ///             - 2.2.0 (07-14-2017) - Initial version.
+        private string GetMultilineTextboxInputResults(string question, string defaultText)
+        {
+            var inputBox = new InputMultilineTextDialogBox()
+            {
+                QuestionText = question,
+                InputText = defaultText,
+            };
+
+            var result = inputBox.ShowDialog();
+
+            return result == DialogResult.OK
+                ? inputBox.InputText
+                : defaultText;
+        }
+
+        /// <summary>
         /// Gets the textbox input results.
         /// </summary>
         /// <param name="question">The question.</param>
@@ -1805,6 +2185,18 @@ namespace ColumnCopier
         }
 
         /// <summary>
+        /// Handles the Click event of the inputExecuteSqlQuery_itm control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        ///  Changelog:
+        ///             - 2.2.0 (07-14-2017) - Initial version.
+        private void inputExecuteSqlQuery_itm_Click(object sender, EventArgs e)
+        {
+            ExecuteSqlQuery();
+        }
+
+        /// <summary>
         /// Handles the Click event of the inputPaste_itm control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -1936,6 +2328,90 @@ namespace ColumnCopier
         }
 
         /// <summary>
+        /// Handles the Click event of the inputSqlConnection_itm control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        ///  Changelog:
+        ///             - 2.2.0 (07-14-2017) - Initial version.
+        private void inputSqlConnection_itm_Click(object sender, EventArgs e)
+        {
+            SetSqlConnectionString();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the inputSqlConnectionMySql_itm control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        ///  Changelog:
+        ///             - 2.2.0 (07-14-2017) - Initial version.
+        private void inputSqlConnectionMySql_itm_Click(object sender, EventArgs e)
+        {
+            ChangeSqlConnectionStringType(SqlConnectionProviders.MySql);
+        }
+
+        /// <summary>
+        /// Handles the Click event of the inputSqlConnectionQuery_itm control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        ///  Changelog:
+        ///             - 2.2.0 (07-14-2017) - Initial version.
+        private void inputSqlConnectionQuery_itm_Click(object sender, EventArgs e)
+        {
+            SqlSelectionQuery();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the inputSqlConnectionStringNone_itm control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        ///  Changelog:
+        ///             - 2.2.0 (07-14-2017) - Initial version.
+        private void inputSqlConnectionStringNone_itm_Click(object sender, EventArgs e)
+        {
+            ChangeSqlConnectionStringType(SqlConnectionProviders.None);
+        }
+
+        /// <summary>
+        /// Handles the Click event of the inputSqlConnectionStringPostgreSql_itm control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        ///  Changelog:
+        ///             - 2.2.0 (07-14-2017) - Initial version.
+        private void inputSqlConnectionStringPostgreSql_itm_Click(object sender, EventArgs e)
+        {
+            ChangeSqlConnectionStringType(SqlConnectionProviders.PostgreSQL);
+        }
+
+        /// <summary>
+        /// Handles the Click event of the inputSqlConnectionStringSqlServer_itm control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        ///  Changelog:
+        ///             - 2.2.0 (07-14-2017) - Initial version.
+        private void inputSqlConnectionStringSqlServer_itm_Click(object sender, EventArgs e)
+        {
+            ChangeSqlConnectionStringType(SqlConnectionProviders.SqlServer);
+        }
+
+        /// <summary>
+        /// Handles the Click event of the inputSqlInputWizard_itm control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        ///  Changelog:
+        ///             - 2.2.0 (07-14-2017) - Initial version.
+        private void inputSqlInputWizard_itm_Click(object sender, EventArgs e)
+        {
+            InputSqlWizard();
+        }
+
+        /// <summary>
         /// Handles the Click event of the outputCopyColumn_itm control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -1981,6 +2457,18 @@ namespace ColumnCopier
         private void outputExportRequest_itm_Click(object sender, EventArgs e)
         {
             ExportRequest();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the outputMultiColumnCopyWizard_itm control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        ///  Changelog:
+        ///             - 2.2.0 (07-14-2017) - Initial version.
+        private void outputMultiColumnCopyWizard_itm_Click(object sender, EventArgs e)
+        {
+            CopyMultipleColumns();
         }
 
         /// <summary>
