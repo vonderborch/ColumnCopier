@@ -4,9 +4,9 @@
 // Author           : Christian
 // Created          : 05-30-2017
 //
-// Version          : 2.2.0
+// Version          : 2.2.1
 // Last Modified By : Christian
-// Last Modified On : 07-14-2017
+// Last Modified On : 08-07-2017
 // ***********************************************************************
 // <copyright file="Constants.cs" company="Christian Webber">
 //		Copyright ©  2016 - 2017
@@ -16,6 +16,7 @@
 // </summary>
 //
 // Changelog:
+//            - 2.2.1 (08-07-2017) - Version number bump.
 //            - 2.2.0 (07-14-2017) - Multiple column copying support.
 //            - 2.2.0 (07-13-2017) - Sql input support.
 //            - 2.1.0 (06-07-2017) - Exception message constants and bumped save version and program version. Also added a minimum save version constant to indicate the minimum readable save version of this program.
@@ -85,7 +86,7 @@ namespace ColumnCopier
         /// Gets the program version.
         /// </summary>
         /// <value>The program version.</value>
-        public static int ProgramVersion { get; private set; } = 220;
+        public static int ProgramVersion { get; private set; } = 221;
 
         /// <summary>
         /// Gets the save version.

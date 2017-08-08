@@ -4,9 +4,9 @@
 // Author           : Christian
 // Created          : 08-15-2016
 //
-// Version          : 2.2.0
+// Version          : 2.2.1
 // Last Modified By : Christian
-// Last Modified On : 07-14-2017
+// Last Modified On : 08-07-2017
 // ***********************************************************************
 // <copyright file="Main.cs" company="Christian Webber">
 //		Copyright ©  2016 - 2017
@@ -16,6 +16,7 @@
 // </summary>
 //
 // Changelog:
+//            - 2.2.1 (08-07-2017) - Loads line separator options into the GUI, updates program title with filename.
 //            - 2.2.0 (07-14-2017) - SQL Input Wizard and multiple column copying.
 //            - 2.2.0 (07-13-2017) - SQL input support.
 //            - 2.1.0 (06-07-2017) - New save system. Fixed auto-scaling. Fixed state loading not changing to correct request. Fixed copy next line bug. Improved error handling.
@@ -176,6 +177,13 @@ namespace ColumnCopier
         /// <param name="menuitem">The menuitem.</param>
         /// <param name="value">if set to <c>true</c> [value].</param>
         private delegate void UpdateMenuItemCheckedDelegate(ToolStripMenuItem menuitem, bool value);
+
+        /// <summary>
+        /// Delegate UpdateProgramTitleDelegate
+        /// </summary>
+        /// <param name="form">The form.</param>
+        /// <param name="text">The text.</param>
+        private delegate void UpdateProgramTitleDelegate(Form form, string text);
 
         /// <summary>
         /// Delegate UpdateProgressBar
@@ -2767,6 +2775,7 @@ namespace ColumnCopier
         /// States the load helper.
         /// </summary>
         ///  Changelog:
+        ///             - 2.2.1 (08-07-2017) - Properly updates the seperator options on loads. Updates program title upon saving.
         ///             - 2.1.0 (06-07-2017) - Support for the new save system, fixed default request selection being incorrect.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         private void StateLoadHelper()
@@ -2788,6 +2797,11 @@ namespace ColumnCopier
                 UpdateTextBox(defaultColumnNumber_txt, ccState.DefaultColumnIndex.ToString());
                 UpdateTextBox(defaultPriorityNameSimilarity_txt, ccState.DefaultColumnNameMatch.ToString());
 
+                UpdateTextBox(seperatorItemPre_txt, ccState.LineSeparatorOptionPre);
+                UpdateTextBox(seperatorItemPost_txt, ccState.LineSeparatorOptionPost);
+                UpdateTextBox(seperatorItem_txt, ccState.LineSeparatorOptionInter);
+                UpdateComboBoxIndex(seperatorOption_cmb, ccState.LineSeparatorOptionIndex);
+
                 switch (ccState.DefaultColumnPriority)
                 {
                     case DefaultColumnPriority.Name:
@@ -2804,6 +2818,7 @@ namespace ColumnCopier
 
                 UpdateComboBoxIndex(requestHistory_cmb, ccState.CurrentRequestIndex);
 
+                UpdateProgramTitle(this, $"Column Copier - {Path.GetFileNameWithoutExtension(ccState.SaveFile)}");
                 UpdateStatusText("State loaded!");
             }
             else if (result == Ternary.Neutral)
@@ -2871,6 +2886,7 @@ namespace ColumnCopier
         /// States the save helper.
         /// </summary>
         ///  Changelog:
+        ///             - 2.2.1 (08-07-2017) - Updates program title upon saving...
         ///             - 2.0.0 (06-06-2017) - Initial version.
         private void StateSaveHelper()
         {
@@ -2879,9 +2895,10 @@ namespace ColumnCopier
 
             ccState.Save();
 
+            UpdateProgramTitle(this, $"Column Copier - {Path.GetFileNameWithoutExtension(ccState.SaveFile)}");
+            UpdateStatusText("Program state saved!");
             ToggleProgressBar();
             saveGuard.Reset();
-            UpdateStatusText("Program state saved!");
         }
 
         /// <summary>
@@ -3126,6 +3143,47 @@ namespace ColumnCopier
                 {
                     menuitem.Checked = value;
                 }*/
+            }
+            catch (Exception ex)
+            {
+                UpdateStatusText("Exception occurred!");
+
+                var result = GetMessageBox(Constants.Instance.MessageTitleException,
+                    string.Format(Constants.Instance.MessageBodyException, ex.ToString()),
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+
+                if (result == DialogResult.Yes)
+                    OpenWebPage(FormExceptionIssueUrl(ex));
+            }
+        }
+
+        /// <summary>
+        /// Updates the program's title text.
+        /// </summary>
+        /// <param name="text">The text.</param>
+        ///  Changelog:
+        ///             - 2.2.1 (08-07-2017) - Initial version.
+        private void UpdateProgramTitle(Form form, string text)
+        {
+            try
+            {
+                if (form.InvokeRequired)
+                {
+                    var d = new UpdateProgramTitleDelegate(UpdateProgramTitle);
+                    this.Invoke(d, new object[] { form, text });
+                }
+                else
+                {
+                    try
+                    {
+                        form.Text = text;
+                    }
+                    catch
+                    {
+                        var d = new UpdateProgramTitleDelegate(UpdateProgramTitle);
+                        this.Invoke(d, new object[] { form, text });
+                    }
+                }
             }
             catch (Exception ex)
             {
