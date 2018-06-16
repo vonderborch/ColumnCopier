@@ -4,9 +4,9 @@
 // Author           : Christian
 // Created          : 08-18-2016
 //
-// Version          : 2.2.0
+// Version          : 2.2.2
 // Last Modified By : Christian
-// Last Modified On : 07-14-2017
+// Last Modified On : 05-17-2018
 // ***********************************************************************
 // <copyright file="Request.cs" company="Christian Webber">
 //		Copyright ©  2016 - 2017
@@ -16,6 +16,7 @@
 // </summary>
 //
 // Changelog:
+//            - 2.2.2 (05-17-2018) - Fixed column name generation from header row crashing if column name already exists.
 //            - 2.2.0 (07-14-2017) - Added method to get the text of any column and any row of any column.
 //            - 2.1.0 (06-07-2017) - Moved most fields/properties to the RequestData class. Revised saving/loading system to use JSON data serialization.
 //            - 2.0.0 (06-06-2017) - Rebuilt!
@@ -435,6 +436,7 @@ namespace ColumnCopier.Classes
         /// <param name="cleanText">if set to <c>true</c> [clean text].</param>
         /// <param name="removeEmptyLines">if set to <c>true</c> [remove empty lines].</param>
         ///  Changelog:
+        ///             - 2.2.1 (06-06-2017) - Initial version.
         ///             - 2.0.0 (06-06-2017) - Initial version.
         private void ParseText(string text, bool hasHeaders, bool cleanText, bool removeEmptyLines)
         {
@@ -469,6 +471,13 @@ namespace ColumnCopier.Classes
                         for (var j = 0; j < columns.Length; j++)
                         {
                             var name = columns[j];
+                            var k = 0;
+                            // find an unused name (if needed)
+                            while (request.ColumnKeys.ContainsValue(name))
+                            {
+                                name = $"{name}{(++k)}";
+                            }
+
                             request.ColumnKeys.Add(j, name);
                             request.ColumnData.Add(name, new ColumnData()
                                 {

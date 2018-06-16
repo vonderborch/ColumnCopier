@@ -4,18 +4,19 @@
 // Author           : Christian
 // Created          : 05-30-2017
 //
-// Version          : 2.2.1
+// Version          : 2.2.2
 // Last Modified By : Christian
-// Last Modified On : 08-07-2017
+// Last Modified On : 05-17-2018
 // ***********************************************************************
 // <copyright file="Constants.cs" company="Christian Webber">
-//		Copyright ©  2016 - 2017
+//		Copyright ©  2016 - 2018
 // </copyright>
 // <summary>
 //      The Constants class.
 // </summary>
 //
 // Changelog:
+//            - 2.2.2 (05-17-2018) - Version number bump.
 //            - 2.2.1 (08-07-2017) - Version number bump.
 //            - 2.2.0 (07-14-2017) - Multiple column copying support.
 //            - 2.2.0 (07-13-2017) - Sql input support.

@@ -1,0 +1,114 @@
+﻿<Window x:Class="ColumnCopier.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ColumnCopier"
+        mc:Ignorable="d"
+        Title="Column Copier" Height="426.437" Width="702.053" ResizeMode="CanMinimize" WindowStartupLocation="CenterOwner">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="321*"/>
+            <ColumnDefinition Width="73*"/>
+        </Grid.ColumnDefinitions>
+        <Menu x:Name="MainMenu" HorizontalAlignment="Left" Height="24" VerticalAlignment="Top" Width="694" Grid.ColumnSpan="2">
+            <MenuItem Header="File" Height="24" Width="35">
+                <MenuItem Header="New" HorizontalAlignment="Left" Height="24" Width="140" Margin="0,0,0,0"/>
+                <MenuItem Header="Open" HorizontalAlignment="Left" Height="24" Width="140" Margin="0,0,0,0"/>
+                <Separator HorizontalAlignment="Left" Height="2" Width="140"/>
+                <MenuItem Header="Save" HorizontalAlignment="Left" Height="24" Width="140" Margin="0,0,0,0"/>
+                <MenuItem Header="Save As" HorizontalAlignment="Left" Height="24" Width="140" Margin="0,0,0,0"/>
+                <Separator HorizontalAlignment="Left" Height="2" Width="140"/>
+                <MenuItem Header="Exit" HorizontalAlignment="Left" Height="24" Width="140" Margin="0,0,0,0"/>
+            </MenuItem>
+            <MenuItem Header="Input" Height="24" Width="45"/>
+            <MenuItem Header="Output" Height="24" Width="52"/>
+            <MenuItem Header="Data History" Height="24" Width="80"/>
+            <MenuItem Header="Help" Height="24" Width="40"/>
+        </Menu>
+        <GroupBox x:Name="InputOptions" Header="Input" HorizontalAlignment="Left" Height="333" Margin="0,29,0,0" VerticalAlignment="Top" Width="180" FontWeight="Bold" FontSize="14">
+            <Grid HorizontalAlignment="Left" Height="323" Margin="0,0,-2,-13" VerticalAlignment="Top" Width="170">
+                <GroupBox x:Name="ImportDataOptions" Header="Import Data" HorizontalAlignment="Left" Height="69" VerticalAlignment="Top" Width="170" Margin="0,0,-2,0" FontWeight="Bold" FontStyle="Italic" FontSize="12">
+                    <Grid HorizontalAlignment="Left" Height="49" Margin="0,0,-12,0" VerticalAlignment="Top" Width="170">
+                        <Button x:Name="PasteButton" Content="Paste" HorizontalAlignment="Left" VerticalAlignment="Top" Width="160" FontStyle="Normal" FontWeight="Normal" FontSize="11"/>
+                        <Button x:Name="PasteAndCopyButton" Content="Paste and Copy" HorizontalAlignment="Left" VerticalAlignment="Top" Width="160" FontStyle="Normal" FontWeight="Normal" Margin="0,25,0,0" FontSize="11"/>
+                    </Grid>
+                </GroupBox>
+                <GroupBox x:Name="ImportOptions" Header="Import Options" HorizontalAlignment="Left" Height="79" VerticalAlignment="Top" Width="170" FontWeight="Bold" FontStyle="Italic" Margin="0,74,0,0" FontSize="12">
+                    <Grid HorizontalAlignment="Left" Height="60" Margin="0,0,-12,0" VerticalAlignment="Top" Width="170">
+                        <CheckBox x:Name="RemoveBlankLines" Content="Remove Blank Lines" HorizontalAlignment="Left" VerticalAlignment="Top" FontStyle="Normal" FontWeight="Normal" IsChecked="True" FontSize="11"/>
+                        <CheckBox x:Name="UseFirstRowAsHeaders" Content="First Row as Headers" HorizontalAlignment="Left" Margin="0,20,0,0" VerticalAlignment="Top" FontStyle="Normal" FontWeight="Normal" IsChecked="True" FontSize="11"/>
+                        <CheckBox x:Name="CleanInputText" Content="Clean Input Text" HorizontalAlignment="Left" Margin="0,40,0,0" VerticalAlignment="Top" FontStyle="Normal" FontWeight="Normal" IsChecked="True" FontSize="11"/>
+                    </Grid>
+                </GroupBox>
+                <GroupBox x:Name="DefaultColumnOptions" Header="Default Column" HorizontalAlignment="Left" Height="154" VerticalAlignment="Top" Width="170" FontWeight="Bold" FontStyle="Italic" Margin="0,158,0,0" FontSize="12">
+                    <Grid HorizontalAlignment="Left" Height="136" Margin="0,0,-12,0" VerticalAlignment="Top" Width="170">
+                        <Label x:Name="Label1" Content="Default Column Number:" HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="0.511,0.541" FontStyle="Normal" FontWeight="Normal" FontSize="11"/>
+                        <TextBox x:Name="DefaultColumnNumber" HorizontalAlignment="Left" Height="22" Margin="136,2,0,0" TextWrapping="Wrap" Text="1" VerticalAlignment="Top" Width="24" FontSize="11" FontStyle="Normal" FontWeight="Normal"/>
+                        <Label x:Name="Label2" Content="Default Column Name:" HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="0.511,0.541" FontStyle="Normal" FontWeight="Normal" FontSize="11" Margin="0,24,0,0" Width="160"/>
+                        <TextBox x:Name="DefaultColumnName" HorizontalAlignment="Left" Height="22" Margin="0,48,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="160" FontSize="11" FontStyle="Normal" FontWeight="Normal"/>
+                        <Label x:Name="Label3" Content="Default Column Priority:" HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="0.511,0.541" FontStyle="Normal" FontWeight="Normal" FontSize="11" Margin="0,70,0,0" Width="160"/>
+                        <RadioButton x:Name="DefaultColumnNumberSelected" Content="Number" HorizontalAlignment="Left" Margin="0,94,0,0" VerticalAlignment="Top" FontStyle="Normal" FontWeight="Normal" FontSize="11" IsChecked="True"/>
+                        <RadioButton x:Name="DefaultColumnNameSelected" Content="Name" HorizontalAlignment="Left" Margin="0,113,0,0" VerticalAlignment="Top" FontStyle="Normal" FontWeight="Normal" FontSize="11" IsChecked="True"/>
+                        <TextBox x:Name="NameFuzzyMatching" HorizontalAlignment="Left" Height="22" Margin="59,108,0,0" TextWrapping="Wrap" Text="5" VerticalAlignment="Top" Width="101" FontSize="11" FontStyle="Normal" FontWeight="Normal"/>
+                    </Grid>
+                </GroupBox>
+            </Grid>
+        </GroupBox>
+        <GroupBox x:Name="OutputOptions" Header="Output" HorizontalAlignment="Left" Height="230" Margin="514,29,0,0" VerticalAlignment="Top" Width="180" FontWeight="Bold" Grid.ColumnSpan="2" FontSize="14">
+            <Grid HorizontalAlignment="Left" Height="207" Margin="0,0,-2,0" VerticalAlignment="Top" Width="170">
+                <GroupBox x:Name="ExportOptions" Header="Export Column" HorizontalAlignment="Left" Height="69" VerticalAlignment="Top" Width="170" Margin="0,0,-2,0" FontWeight="Bold" FontStyle="Italic" FontSize="12">
+                    <Grid HorizontalAlignment="Left" Height="49" Margin="0,0,-12,0" VerticalAlignment="Top" Width="170">
+                        <Button x:Name="CopyColumn" Content="Copy Column" HorizontalAlignment="Left" VerticalAlignment="Top" Width="160" FontStyle="Normal" FontWeight="Normal" FontSize="11"/>
+                        <Button x:Name="CopyLine" Content="Copy Line" HorizontalAlignment="Left" VerticalAlignment="Top" Width="107" FontStyle="Normal" FontWeight="Normal" Margin="0,25,0,0" FontSize="11"/>
+                        <TextBox x:Name="CopyLineNumber" HorizontalAlignment="Left" Height="22" Margin="112,24,0,0" TextWrapping="Wrap" Text="1" VerticalAlignment="Top" Width="48" FontSize="11" FontWeight="Normal" FontStyle="Normal"/>
+                    </Grid>
+                </GroupBox>
+                <GroupBox x:Name="CopyColumnAsLine" Header="Copy Column as Line" HorizontalAlignment="Left" Height="70" VerticalAlignment="Top" Width="170" FontWeight="Bold" FontStyle="Italic" Margin="0,74,0,0" FontSize="12">
+                    <Grid HorizontalAlignment="Left" Height="60" Margin="0,0,-12,-13" VerticalAlignment="Top" Width="170">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="40*"/>
+                            <ColumnDefinition Width="9*"/>
+                            <ColumnDefinition Width="36*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="PreLine" HorizontalAlignment="Left" Height="23" TextWrapping="Wrap" VerticalAlignment="Top" Width="36" FontSize="11" FontStyle="Normal" FontWeight="Normal" TextAlignment="Center"/>
+                        <TextBox x:Name="JoinLine" HorizontalAlignment="Left" Height="23" TextWrapping="Wrap" VerticalAlignment="Top" Width="36" FontSize="11" FontStyle="Normal" FontWeight="Normal" Margin="41,0,0,0" Text=", " TextAlignment="Center"/>
+                        <TextBox x:Name="PostLine" HorizontalAlignment="Left" Height="23" TextWrapping="Wrap" VerticalAlignment="Top" Width="36" FontSize="11" FontStyle="Normal" FontWeight="Normal" Grid.Column="1" Margin="2,0,0,0" TextAlignment="Center" Grid.ColumnSpan="2"/>
+                        <ComboBox x:Name="LineOptions" HorizontalAlignment="Left" Margin="25,0,0,0" VerticalAlignment="Top" Width="40" Grid.Column="2"/>
+                        <Button x:Name="CopyAsLine" Content="Copy Column as Line" HorizontalAlignment="Left" Margin="0,28,0,0" VerticalAlignment="Top" Width="160" Grid.ColumnSpan="3" FontStyle="Normal" FontWeight="Normal"/>
+                    </Grid>
+                </GroupBox>
+                <GroupBox x:Name="ExportRequestOptions" Header="Export Request" HorizontalAlignment="Left" Height="57" VerticalAlignment="Top" Width="170" FontWeight="Bold" FontStyle="Italic" Margin="0,149,0,0" FontSize="12">
+                    <Button x:Name="ExportRequest" Content="Export Current Request" HorizontalAlignment="Left" Margin="0,10,-2,0" VerticalAlignment="Top" Width="160" FontStyle="Normal" FontWeight="Normal"/>
+                </GroupBox>
+            </Grid>
+        </GroupBox>
+        <GroupBox x:Name="CurrentRequestOptions" Header="Current Request" HorizontalAlignment="Left" Height="333" Margin="185,29,0,0" VerticalAlignment="Top" Width="324" FontWeight="Bold" FontSize="14">
+            <Grid HorizontalAlignment="Left" Height="305" Margin="0,10,-2,-8" VerticalAlignment="Top" Width="314">
+                <Label x:Name="Label5" Content="Request Name:" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="12" FontWeight="Normal"/>
+                <TextBox x:Name="RequestName" HorizontalAlignment="Left" Height="23" Margin="95,4,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="209" FontSize="12" FontWeight="Normal"/>
+                <CheckBox x:Name="KeepRequest" Content="Keep Request" HorizontalAlignment="Left" Margin="6,31,0,0" VerticalAlignment="Top" FontSize="12" FontWeight="Normal"/>
+                <ComboBox x:Name="ColumnNames" HorizontalAlignment="Left" Margin="6,51,0,0" VerticalAlignment="Top" Width="298" Height="24"/>
+                <RichTextBox x:Name="ColumnData" VerticalScrollBarVisibility="Visible"  HorizontalAlignment="Left" Height="215" Margin="6,80,0,0" VerticalAlignment="Top" Width="298" FontSize="12" FontWeight="Normal">
+                    <FlowDocument>
+                        <Paragraph>
+                            <Run Text="RichTextBox"/>
+                        </Paragraph>
+                    </FlowDocument>
+                </RichTextBox>
+                <Button x:Name="DeleteRequest" Content="Delete Request" HorizontalAlignment="Left" Margin="193,28,0,0" VerticalAlignment="Top" Width="111" FontSize="12" FontWeight="Normal"/>
+            </Grid>
+
+        </GroupBox>
+        <GroupBox x:Name="HistoryOptions" Header="History" HorizontalAlignment="Left" Height="98" Margin="514,264,0,0" VerticalAlignment="Top" Width="180" FontWeight="Bold" Grid.ColumnSpan="2" FontSize="14">
+            <Grid HorizontalAlignment="Left" Height="77" Margin="0,0,-2,-4.5" VerticalAlignment="Top" Width="170">
+                <ComboBox x:Name="History" HorizontalAlignment="Left" VerticalAlignment="Top" Width="150" FontSize="12" FontWeight="Normal" Margin="10,0,0,0"/>
+                <Label x:Name="Label6" Content="Max History:" HorizontalAlignment="Left" Margin="0,24,0,0" VerticalAlignment="Top" FontSize="12" FontWeight="Normal"/>
+                <TextBox x:Name="MaxHistory" HorizontalAlignment="Left" Height="23" Margin="76,27,0,0" TextWrapping="Wrap" Text="10" VerticalAlignment="Top" Width="84" FontSize="12" FontWeight="Normal"/>
+                <Button x:Name="DeleteAllHistory" Content="Delete All History" Margin="10,55,10,0" VerticalAlignment="Top" FontSize="12" FontWeight="Normal"/>
+            </Grid>
+        </GroupBox>
+        <ProgressBar x:Name="ProgressBar" HorizontalAlignment="Left" Height="20" Margin="0,368,0,0" VerticalAlignment="Top" Width="696" Grid.ColumnSpan="2"/>
+
+    </Grid>
+</Window>
