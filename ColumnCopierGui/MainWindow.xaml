@@ -13,18 +13,100 @@
         </Grid.ColumnDefinitions>
         <Menu x:Name="MainMenu" HorizontalAlignment="Left" Height="24" VerticalAlignment="Top" Width="694" Grid.ColumnSpan="2">
             <MenuItem Header="File" Height="24" Width="35">
-                <MenuItem Header="New" HorizontalAlignment="Left" Height="24" Width="140" Margin="0,0,0,0"/>
-                <MenuItem Header="Open" HorizontalAlignment="Left" Height="24" Width="140" Margin="0,0,0,0"/>
-                <Separator HorizontalAlignment="Left" Height="2" Width="140"/>
-                <MenuItem Header="Save" HorizontalAlignment="Left" Height="24" Width="140" Margin="0,0,0,0"/>
-                <MenuItem Header="Save As" HorizontalAlignment="Left" Height="24" Width="140" Margin="0,0,0,0"/>
-                <Separator HorizontalAlignment="Left" Height="2" Width="140"/>
-                <MenuItem Header="Exit" HorizontalAlignment="Left" Height="24" Width="140" Margin="0,0,0,0"/>
+                <MenuItem Header="New" HorizontalAlignment="Left" Height="24" Width="180" Margin="0,0,0,0"/>
+                <MenuItem Header="Open" HorizontalAlignment="Left" Height="24" Width="180" Margin="0,0,0,0"/>
+                <Separator HorizontalAlignment="Left" Height="2" Width="180"/>
+                <MenuItem Header="Save" HorizontalAlignment="Left" Height="24" Width="180" Margin="0,0,0,0"/>
+                <MenuItem Header="Save As" HorizontalAlignment="Left" Height="24" Width="180" Margin="0,0,0,0"/>
+                <Separator HorizontalAlignment="Left" Height="2" Width="180"/>
+                <MenuItem Header="Program Settings" HorizontalAlignment="Left" Height="24" Width="180" Margin="0,0,0,0">
+                    <MenuItem Header="Show On Top" HorizontalAlignment="Left" Height="24" Width="180" Margin="0,0,0,0" IsCheckable="True"/>
+                    <MenuItem Header="Compress Save" HorizontalAlignment="Left" Height="24" Width="180" Margin="0,0,0,0" IsCheckable="True"/>
+                    <MenuItem Header="Window Opacity" HorizontalAlignment="Left" Height="24" Width="180" Margin="0,0,0,0" IsCheckable="True"/>
+                </MenuItem>
+                <Separator HorizontalAlignment="Left" Height="2" Width="180"/>
+                <MenuItem Header="Exit" HorizontalAlignment="Left" Height="24" Width="180" Margin="0,0,0,0"/>
             </MenuItem>
-            <MenuItem Header="Input" Height="24" Width="45"/>
-            <MenuItem Header="Output" Height="24" Width="52"/>
-            <MenuItem Header="Data History" Height="24" Width="80"/>
-            <MenuItem Header="Help" Height="24" Width="40"/>
+            <MenuItem Header="Input" Height="24" Width="45">
+                <MenuItem Header="Paste" HorizontalAlignment="Left" Height="24" Width="210" Margin="0,0,0,0"/>
+                <MenuItem Header="Paste and Copy" HorizontalAlignment="Left" Height="24" Width="210" Margin="0,0,0,0"/>
+                <Separator HorizontalAlignment="Left" Height="2" Width="210"/>
+                <MenuItem Header="SQL Input Wizard" HorizontalAlignment="Left" Height="24" Width="210" Margin="0,0,0,0"/>
+                <Separator HorizontalAlignment="Left" Height="2" Width="210"/>
+                <MenuItem Header="SQL Provider" HorizontalAlignment="Left" Height="24" Width="210" Margin="0,0,0,0">
+                    <MenuItem Header="None" HorizontalAlignment="Left" Height="24" Width="210" Margin="0,0,0,0" IsCheckable="True" IsChecked="True"/>
+                    <MenuItem Header="SQL Server" HorizontalAlignment="Left" Height="24" Width="210" Margin="0,0,0,0" IsCheckable="True" IsChecked="False"/>
+                    <MenuItem Header="MySQL" HorizontalAlignment="Left" Height="24" Width="210" Margin="0,0,0,0" IsCheckable="True" IsChecked="False"/>
+                    <MenuItem Header="PostgreSQL" HorizontalAlignment="Left" Height="24" Width="210" Margin="0,0,0,0" IsCheckable="True" IsChecked="False"/>
+                </MenuItem>
+                <MenuItem Header="SQL Connection String" HorizontalAlignment="Left" Height="24" Width="210" Margin="0,0,0,0"/>
+                <MenuItem Header="SQL Query" HorizontalAlignment="Left" Height="24" Width="210" Margin="0,0,0,0"/>
+                <MenuItem Header="Execute SQL Query" HorizontalAlignment="Left" Height="24" Width="210" Margin="0,0,0,0"/>
+                <Separator HorizontalAlignment="Left" Height="2" Width="210"/>
+                <MenuItem Header="Input Settings" HorizontalAlignment="Left" Height="24" Width="210" Margin="0,0,0,0">
+                    <MenuItem Header="Remove Blank Lines" HorizontalAlignment="Left" Height="24" Width="210" Margin="0,0,0,0" IsCheckable="True" IsChecked="True"/>
+                    <MenuItem Header="First Row as Headers" HorizontalAlignment="Left" Height="24" Width="210" Margin="0,0,0,0" IsCheckable="True" IsChecked="True"/>
+                    <MenuItem Header="Clean Input Text" HorizontalAlignment="Left" Height="24" Width="210" Margin="0,0,0,0" IsCheckable="True" IsChecked="True"/>
+                    <Separator HorizontalAlignment="Left" Height="2" Width="210"/>
+                    <MenuItem Header="Default Column Number" HorizontalAlignment="Left" Height="24" Width="210" Margin="0,0,0,0"/>
+                    <MenuItem Header="Default Column Name" HorizontalAlignment="Left" Height="24" Width="210" Margin="0,0,0,0"/>
+                    <MenuItem Header="Default Priority" HorizontalAlignment="Left" Height="24" Width="210" Margin="0,0,0,0">
+                        <MenuItem Header="Default Column: Column Number" HorizontalAlignment="Left" Height="24" Width="210" Margin="0,0,0,0" IsCheckable="True" IsChecked="True"/>
+                        <MenuItem Header="Default Column: Column Name" HorizontalAlignment="Left" Height="24" Width="210" Margin="0,0,0,0" IsCheckable="True" IsChecked="False"/>
+                        <Separator HorizontalAlignment="Left" Height="2" Width="210"/>
+                        <MenuItem Header="Name Similarity Value" HorizontalAlignment="Left" Height="24" Width="210" Margin="0,0,0,0"/>
+                    </MenuItem>
+                </MenuItem>
+            </MenuItem>
+            <MenuItem Header="Current Request" Height="24" Width="100">
+                <MenuItem Header="Keep Request" HorizontalAlignment="Left" Height="24" Width="260" Margin="0,0,0,0"/>
+                <MenuItem Header="Delete Request" HorizontalAlignment="Left" Height="24" Width="260" Margin="0,0,0,0"/>
+                <Separator HorizontalAlignment="Left" Height="2" Width="260"/>
+                <MenuItem Header="Request Stats" HorizontalAlignment="Left" Height="24" Width="260" Margin="0,0,0,0">
+                    <MenuItem Header="Number of Columns: " HorizontalAlignment="Left" Height="24" Width="300" Margin="0,0,0,0"/>
+                </MenuItem>
+                <MenuItem Header="Selected Column Stats" HorizontalAlignment="Left" Height="24" Width="260" Margin="0,0,0,0">
+                    <MenuItem Header="Current Selected Column: " HorizontalAlignment="Left" Height="24" Width="300" Margin="0,0,0,0"/>
+                    <MenuItem Header="Number of Rows: " HorizontalAlignment="Left" Height="24" Width="300" Margin="0,0,0,0"/>
+                </MenuItem>
+            </MenuItem>
+            <MenuItem Header="Output" Height="24" Width="52">
+                <MenuItem Header="Copy Column" HorizontalAlignment="Left" Height="24" Width="260" Margin="0,0,0,0"/>
+                <Separator HorizontalAlignment="Left" Height="2" Width="260"/>
+                <MenuItem Header="Copy Line" HorizontalAlignment="Left" Height="24" Width="260" Margin="0,0,0,0"/>
+                <MenuItem Header="Current Line Number: " HorizontalAlignment="Left" Height="24" Width="260" Margin="0,0,0,0"/>
+                <Separator HorizontalAlignment="Left" Height="2" Width="260"/>
+                <MenuItem Header="Copy Column as Line" HorizontalAlignment="Left" Height="24" Width="260" Margin="0,0,0,0"/>
+                <MenuItem Header="Line Break Replacement Settings" HorizontalAlignment="Left" Height="24" Width="260" Margin="0,0,0,0">
+                    <MenuItem Header="Pre-" HorizontalAlignment="Left" Height="24" Width="260" Margin="0,0,0,0"/>
+                    <MenuItem Header="Join" HorizontalAlignment="Left" Height="24" Width="260" Margin="0,0,0,0"/>
+                    <MenuItem Header="Post-" HorizontalAlignment="Left" Height="24" Width="260" Margin="0,0,0,0"/>
+                    <Separator HorizontalAlignment="Left" Height="2" Width="260"/>
+                    <MenuItem Header="Seperator Sets" HorizontalAlignment="Left" Height="24" Width="260" Margin="0,0,0,0"/>
+                    <MenuItem Header="Save Current Seperators" HorizontalAlignment="Left" Height="24" Width="260" Margin="0,0,0,0"/>
+                </MenuItem>
+                <Separator HorizontalAlignment="Left" Height="2" Width="260"/>
+                <MenuItem Header="Multi-Column Copy Wizard" HorizontalAlignment="Left" Height="24" Width="260" Margin="0,0,0,0"/>
+                <Separator HorizontalAlignment="Left" Height="2" Width="260"/>
+                <MenuItem Header="Export Request" HorizontalAlignment="Left" Height="24" Width="260" Margin="0,0,0,0"/>
+            </MenuItem>
+            <MenuItem Header="Data History" Height="24" Width="80">
+                <MenuItem Header="Change Request" HorizontalAlignment="Left" Height="24" Width="175" Margin="0,0,0,0"/>
+                <Separator HorizontalAlignment="Left" Height="2" Width="175"/>
+                <MenuItem Header="Clear History" HorizontalAlignment="Left" Height="24" Width="175" Margin="0,0,0,0"/>
+                <Separator HorizontalAlignment="Left" Height="2" Width="175"/>
+                <MenuItem Header="History Settings" HorizontalAlignment="Left" Height="24" Width="175" Margin="0,0,0,0">
+                    <MenuItem Header="Max Request History" HorizontalAlignment="Left" Height="24" Width="200" Margin="0,0,0,0"/>
+                </MenuItem>
+            </MenuItem>
+            <MenuItem Header="Help" Height="24" Width="40">
+                <MenuItem Header="Support" HorizontalAlignment="Left" Height="24" Width="190" Margin="0,0,0,0"/>
+                <MenuItem Header="Documentation" HorizontalAlignment="Left" Height="24" Width="190" Margin="0,0,0,0"/>
+                <Separator HorizontalAlignment="Left" Height="2" Width="190"/>
+                <MenuItem Header="Check for Updates" HorizontalAlignment="Left" Height="24" Width="190" Margin="0,0,0,0"/>
+                <Separator HorizontalAlignment="Left" Height="2" Width="190"/>
+                <MenuItem Header="About" HorizontalAlignment="Left" Height="24" Width="190" Margin="0,0,0,0"/>
+            </MenuItem>
         </Menu>
         <GroupBox x:Name="InputOptions" Header="Input" HorizontalAlignment="Left" Height="333" Margin="0,29,0,0" VerticalAlignment="Top" Width="180" FontWeight="Bold" FontSize="14">
             <Grid HorizontalAlignment="Left" Height="323" Margin="0,0,-2,-13" VerticalAlignment="Top" Width="170">

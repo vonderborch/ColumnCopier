@@ -5,7 +5,9 @@ VisualStudioVersion = 15.0.27703.2026
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ColumnCopierOLD", "ColumnCopierOLD\ColumnCopierOLD.csproj", "{3DC1941E-2AF6-4638-8ED4-06716862C78B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ColumnCopier", "ColumnCopier\ColumnCopier.csproj", "{5CDB68E9-0596-4BB7-814E-7B0E1EBE3766}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ColumnCopierGui", "ColumnCopierGui\ColumnCopierGui.csproj", "{5CDB68E9-0596-4BB7-814E-7B0E1EBE3766}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ColumnCopier", "ColumnCopier\ColumnCopier.csproj", "{7BFEBE35-C001-4AFE-A24F-7237655342C3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{5CDB68E9-0596-4BB7-814E-7B0E1EBE3766}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5CDB68E9-0596-4BB7-814E-7B0E1EBE3766}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5CDB68E9-0596-4BB7-814E-7B0E1EBE3766}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7BFEBE35-C001-4AFE-A24F-7237655342C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7BFEBE35-C001-4AFE-A24F-7237655342C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7BFEBE35-C001-4AFE-A24F-7237655342C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7BFEBE35-C001-4AFE-A24F-7237655342C3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
