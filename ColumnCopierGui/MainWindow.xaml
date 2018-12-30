@@ -7,6 +7,10 @@
         mc:Ignorable="d"
         Title="Column Copier" Height="426.437" Width="702.053" ResizeMode="CanMinimize" WindowStartupLocation="CenterOwner">
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="59*"/>
+            <RowDefinition Height="339*"/>
+        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="321*"/>
             <ColumnDefinition Width="73*"/>
@@ -108,7 +112,7 @@
                 <MenuItem Header="About" HorizontalAlignment="Left" Height="24" Width="190" Margin="0,0,0,0"/>
             </MenuItem>
         </Menu>
-        <GroupBox x:Name="InputOptions" Header="Input" HorizontalAlignment="Left" Height="333" Margin="0,29,0,0" VerticalAlignment="Top" Width="180" FontWeight="Bold" FontSize="14">
+        <GroupBox x:Name="InputOptions" Header="Input" HorizontalAlignment="Left" Height="333" Margin="0,29,0,0" VerticalAlignment="Top" Width="180" FontWeight="Bold" FontSize="14" Grid.RowSpan="2">
             <Grid HorizontalAlignment="Left" Height="323" Margin="0,0,-2,-13" VerticalAlignment="Top" Width="170">
                 <GroupBox x:Name="ImportDataOptions" Header="Import Data" HorizontalAlignment="Left" Height="69" VerticalAlignment="Top" Width="170" Margin="0,0,-2,0" FontWeight="Bold" FontStyle="Italic" FontSize="12">
                     <Grid HorizontalAlignment="Left" Height="49" Margin="0,0,-12,0" VerticalAlignment="Top" Width="170">
@@ -137,7 +141,7 @@
                 </GroupBox>
             </Grid>
         </GroupBox>
-        <GroupBox x:Name="OutputOptions" Header="Output" HorizontalAlignment="Left" Height="230" Margin="514,29,0,0" VerticalAlignment="Top" Width="180" FontWeight="Bold" Grid.ColumnSpan="2" FontSize="14">
+        <GroupBox x:Name="OutputOptions" Header="Output" HorizontalAlignment="Left" Height="230" Margin="514,29,0,0" VerticalAlignment="Top" Width="180" FontWeight="Bold" Grid.ColumnSpan="2" FontSize="14" Grid.RowSpan="2">
             <Grid HorizontalAlignment="Left" Height="207" Margin="0,0,-2,0" VerticalAlignment="Top" Width="170">
                 <GroupBox x:Name="ExportOptions" Header="Export Column" HorizontalAlignment="Left" Height="69" VerticalAlignment="Top" Width="170" Margin="0,0,-2,0" FontWeight="Bold" FontStyle="Italic" FontSize="12">
                     <Grid HorizontalAlignment="Left" Height="49" Margin="0,0,-12,0" VerticalAlignment="Top" Width="170">
@@ -165,7 +169,7 @@
                 </GroupBox>
             </Grid>
         </GroupBox>
-        <GroupBox x:Name="CurrentRequestOptions" Header="Current Request" HorizontalAlignment="Left" Height="333" Margin="185,29,0,0" VerticalAlignment="Top" Width="324" FontWeight="Bold" FontSize="14">
+        <GroupBox x:Name="CurrentRequestOptions" Header="Current Request" HorizontalAlignment="Left" Height="333" Margin="185,29,0,0" VerticalAlignment="Top" Width="324" FontWeight="Bold" FontSize="14" Grid.RowSpan="2">
             <Grid HorizontalAlignment="Left" Height="305" Margin="0,10,-2,-8" VerticalAlignment="Top" Width="314">
                 <Label x:Name="Label5" Content="Request Name:" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="12" FontWeight="Normal"/>
                 <TextBox x:Name="RequestName" HorizontalAlignment="Left" Height="23" Margin="95,4,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="209" FontSize="12" FontWeight="Normal"/>
@@ -182,7 +186,7 @@
             </Grid>
 
         </GroupBox>
-        <GroupBox x:Name="HistoryOptions" Header="History" HorizontalAlignment="Left" Height="98" Margin="514,264,0,0" VerticalAlignment="Top" Width="180" FontWeight="Bold" Grid.ColumnSpan="2" FontSize="14">
+        <GroupBox x:Name="HistoryOptions" Header="History" HorizontalAlignment="Left" Height="98" Margin="514,205.251,0,0" VerticalAlignment="Top" Width="180" FontWeight="Bold" Grid.ColumnSpan="2" FontSize="14" Grid.Row="1">
             <Grid HorizontalAlignment="Left" Height="77" Margin="0,0,-2,-4.5" VerticalAlignment="Top" Width="170">
                 <ComboBox x:Name="History" HorizontalAlignment="Left" VerticalAlignment="Top" Width="150" FontSize="12" FontWeight="Normal" Margin="10,0,0,0"/>
                 <Label x:Name="Label6" Content="Max History:" HorizontalAlignment="Left" Margin="0,24,0,0" VerticalAlignment="Top" FontSize="12" FontWeight="Normal"/>
@@ -190,7 +194,7 @@
                 <Button x:Name="DeleteAllHistory" Content="Delete All History" Margin="10,55,10,0" VerticalAlignment="Top" FontSize="12" FontWeight="Normal"/>
             </Grid>
         </GroupBox>
-        <ProgressBar x:Name="ProgressBar" HorizontalAlignment="Left" Height="20" Margin="0,368,0,0" VerticalAlignment="Top" Width="696" Grid.ColumnSpan="2"/>
+        <ProgressBar x:Name="ProgressBar" HorizontalAlignment="Left" Height="20" Margin="0,309.251,0,0" VerticalAlignment="Top" Width="696" Grid.ColumnSpan="2" Grid.Row="1"/>
 
     </Grid>
 </Window>
