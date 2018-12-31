@@ -8,6 +8,11 @@ namespace ColumnCopier
 {
     public abstract class CoreConstants
     {
+        public static string ProgramVersionString = "3.0.0";
+        public static int ProgramVersion = 300;
+        public static int SaveVersion = 30;
+        public static int SaveVersionMinimum = 30;
+
         public static string FormatColumnName { get; private set; } = "Column {0}";
 
         public static string SaveExtension { get; private set; } = ".ccx";

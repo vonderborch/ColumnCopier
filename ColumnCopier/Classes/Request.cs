@@ -39,7 +39,7 @@ using System.Threading.Tasks;
 using ColumnCopier.Enums;
 using ColumnCopier.Helpers;
 
-namespace ColumnCopier.Request
+namespace ColumnCopier.Classes
 {
     /// <summary>
     /// Class Request.
@@ -58,7 +58,7 @@ namespace ColumnCopier.Request
         public int CurrentColumnIndex { get; set; } = 0;
 
         [DataMember]
-        public int Id { get; set; } = 0;
+        public ulong Id { get; set; } = 0;
 
         [DataMember]
         public bool IsPreserved { get; set; } = false;
@@ -110,7 +110,7 @@ namespace ColumnCopier.Request
 
         }
 
-        public Request(string text, RequestSettings settings, int requestId, DefaultColumnSettings columnSettings)
+        public Request(string text, RequestSettings settings, ulong requestId, DefaultColumnSettings columnSettings)
         {
             Id = requestId;
 

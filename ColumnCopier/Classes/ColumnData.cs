@@ -26,7 +26,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using ColumnCopier.Helpers;
 
-namespace ColumnCopier.Request
+namespace ColumnCopier.Classes
 {
     /// <summary>
     /// Class ColumnData.

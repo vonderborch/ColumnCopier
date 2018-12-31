@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ColumnCopier.Enums;
 
-namespace ColumnCopier.Request
+namespace ColumnCopier.Classes
 {
     [DataContract]
     [KnownType(typeof(DefaultColumnSettings))]
